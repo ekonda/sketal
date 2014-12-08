@@ -53,9 +53,3 @@ LOLBOT
 ========
 
 Код распространяется под лицензией [WTFPL](https://ru.wikipedia.org/wiki/WTFPL) (Do What The Fuck You Want To Public License) версии 2
-=======
-lolbotvk
-========
-
-Чат-бот для ВКонтакте
->>>>>>> a5f9ec24860a9c0e1f0fcf25147bb271682b1db9
