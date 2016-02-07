@@ -10,6 +10,7 @@ class VkPlus:
     def __init__(self, login, password):
         try:
             self.api = vk_api.VkApi(login, password)  # Авторизируемся
+            self.api.authorization() 
         except vk_api.AuthorizationError as error_msg:
             print(error_msg)
             return None
