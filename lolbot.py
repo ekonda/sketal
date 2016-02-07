@@ -6,6 +6,8 @@ import time
 
 from vkplus import VkPlus
 
+import settings
+
 
 def main():
     path = 'plugins/'
@@ -19,7 +21,7 @@ def main():
 
     print('Авторизация в вк...')
 
-    vk = VkPlus('login', 'password')
+    vk = VkPlus(settings.vk_login, settings.vk_password)
 
     print('Подгружаем плагины...')
 

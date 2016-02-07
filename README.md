@@ -16,7 +16,7 @@ LOLBOT
 ## Начальная настройка
 
 1. Установить модуль vk_api: `pip install vk_api`
-2. В файле `lolbot.py` заменить на 22 строке `login` и `password` на логин и пароль соответственно
+2. Переименовать `settings.py.sample` в `settings.py`. В файле ~~`lolbot.py`~~ заменить на ~~22 строке~~ `login` и `password` на логин и пароль соответственно. 
 3. Запустить: `python lolbot.py`
 
 ## Смена префиксов

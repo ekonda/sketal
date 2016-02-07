@@ -1,0 +1,3 @@
+vk_login = 'login'
+vk_password = 'password'
+vk_app_id = 11111111 # ID of your own vk app.
