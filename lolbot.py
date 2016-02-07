@@ -21,7 +21,7 @@ def main():
 
     print('Авторизация в вк...')
 
-    vk = VkPlus(settings.vk_login, settings.vk_password)
+    vk = VkPlus(settings.vk_login, settings.vk_password, settings.vk_app_id)
 
     print('Подгружаем плагины...')
 
