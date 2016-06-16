@@ -17,8 +17,6 @@ def main():
     global lastmessid
     lastmessid = 0
 
-    print('LOLbot by akaluth')
-
     print('Авторизация в вк...')
 
     vk = VkPlus(settings.vk_login, settings.vk_password, settings.vk_app_id)
@@ -47,6 +45,9 @@ def main():
 
     while True:
 
+        # обозначаем что аккаунт онлайн
+        vk.method('account.setOnline')	
+
         values = {
             'out': 0,
             'offset': 0,
@@ -57,12 +58,11 @@ def main():
             'last_message_id': lastmessid
         }
 
-        response = vk.api.method('messages.get', values)
+        response = vk.method('messages.get', values)
 
         if response['items']:
             lastmessid = response['items'][0]['id']
             for item in response['items']:
-                print('> ' + item['body'])
                 command(item, cmds)
                 vk.markasread(item['id'])  # Помечаем прочитанным
 
@@ -74,9 +74,10 @@ def command(message, cmds):
         return
     words = message['body'].split()
 
-    prefixes = ['lolbot', u'лолбот', u'лб', u'чб', u'кб']
+    prefixes = ['lolbot', u'лолбот', u'лб', u'lb', u'фб', u'файнбот', u'fb', u'finebot', '!']
 
     if words[0].lower() in prefixes:
+    print('> ' + message['body']).encode('utf-8')
         if len(words) > 1 and words[1] in cmds:
             cmds[words[1].lower()].call(message)
 
