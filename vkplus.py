@@ -50,7 +50,7 @@ class VkPlus:
             self.exit = True 
 
     def respond(self, to, values):
-        answ_flood_detour = [u'Обход блокировки:', u'Обход анти-флуд системы:']
+        answ_flood_detour = [u'Обход блокировки', u'Обход анти-флуд системы']
         
         if 'chat_id' in to:
             values['chat_id'] = to['chat_id']
@@ -64,7 +64,7 @@ class VkPlus:
             if err.code == 9:
                 if values.has_key('message'):
                     print(u'Respond has api error with code '+ str(err.code) + u'. Try to detour.')
-                    values['message'] += u'\n' + random.choice(answ_flood_detour) + u'. ' + ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits + string.lowercase) for _ in range(random.randint(5, 15)))
+                    values['message'] += u'\n' + random.choice(answ_flood_detour) + u': ' + ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits + string.lowercase) for _ in range(random.randint(5, 15)))
                     try:
                         self.api.method('messages.send', values)
                     except vk_api.vk_api.ApiError, err2:
