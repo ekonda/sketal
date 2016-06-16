@@ -50,7 +50,7 @@ class VkPlus:
             self.exit = True 
 
     def respond(self, to, values):
-        answ_flood_detour = [u'Flood detour', u'Обход ошибки о флуде']
+        answ_flood_detour = [u'Обход блокировки:', u'Обход анти-флуд системы:']
         
         if 'chat_id' in to:
             values['chat_id'] = to['chat_id']
