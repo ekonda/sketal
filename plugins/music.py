@@ -38,7 +38,8 @@ class Plugin:
 
         musicatt = []
 
-        for attach in music['items']:
+        if music['items'] is not None:
+         for attach in music['items']:
             user = attach['owner_id']
             ident = attach['id']
             musicatt.append('audio' + str(user) + '_' + str(ident))
