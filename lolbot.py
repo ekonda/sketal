@@ -10,8 +10,17 @@ import settings
 
 
 def main():
-    BLACKLIST = (0, 0)
-    path = 'plugins/'
+    
+    try:
+        BLACKLIST = settings.blacklist
+    except:
+        BLACKLIST = (0, 0)
+
+    try:
+        path = settings.path
+    except:
+        path = 'plugins/'
+        
     cmds = {}
     plugins = {}
 
@@ -77,7 +86,10 @@ def command(message, cmds):
         return
     words = message['body'].split()
 
-    prefixes = ['lolbot', u'лолбот', u'лб', u'lb', u'фб', u'файнбот', u'fb', u'finebot', '!']
+    try:
+        prefixes = settings.prefixes
+    except:
+        prefixes = ['lolbot', u'лолбот', u'лб', u'lb', u'фб', u'файнбот', u'fb', u'finebot']
 
     if words[0].lower() in prefixes:
     print('> ' + message['body']).encode('utf-8')
