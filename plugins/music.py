@@ -23,7 +23,8 @@ class Plugin:
         errors = []
         errors.append(u'Открой аудио, мудак!')
         errors.append(u'Мудак, аудиозаписи открой!')
-        errors.append(u'Я бы с радостью тебе дал музыки, но ты мудак')
+        errors.append(u'У тебя аудио закрыты, мудак!')
+        errors.append(u'Я бы с радостью тебе дал музыки, но ты мудак.')
 
         try:
             count = self.vk.api.method('audio.getRecommendations',
@@ -45,7 +46,9 @@ class Plugin:
             musicatt.append('audio' + str(user) + '_' + str(ident))
 
         answers = []
-        answers.append(u'Вот твоя музыка')
+        answers.append(u'Вот твоя музыка:')
+        answers.append(u'Вот, послушай.')
+        answers.append(u'Мои рекомендации для тебя:')
         answers.append(u'Музыку заказывали?')
         answers.append(u'Бесплатная музыка!')
 
