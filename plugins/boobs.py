@@ -30,7 +30,7 @@ class Plugin:
             values = {
             # owner_id = ид группы
                 'owner_id': -20282193,
-                'offset': random.randint(1, 1200),
+                'offset': random.randint(1, 500),
                 'count': 1
             }
 
