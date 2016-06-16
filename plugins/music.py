@@ -38,7 +38,7 @@ class Plugin:
 
         musicatt = []
 
-        if music['items'] is not None:
+        if music is not None and music['items']:
          for attach in music['items']:
             user = attach['owner_id']
             ident = attach['id']
@@ -51,7 +51,8 @@ class Plugin:
 
         attstring = ''
 
-        for item in musicatt:
+        if musicatt is not None:
+         for item in musicatt:
             attstring += item + ','
 
         if attstring == '':
