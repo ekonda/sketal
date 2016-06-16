@@ -71,7 +71,7 @@ def main():
 
         response = vk.method('messages.get', values)
 
-        if response['items'] and response['items'] is not None:
+        if response is not None and response['items']:
             lastmessid = response['items'][0]['id']
             for item in response['items']:
              if item['read_state'] == 0 and item['user_id'] not in BLACKLIST:
