@@ -29,8 +29,8 @@ class Plugin:
         while isphoto is False:
             values = {
             # owner_id = ид группы
-                'owner_id': -45703579,
-                'offset': random.randint(1, 1985),
+                'owner_id': -20282193,
+                'offset': random.randint(1, 300),
                 'count': 1
             }
 
