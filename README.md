@@ -60,4 +60,4 @@ LOLBOT
 Плагины могут работать со всеми методами API вконтакте.
 
 ## Лицензия:
-Код распространяется под лицензией [WTFPL](https://ru.wikipedia.org/wiki/WTFPL) (Do What The Fuck You Want To Public License) версии 2
+Код распространяется под лицензией [GPL V2](https://ru.wikipedia.org/wiki/GNU_General_Public_License) (General_Public_License V2)
