@@ -10,6 +10,7 @@ import settings
 
 
 def main():
+    BLACKLIST = (0, 0)
     path = 'plugins/'
     cmds = {}
     plugins = {}
@@ -64,6 +65,7 @@ def main():
         if response['items']:
             lastmessid = response['items'][0]['id']
             for item in response['items']:
+             if item['read_state'] == 0 and item['user_id'] not in BLACKLIST:
                 command(item, cmds)
                 vk.markasread(item['id'])  # Помечаем прочитанным
 
