@@ -3,6 +3,8 @@
 
 import vk_api
 
+import random, string, errno
+from requests.exceptions import ConnectionError
 
 class VkPlus:
     api = None
@@ -21,6 +23,32 @@ class VkPlus:
 
     # values передаются все, кроме user_id/chat_id
     # Поэтому метод и называется respond, ваш кэп
+    # Сделано для упрощения ответа. В пагине или другом коде 
+    # не нужно "думать" о том, откуда пришло сообщение:
+    # из диалога, или из беседы (чата, конференции).
+
+    def method(self, key, data=None):
+
+        for attempt in range(10):
+            if attempt > 0:
+                print (u'Attepts $'+str(attempt))
+
+            try:
+                return self.api.method(key, data)
+            except ConnectionError as e:
+                if e.errno != errno.ECONNRESET:
+                    print(u'Exeption at vkservice at attempt '+str(attempt)+u' :')
+                    print(e)
+                    break
+                print(u'104 Connection reset by peer. Attempt: '+str(attempt))                    
+            else:
+                break
+        else:
+            print(u'Exeption at vkservice (last): ')
+            print(e)
+            socket.send(b'error')
+            self.exit = True 
+
     def respond(self, to, values):
         answ_flood_detour = [u'Flood detour', u'Обход ошибки о флуде']
         
