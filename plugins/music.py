@@ -35,7 +35,7 @@ class Plugin:
                 'offset': random.randint(0, count['count'] - 5),
                 'count': 5})
         except:
-            self.vk.respond(msg, {'message': random.choice(errors)})
+            print(u'Failed get music of id' + str(msg['user_id']))
 
         musicatt = []
 
