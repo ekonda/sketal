@@ -5,13 +5,15 @@ import random
 
 class Plugin:
     vk = None
+	
+    plugin_type = 'command'
 
     def __init__(self, vk):
         self.vk = vk
         print('Nope')
 
     def getkeys(self):
-        keys = [u'нет', u'неа', u'nope', u'видео', u'видосик']
+        keys = [u'нет', u'неа', u'nope', u'видосик']
         ret = {}
         for key in keys:
             ret[key] = self

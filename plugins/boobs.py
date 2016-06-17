@@ -5,6 +5,8 @@ import random
 
 class Plugin:
     vk = None
+	
+    plugin_type = 'command'
 
     def __init__(self, vk):
         self.vk = vk
@@ -34,7 +36,7 @@ class Plugin:
                 'count': 1
             }
 
-            boobs = self.vk.api.method('wall.get', values)
+            boobs = self.vk.method('wall.get', values)
             if 'attachments' in boobs['items'][0]:
                 if 'photo' in boobs['items'][0]['attachments'][0]:
                     isphoto = True

@@ -5,6 +5,8 @@ import random
 
 class Plugin:
     vk = None
+	
+    plugin_type = 'command'
 
     def __init__(self, vk):
         self.vk = vk
@@ -20,10 +22,10 @@ class Plugin:
     def call(self, msg):
         greetings = []
 
-        greetings.append(u'Доброго времени суток.')
+        greetings.append(u'Слава Украине!')
         greetings.append(u'Кекеке')
-        greetings.append(u'Запущен и готов служить.')
-        greetings.append(u'У контакта ужасный флуд-контроль, %username%.')
-        greetings.append(u'Хуяк-хуяк и в продакшен!')
+        greetings.append(u'Запущен и готов служить!')
+        greetings.append(u'У контакта ужасный флуд-контроль, %username%')
+        greetings.append(u'Хуяк-хуяк и в продакшен')
 
         self.vk.respond(msg, {'message': random.choice(greetings)})

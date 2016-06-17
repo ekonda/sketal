@@ -5,6 +5,8 @@ import random
 
 class Plugin:
     vk = None
+	
+    plugin_type = 'command'
 
     def __init__(self, vk):
         self.vk = vk
@@ -27,10 +29,10 @@ class Plugin:
         errors.append(u'Я бы с радостью тебе дал музыки, но ты мудак.')
 
         try:
-            count = self.vk.api.method('audio.getRecommendations',
+            count = self.vk.method('audio.getRecommendations',
                 {'user_id': msg['user_id'], 'count': 1})
 
-            music = self.vk.api.method('audio.getRecommendations',
+            music = self.vk.method('audio.getRecommendations',
                 {'user_id': msg['user_id'],
                 'offset': random.randint(0, count['count'] - 5),
                 'count': 5})

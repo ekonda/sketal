@@ -5,6 +5,8 @@ import random
 
 class Plugin:
     vk = None
+	
+    plugin_type = 'command'
 
     def __init__(self, vk):
         self.vk = vk

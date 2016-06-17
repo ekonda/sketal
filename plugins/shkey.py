@@ -10,10 +10,10 @@ class Plugin:
 
     def __init__(self, vk):
         self.vk = vk
-        print('Файнмайн записи')
+        print('Случайные школьницы')
 
     def getkeys(self):
-        keys = [u'файнмайн', u'finemine']
+        keys = [u'шк', u'sh', u'shkey', u'школьницы', u'школьница']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -21,9 +21,11 @@ class Plugin:
 
     def call(self, msg):
         answers = []
-        answers.append(u"Куйня какая-то!")
-        answers.append(u"Великолепно (Нет)")
-        answers.append(u"Я сам смотреть не буду, но вы смотрите.")
+        answers.append(u"Я тут выбрал, посмотрите.")
+        answers.append(u"Баллов на " + str(random.randint(1, 8)) + u" из 10")
+        answers.append(u"Вот, держи!")
+        answers.append(u"Не знаю как вам, а мне понравилась.")
+        answers.append(u"&#127770;")
 
         isphoto = False
         boobs = None
@@ -31,8 +33,8 @@ class Plugin:
         while isphoto is False:
             values = {
             # owner_id = ид группы
-                'owner_id': -35140461,
-                'offset': random.randint(1, 1000),
+                'owner_id': -114802962,
+                'offset': random.randint(1, 1800),
                 'count': 1
             }
 
