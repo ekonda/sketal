@@ -21,11 +21,8 @@ class Plugin:
     def call(self, msg, args=None):
 
     	if len(args) >= 1:
-    		uid=str(args[0].encode('utf-8'))
-    		body=''
     		for arg in args[1:]:
-    			body = body + ' ' + arg
-				
+    			
                 query = ' '.join(args)
                 wiki_api  = 'http://ru.wikipedia.org/w/api.php?'  # А что если нужна не русская вики? очевидно русская, потому что аудитория вк только русская. для гурманов можно ссылку на англ версию при желании
                 wiki_main = 'http://ru.wikipedia.org/wiki/'
