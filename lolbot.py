@@ -20,7 +20,8 @@ def main():
         path = settings.path
     except:
         path = 'plugins/'
-        
+
+    global cmds        
     cmds = {}
     plugins = {}
 
@@ -94,8 +95,31 @@ def command(message, cmds):
     if words[0].lower() in prefixes:
     print('> ' + message['body']).encode('utf-8')
         if len(words) > 1 and words[1] in cmds:
-            cmds[words[1].lower()].call(message)
+            command_execute(message, words[1].lower(), words[2:])
 
+def command_execute(message, plugin, params):
+    if plugin and plugin in cmds:
+        # Помечаем прочитанным перед выполнением команды.           
+        vk.markasread(message['id'])
+
+        # Приоритеты аргументов:
+        # 0. message - всегда есть.
+        # 1. params, with_args, args
+
+        # 0
+        args = [message]
+
+        # 1
+        if any(s in cmds[plugin].plugin_type for s in ['params', 'with_args', 'args']):
+            args.append(params)
+        # 2 
+        if 'settings' in cmds[plugin].plugin_type:
+            args.append(settings)
+
+        cmds[plugin].call(*args)
+        return True
+    else:
+        return False
 
 if __name__ == '__main__':
     main()
