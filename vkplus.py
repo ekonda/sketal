@@ -10,12 +10,12 @@ from requests.exceptions import ConnectionError
 class VkPlus:
     api = None
 
-    def __init__(self, login, password, app_id=-1):
+    def __init__(self, access_token, app_id=-1):
         try:
             if app_id == -1:
-                self.api = vk_api.VkApi(login, password)
+                self.api = vk_api.VkApi(token=access_token)
             else:
-                self.api = vk_api.VkApi(login, password, app_id)
+                self.api = vk_api.VkApi(app_id, token=access_token)
 
             self.api.authorization()  # Авторизируемся
         except vk_api.AuthorizationError as error_msg:
@@ -33,7 +33,7 @@ class VkPlus:
             return self.api.method(key, data)
         except ConnectionError as e:
             if e.errno != errno.ECONNRESET:
-                print(u'Exeption at vkservice at attempt :')
+                print(u'Exeption at vkservice:')
                 print(e.message)
 
     def respond(self, to, values):
@@ -45,7 +45,7 @@ class VkPlus:
             else:  # если ЛС
                 values['user_id'] = to['user_id']
                 self.method('messages.send', values)
-        except vk_api.vk_api.ApiError, err:
+        except vk_api.vk_api.ApiError as err:
             if err.code == 9:
                 if values.has_key('message'):
                     print(u'Respond has api error with code ' + str(err.code) + u'. Try to detour.')

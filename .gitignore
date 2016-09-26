@@ -4,3 +4,4 @@ config
 vk_config.json
 __pycache__
 settings.py
+.idea/

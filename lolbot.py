@@ -30,8 +30,8 @@ def main():
 
     print('Авторизация в вк...')
     global vk
-    vk = VkPlus(settings.vk_login, settings.vk_password, settings.vk_app_id)
-    print('Успешная авторизация с аккаунтом: ' + settings.vk_login)
+    vk = VkPlus(settings.vk_access_token, settings.vk_app_id)
+    print('Успешная авторизация с аккаунтом')
 
     print('Подгружаем плагины...')
 
@@ -58,7 +58,6 @@ def main():
     while True:
 
         # обозначаем что аккаунт онлайн
-        vk.method('account.setOnline')	
 
         values = {
             'out': 0,
