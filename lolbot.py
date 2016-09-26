@@ -4,7 +4,7 @@ import os
 import sys
 import time
 import builtins
-from say import say
+from say import say, fmt
 from vkplus import VkPlus
 import traceback
 import settings
@@ -14,7 +14,7 @@ global vk
 builtins.print = say  # Переопределить print функцией say (совместима с print)
 
 
-def good(string): # Функция для упрощённого вывода зелёных сообщений
+def good(string):  # Функция для упрощённого вывода зелёных сообщений
     say(string, style='green')
 
 
@@ -125,6 +125,10 @@ def command_execute(message, plugin, params):
         try:
             cmds[plugin].call(*args)
         except Exception as error:
+            vk.respond(args[0], {
+                    "message": fmt("{vk.anti_flood()}. Произошла ошибка в плагине <{plugin}>, пожалуйста, сообщите об этом разработчику!")
+                })
+
             say(
                 "Произошла ошибка в плагине {plugin} при вызове команды {message['body']} с параметрами {params}. "
                 "Ошибка:\n{traceback.format_exc()}",

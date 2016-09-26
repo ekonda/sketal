@@ -35,9 +35,12 @@ class VkPlus:
         except ConnectionError as e:
             if e.errno != errno.ECONNRESET:
                 print('Exeption at vkservice:')
-                print(e.message)
+                print(e)
         except vk_api.vk_api.ApiError as error:
-            say("Ошибка при вызове метода API {key} с значениями {data}.", style = 'red')
+            say("Произошла ошибка при вызове метода API {key} с значениями {data}:\n{error}", style = 'red')
+
+    def anti_flood(self):
+        return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
     def respond(self, to, values):
         flood_bypass_message = 'Обход анти-флуд системы'
@@ -52,7 +55,7 @@ class VkPlus:
             if err.code == 9:
                 if 'message' in values:
                     print(('Respond has api error with code ' + str(err.code) + '. Try to detour.'))
-                    values['message'] += '\n {(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))}'
+                    values['message'] += '\n {anti_flood()}'
                     try:
                         self.api.method('messages.send', values)
                     except vk_api.vk_api.ApiError as err2:
