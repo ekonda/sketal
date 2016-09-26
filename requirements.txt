@@ -1,0 +1,4 @@
+vk_api
+say
+pytz
+requests

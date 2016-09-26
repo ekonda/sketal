@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 import time
 import builtins
 from os.path import abspath
@@ -10,7 +8,6 @@ from say import say, fmt
 
 from plugin_system import PluginSystem
 from vkplus import VkPlus
-import traceback
 import settings
 
 global vk
