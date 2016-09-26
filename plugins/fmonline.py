@@ -7,7 +7,7 @@ from plugin_system import Plugin
 plugin = Plugin('Онлайн серверов')
 
 @plugin.on_command('онлайн','online','сервера')
-def call(vk, raw_message, args):
+def get_online(vk, raw_message, args):
     online_hard = requests.get("http://finemine.ru/mon/ajax.php")
     onlineid_hard = online_hard.json()["servers"]["HardTech"]["online"]
     online_tm1 = requests.get("http://finemine.ru/mon/ajax.php")

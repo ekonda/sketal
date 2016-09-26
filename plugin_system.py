@@ -10,14 +10,14 @@ import types
 
 
 class Plugin(object):
-    def __init__(self, name="Plugin(changeme)", description=""):
-        self.deferred_events = []  # events which plugin substribed on
+    def __init__(self, name="Стандартное имя плагина (измени меня)", description=""):
+        self.deferred_events = []  # events which plugin subsсribed on
         self.name = name
         self.description = description
         self.log = print
         self.log(name)
 
-    # Event wrapper (executed on first start, one time only)
+    # Event wrapper (executed on first start, and when everytime when you call it)
     def on_command(self, *commands):
         def wrapper(method):
             for command in commands:
@@ -48,6 +48,9 @@ class PluginSystem(object):
     def __init__(self, folder=None):
         self.events = {}  # key is event name, value is list of methods, those are subscribed to this method
         self.folder = folder
+
+    def get_commands(self):
+        return [command for command, event_hanlder in self.events.items()]
 
     def add_event(self, name, method):
         if name in self.events:  # if event is already initialized, append
