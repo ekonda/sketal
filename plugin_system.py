@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # This code was originally taken from https://github.com/zeuxisoo/python-pluginplot
-import logging
-import time
+import builtins as builtin
+import imp
+import os
+import sys
+import threading
+import types
 
 
 class Plugin(object):
@@ -11,6 +15,7 @@ class Plugin(object):
         self.name = name
         self.description = description
         self.log = print
+        self.log(name)
 
     # Event wrapper (executed on first start, one time only)
     def on_command(self, *commands):
@@ -31,14 +36,6 @@ class Plugin(object):
         for deferred_event in self.deferred_events:
             deferred_event(plugin)
 
-
-import builtins as builtin
-import imp
-import os
-import sys
-import threading
-import traceback
-import types
 
 local_data = threading.local()
 
