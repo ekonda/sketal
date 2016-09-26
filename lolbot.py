@@ -8,7 +8,7 @@ from vkplus import VkPlus
 
 import settings
 
-
+global vk
 def main():
     
     try:
@@ -29,7 +29,7 @@ def main():
     lastmessid = 0
 
     print('Авторизация в вк...')
-
+    global vk
     vk = VkPlus(settings.vk_login, settings.vk_password, settings.vk_app_id)
     print('Успешная авторизация с аккаунтом: ' + settings.vk_login)
 
@@ -71,13 +71,12 @@ def main():
         }
 
         response = vk.method('messages.get', values)
-
         if response is not None and response['items']:
             lastmessid = response['items'][0]['id']
             for item in response['items']:
-             if item['read_state'] == 0 and item['user_id'] not in BLACKLIST:
-                command(item, cmds)
-                vk.markasread(item['id'])  # Помечаем прочитанным
+                if item['read_state'] == 0 and item['user_id'] not in BLACKLIST:
+                    command(item, cmds)
+                    vk.mark_as_read(item['id'])  # Помечаем прочитанным
 
         time.sleep(0.5)
 
@@ -93,14 +92,15 @@ def command(message, cmds):
         prefixes = ['lolbot', u'лолбот', u'лб', u'lb', u'фб', u'файнбот', u'fb', u'finebot']
 
     if words[0].lower() in prefixes:
-    print('> ' + message['body']).encode('utf-8')
+        print('> ' + message['body']).encode('utf-8')
         if len(words) > 1 and words[1] in cmds:
             command_execute(message, words[1].lower(), words[2:])
 
 def command_execute(message, plugin, params):
+    global vk
     if plugin and plugin in cmds:
         # Помечаем прочитанным перед выполнением команды.           
-        vk.markasread(message['id'])
+        vk.mark_as_read(message['id'])
 
         # Приоритеты аргументов:
         # 0. message - всегда есть.

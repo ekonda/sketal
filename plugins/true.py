@@ -13,7 +13,7 @@ class Plugin:
         print('Правда')
 
     def getkeys(self):
-        keys = [u'правда', 'предсказание', u'true', u'реши', u'шар']
+        keys = [u'правда', u'предсказание', u'true', u'реши', u'шар']
         ret = {}
         for key in keys:
             ret[key] = self

@@ -18,4 +18,5 @@ class Plugin:
         return ret
 
     def call(self, msg):
+        print("OK!")
         self.vk.respond(msg, {'message': u'Пример плагина'})
