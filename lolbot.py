@@ -9,8 +9,9 @@ from vkplus import VkPlus
 import settings
 
 global vk
+
+
 def main():
-    
     try:
         BLACKLIST = settings.blacklist
     except:
@@ -21,7 +22,7 @@ def main():
     except:
         path = 'plugins/'
 
-    global cmds        
+    global cmds
     cmds = {}
     plugins = {}
 
@@ -95,6 +96,7 @@ def command(message, cmds):
         if len(words) > 1 and words[1] in cmds:
             command_execute(message, words[1].lower(), words[2:])
 
+
 def command_execute(message, plugin, params):
     global vk
     if plugin and plugin in cmds:
@@ -119,6 +121,7 @@ def command_execute(message, plugin, params):
         return True
     else:
         return False
+
 
 if __name__ == '__main__':
     main()

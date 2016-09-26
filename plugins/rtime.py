@@ -9,7 +9,7 @@ class Plugin:
     global timeM
     global timeK
     vk = None
-	
+
     plugin_type = 'command'
     tzm = pytz.timezone('Europe/Moscow')
     timeM = datetime.datetime.now(tzm).strftime('%d-%m-%Y %H:%M')

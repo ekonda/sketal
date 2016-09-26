@@ -5,7 +5,7 @@ import random
 
 class Plugin:
     vk = None
-	
+
     plugin_type = 'command'
 
     def __init__(self, vk):
@@ -25,4 +25,4 @@ class Plugin:
         answer.append(u'&#127770;')
 
         self.vk.respond(msg, {'message': answer,
-            'attachment': 'video174811191_170020157'})
+                              'attachment': 'video174811191_170020157'})

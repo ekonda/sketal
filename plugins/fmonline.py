@@ -6,7 +6,7 @@ import requests
 
 class Plugin:
     vk = None
-	
+
     plugin_type = 'command'
 
     def __init__(self, vk):
@@ -35,6 +35,8 @@ class Plugin:
         onlineid_redordday = online_redordday.json()["recordday"]
         online_redord = requests.get("http://finemine.ru/mon/ajax.php")
         onlineid_redord = online_redord.json()["record"]
-        vk_message = "HardTech = {} человек. \n TechnoMagic #1 = {} человек. \n TechnoMagic #2 = {} человек. \n MagicRPG #2 = {} человек. \n Общий онлайн = {} человек. \n Дневной рекорд = {} человек. \n Общий рекорд = {} человек.".format(onlineid_hard, onlineid_tm1, onlineid_tm2, onlineid_magic, onlineid_all, onlineid_redordday, onlineid_redord)
-		
+        vk_message = "HardTech = {} человек. \n TechnoMagic #1 = {} человек. \n TechnoMagic #2 = {} человек. \n MagicRPG #2 = {} человек. \n Общий онлайн = {} человек. \n Дневной рекорд = {} человек. \n Общий рекорд = {} человек.".format(
+            onlineid_hard, onlineid_tm1, onlineid_tm2, onlineid_magic, onlineid_all, onlineid_redordday,
+            onlineid_redord)
+
         self.vk.respond(msg, {'message': vk_message})

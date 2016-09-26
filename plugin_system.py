@@ -4,9 +4,10 @@
 import logging
 import time
 
+
 class Plugin(object):
     def __init__(self, name="Plugin(changeme)", description="", version=""):
-        self.deferred_events = []  #events which plugin substribed on
+        self.deferred_events = []  # events which plugin substribed on
         self.name = name
         self.description = description
         self.version = version

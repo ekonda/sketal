@@ -5,7 +5,7 @@ import random
 
 class Plugin:
     vk = None
-	
+
     plugin_type = 'command'
 
     def __init__(self, vk):
@@ -30,22 +30,22 @@ class Plugin:
 
         try:
             count = self.vk.method('audio.getRecommendations',
-                {'user_id': msg['user_id'], 'count': 1})
+                                   {'user_id': msg['user_id'], 'count': 1})
 
             music = self.vk.method('audio.getRecommendations',
-                {'user_id': msg['user_id'],
-                'offset': random.randint(0, count['count'] - 5),
-                'count': 5})
+                                   {'user_id': msg['user_id'],
+                                    'offset': random.randint(0, count['count'] - 5),
+                                    'count': 5})
         except:
             print(u'Failed get music of id' + str(msg['user_id']))
 
         musicatt = []
 
         if music is not None and music['items']:
-         for attach in music['items']:
-            user = attach['owner_id']
-            ident = attach['id']
-            musicatt.append('audio' + str(user) + '_' + str(ident))
+            for attach in music['items']:
+                user = attach['owner_id']
+                ident = attach['id']
+                musicatt.append('audio' + str(user) + '_' + str(ident))
 
         answers = []
         answers.append(u'Вот твоя музыка:')
@@ -57,11 +57,11 @@ class Plugin:
         attstring = ''
 
         if musicatt is not None:
-         for item in musicatt:
-            attstring += item + ','
+            for item in musicatt:
+                attstring += item + ','
 
         if attstring == '':
             self.vk.respond(msg, {'message': random.choice(errors)})
         else:
             self.vk.respond(msg, {'message': random.choice(answers),
-            'attachment': attstring})
+                                  'attachment': attstring})

@@ -5,7 +5,7 @@ import random
 
 class Plugin:
     vk = None
-	
+
     plugin_type = 'command'
 
     def __init__(self, vk):
@@ -31,7 +31,7 @@ class Plugin:
 
         while isphoto is False:
             values = {
-            # owner_id = ид группы
+                # owner_id = ид группы
                 'owner_id': -22751485,
                 'offset': random.randint(1, 1985),
                 'count': 1
@@ -53,4 +53,4 @@ class Plugin:
         print attachment
 
         self.vk.respond(msg, {'message': random.choice(answers),
-            'attachment': attachment})
+                              'attachment': attachment})
