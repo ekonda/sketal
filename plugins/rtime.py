@@ -19,7 +19,7 @@ class Plugin:
         print('Время')
 
     def getkeys(self):
-        keys = [u'время', u'time', u'rtime', u'дата', u'date']
+        keys = ['время', 'time', 'rtime', 'дата', 'date']
         ret = {}
         for key in keys:
             ret[key] = self

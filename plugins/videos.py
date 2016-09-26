@@ -13,7 +13,7 @@ class Plugin:
         print('Поиск видео')
 
     def getkeys(self):
-        keys = [u'видос', 'видосик', u'видео', u'поиск', u'найди']
+        keys = ['видос', 'видосик', 'видео', 'поиск', 'найди']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -26,7 +26,7 @@ class Plugin:
             for arg in args[1:]:
                 body = body + ' ' + arg
 
-            req = u' '.join(args)
+            req = ' '.join(args)
             pars = {
                 'q': req,
                 'sort': 2,
@@ -36,15 +36,15 @@ class Plugin:
             r = self.vk.method('video.search', pars)
             vids = r.get('items')
             if vids is None:
-                self.vk.respond(msg, {'message': u'Ничего не найдено '})
+                self.vk.respond(msg, {'message': 'Ничего не найдено '})
             if vids is not None:
                 kol = min(len(vids), 4)
                 if kol == 0:
-                    self.vk.respond(msg, {'message': u'Ничего не найдено '})
-                respstr = u''
-                for i in xrange(kol):
-                    respstr += u'video' + unicode(vids[i]['owner_id']) + u'_' + unicode(vids[i]['id']) + u','
-                self.vk.respond(msg, {'message': u'Приятного просмотра! ',
+                    self.vk.respond(msg, {'message': 'Ничего не найдено '})
+                respstr = ''
+                for i in range(kol):
+                    respstr += 'video' + str(vids[i]['owner_id']) + '_' + str(vids[i]['id']) + ','
+                self.vk.respond(msg, {'message': 'Приятного просмотра! ',
                                       'attachment': respstr})
         else:
             self.vk.respond(msg, {'message': 'Что мне искать?'})

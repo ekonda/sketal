@@ -13,7 +13,7 @@ class Plugin:
         print('Написать анонимно')
 
     def getkeys(self):
-        keys = [u'send', u'написать', u'напиши', u'лс', u'msg']
+        keys = ['send', 'написать', 'напиши', 'лс', 'msg']
         ret = {}
         for key in keys:
             ret[key] = self

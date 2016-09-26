@@ -13,7 +13,7 @@ class Plugin:
         print('Луна')
 
     def getkeys(self):
-        keys = [u'луна', u'&#127770;', u'??']
+        keys = ['луна', '&#127770;', '??']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -22,7 +22,7 @@ class Plugin:
     def call(self, msg):
         answers = []
 
-        answers.append(u'&#127770;')
-        answers.append(u'&#127770;&#127770;')
+        answers.append('&#127770;')
+        answers.append('&#127770;&#127770;')
 
         self.vk.respond(msg, {'message': random.choice(answers)})

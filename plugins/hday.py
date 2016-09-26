@@ -17,7 +17,7 @@ class Plugin:
         print('Дни рождения')
 
     def getkeys(self):
-        keys = [u'др', u'hd', u'деньрождения']
+        keys = ['др', 'hd', 'деньрождения']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -27,28 +27,28 @@ class Plugin:
 
         # Варианты начала ответа
         answers = []
-        answers.append(u"Вот список со днями рождения в группе FineMine.")
-        answers.append(u"Список дней рождения в группе FineMine!")
-        answers.append(u"Вот твой список именинников, принцесса.")
+        answers.append("Вот список со днями рождения в группе FineMine.")
+        answers.append("Список дней рождения в группе FineMine!")
+        answers.append("Вот твой список именинников, принцесса.")
 
         # Варианты фразы, назвающей количество участников в группе
         memb_name = []
-        memb_name.append(u"Лалочек")
-        memb_name.append(u"Участников в группе")
-        memb_name.append(u"Человек в группе")
+        memb_name.append("Лалочек")
+        memb_name.append("Участников в группе")
+        memb_name.append("Человек в группе")
 
         # Варианты информаци сколько участников указали дату рождения в профиле (и не склрыли её)
         has_bddate = []
-        has_bddate.append(u"У стольких указана дата рождения")
-        has_bddate.append(u"Указана дата рождения у")
-        has_bddate.append(u"Указали дату рождения")
+        has_bddate.append("У стольких указана дата рождения")
+        has_bddate.append("Указана дата рождения у")
+        has_bddate.append("Указали дату рождения")
 
         # Фраза, начинающая список в ответе
         there_list = []
-        there_list.append(u"Вот список")
-        there_list.append(u"Держи списочек")
-        there_list.append(u"Вот эти людишки")
-        there_list.append(u"Вот они, эти счастливчики")
+        there_list.append("Вот список")
+        there_list.append("Держи списочек")
+        there_list.append("Вот эти людишки")
+        there_list.append("Вот они, эти счастливчики")
 
         # ID группы, в которой искать
         grp_id = 35140461
@@ -121,16 +121,16 @@ class Plugin:
 
         # Создаём строку списка ответа
         for member in mbbday:
-            members_list_string += u'\n' + member['bdate'] + u' :: ' + member['first_name'] + u' ' + member[
-                'last_name'] + u' => https://vk.com/id' + str(member['id'])
+            members_list_string += '\n' + member['bdate'] + ' :: ' + member['first_name'] + ' ' + member[
+                'last_name'] + ' => https://vk.com/id' + str(member['id'])
 
         # Печатаем в "лог" отладочную информацию
-        print mcnt
-        print has_bdate
-        print len(mbbday)
+        print(mcnt)
+        print(has_bdate)
+        print(len(mbbday))
 
         # Отвечаем в ВК
-        self.vk.respond(msg, {'message': random.choice(answers) + u'\n' + random.choice(memb_name) + u': ' + str(
-            mcnt) + u'\n' + random.choice(has_bddate) + u': ' + str(has_bdate) + u'\n Скоро (В ближайшие ' + str(
-            dayshift) + u' дней)  : ' + str(len(mbbday)) + u'\n' + random.choice(
-            there_list) + u':' + members_list_string})
+        self.vk.respond(msg, {'message': random.choice(answers) + '\n' + random.choice(memb_name) + ': ' + str(
+            mcnt) + '\n' + random.choice(has_bddate) + ': ' + str(has_bdate) + '\n Скоро (В ближайшие ' + str(
+            dayshift) + ' дней)  : ' + str(len(mbbday)) + '\n' + random.choice(
+            there_list) + ':' + members_list_string})

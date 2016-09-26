@@ -13,7 +13,7 @@ class Plugin:
         print('Случайные мемасики')
 
     def getkeys(self):
-        keys = [u'мемасики', u'мемы', u'memes', u'мем', u'мемчики', u'мемасик', u'мемосы']
+        keys = ['мемасики', 'мемы', 'memes', 'мем', 'мемчики', 'мемасик', 'мемосы']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -21,9 +21,9 @@ class Plugin:
 
     def call(self, msg):
         answers = []
-        answers.append(u"Мемы поданы!")
-        answers.append(u"Классный мемес!")
-        answers.append(u"Знакомься, мемасик")
+        answers.append("Мемы поданы!")
+        answers.append("Классный мемес!")
+        answers.append("Знакомься, мемасик")
 
         isphoto = False
         boobs = None
@@ -49,7 +49,7 @@ class Plugin:
 
         attachment = 'photo' + owner_id + '_' + att_id + '_' + access_key
 
-        print attachment
+        print(attachment)
 
         self.vk.respond(msg, {'message': random.choice(answers),
                               'attachment': attachment})

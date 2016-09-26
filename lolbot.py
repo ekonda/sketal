@@ -3,12 +3,19 @@
 import os
 import sys
 import time
-
+import builtins
+from say import say
 from vkplus import VkPlus
-
+import traceback
 import settings
 
 global vk
+
+builtins.print = say  # Переопределить print функцией say (совместима с print)
+
+
+def good(string): # Функция для упрощённого вывода зелёных сообщений
+    say(string, style='green')
 
 
 def main():
@@ -29,14 +36,12 @@ def main():
     global lastmessid
     lastmessid = 0
 
-    print('Авторизация в вк...')
+    say('Авторизация в вк...', style='yellow')
     global vk
     vk = VkPlus(settings.vk_access_token, settings.vk_app_id)
-    print('Успешная авторизация с аккаунтом')
+    good('Успешная авторизация')
 
-    print('Подгружаем плагины...')
-
-    print('---------------------------')
+    say.title("Загрузка плагинов:")
 
     # Подгружаем плагины
     sys.path.insert(0, path)
@@ -47,18 +52,16 @@ def main():
             plugins[fname] = mod.Plugin(vk)
     sys.path.pop(0)
 
-    print('---------------------------')
+    say.title("Загрузка плагинов завершена")
 
     # Регистрируем плагины
-    for plugin in plugins.values():
-        for key, value in plugin.getkeys().items():
+    for plugin in list(plugins.values()):
+        for key, value in list(plugin.getkeys().items()):
             cmds[key] = value
 
-    print('Приступаю к приему сообщений')
+    good('Приступаю к приему сообщений')
 
     while True:
-
-        # обозначаем что аккаунт онлайн
 
         values = {
             'out': 0,
@@ -78,21 +81,24 @@ def main():
                     command(item, cmds)
                     vk.mark_as_read(item['id'])  # Помечаем прочитанным
 
-        time.sleep(0.5)
+        time.sleep(0.1)
 
 
 def command(message, cmds):
-    if message['body'] == u'':
+    if message['body'] == '':
         return
     words = message['body'].split()
 
     try:
         prefixes = settings.prefixes
     except:
-        prefixes = ['lolbot', u'лолбот', u'лб', u'lb', u'фб', u'файнбот', u'fb', u'finebot']
+        prefixes = ['lolbot', 'лолбот', 'лб', 'lb', 'фб', 'файнбот', 'fb', 'finebot']
 
     if words[0].lower() in prefixes:
-        print('> ' + message['body']).encode('utf-8')
+        if 'chat_id' in message:
+            say("Команда из конференции ({message['chat_id']}) > {message['body']}", style='blue+bold')
+        elif 'user_id' in message:
+            say("Команда из ЛС (id{message['user_id']}) > {message['body']}", style='blue+bold')
         if len(words) > 1 and words[1] in cmds:
             command_execute(message, words[1].lower(), words[2:])
 
@@ -116,8 +122,13 @@ def command_execute(message, plugin, params):
         # 2 
         if 'settings' in cmds[plugin].plugin_type:
             args.append(settings)
-
-        cmds[plugin].call(*args)
+        try:
+            cmds[plugin].call(*args)
+        except Exception as error:
+            say(
+                "Произошла ошибка в плагине {plugin} при вызове команды {message['body']} с параметрами {params}. "
+                "Ошибка:\n{traceback.format_exc()}",
+                style='red')
         return True
     else:
         return False

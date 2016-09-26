@@ -14,7 +14,7 @@ class Plugin:
         print('Курс')
 
     def getkeys(self):
-        keys = [u'курс', u'валюта', u'kurs']
+        keys = ['курс', 'валюта', 'kurs']
         ret = {}
         for key in keys:
             ret[key] = self

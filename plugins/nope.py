@@ -13,7 +13,7 @@ class Plugin:
         print('Nope')
 
     def getkeys(self):
-        keys = [u'нет', u'неа', u'nope', u'видосик']
+        keys = ['нет', 'неа', 'nope', 'видосик']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -22,7 +22,7 @@ class Plugin:
     def call(self, msg):
         answer = []
 
-        answer.append(u'&#127770;')
+        answer.append('&#127770;')
 
         self.vk.respond(msg, {'message': answer,
                               'attachment': 'video174811191_170020157'})

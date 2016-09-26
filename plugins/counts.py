@@ -13,7 +13,7 @@ class Plugin:
         print('Счетчики')
 
     def getkeys(self):
-        keys = [u'счетчики', u'счетчик', u'count', u'статистика', u'стата', u'stats']
+        keys = ['счетчики', 'счетчик', 'count', 'статистика', 'стата', 'stats']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -21,19 +21,19 @@ class Plugin:
 
     def call(self, msg):
 
-        answ_str_stats = [u'Счётчики', u'Счётчики аккаунта']
-        answ_str_stats_null = [u'Всё по нулям', u'Всё счётчики по нулям']
+        answ_str_stats = ['Счётчики', 'Счётчики аккаунта']
+        answ_str_stats_null = ['Всё по нулям', 'Всё счётчики по нулям']
 
         stats = self.vk.method('account.getCounters')
 
         stats_str = ''
 
         for key in stats:
-            stats_str += u'* ' + key + u' = ' + str(stats[key]) + u'\n'
+            stats_str += '* ' + key + ' = ' + str(stats[key]) + '\n'
 
         if stats_str == '':
-            answ = random.choice(answ_str_stats_null) + u'.'
+            answ = random.choice(answ_str_stats_null) + '.'
         else:
-            answ = random.choice(answ_str_stats) + u': \n' + stats_str
+            answ = random.choice(answ_str_stats) + ': \n' + stats_str
 
         self.vk.respond(msg, {'message': answ})

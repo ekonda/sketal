@@ -11,7 +11,7 @@ class Plugin:
         print('Пример плагина')
 
     def getkeys(self):
-        keys = [u'примерплагина', u'тестовыйплагин']
+        keys = ['примерплагина', 'тестовыйплагин']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -19,4 +19,4 @@ class Plugin:
 
     def call(self, msg):
         print("OK!")
-        self.vk.respond(msg, {'message': u'Пример плагина'})
+        self.vk.respond(msg, {'message': 'Пример плагина'})

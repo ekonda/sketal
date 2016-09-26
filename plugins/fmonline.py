@@ -14,7 +14,7 @@ class Plugin:
         print('Онлайн серверов')
 
     def getkeys(self):
-        keys = [u'онлайн', u'online', u'сервера']
+        keys = ['онлайн', 'online', 'сервера']
         ret = {}
         for key in keys:
             ret[key] = self

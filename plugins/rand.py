@@ -13,7 +13,7 @@ class Plugin:
         print('Рандом')
 
     def getkeys(self):
-        keys = [u'рандом', u'ранд', 'random', 'rand', 'dice', 'кубик']
+        keys = ['рандом', 'ранд', 'random', 'rand', 'dice', 'кубик']
         ret = {}
         for key in keys:
             ret[key] = self

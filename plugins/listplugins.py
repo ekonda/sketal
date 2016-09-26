@@ -14,7 +14,7 @@ class Plugin:
         print('Список плагинов')
 
     def getkeys(self):
-        keys = [u'плагины', 'plugins']
+        keys = ['плагины', 'plugins']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -29,4 +29,4 @@ class Plugin:
             if ext == '.py':
                 lists += fname + ' '
         sys.path.pop(0)
-        self.vk.respond(msg, {'message': u'Загруженные плагины:\n' + lists})
+        self.vk.respond(msg, {'message': 'Загруженные плагины:\n' + lists})

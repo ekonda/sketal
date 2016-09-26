@@ -13,7 +13,7 @@ class Plugin:
         print('Случайные шкуры')
 
     def getkeys(self):
-        keys = [u'шкуры', u'fur', u'бабы', u'девушки', u'girls']
+        keys = ['шкуры', 'fur', 'бабы', 'девушки', 'girls']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -21,11 +21,11 @@ class Plugin:
 
     def call(self, msg):
         answers = []
-        answers.append(u"Как вам эта?")
-        answers.append(u"Баллов на " + str(random.randint(1, 8)) + u" из 10")
-        answers.append(u"Вот, держи!")
-        answers.append(u"Вроде ничего так...")
-        answers.append(u"&#127770;")
+        answers.append("Как вам эта?")
+        answers.append("Баллов на " + str(random.randint(1, 8)) + " из 10")
+        answers.append("Вот, держи!")
+        answers.append("Вроде ничего так...")
+        answers.append("&#127770;")
 
         isphoto = False
         boobs = None
@@ -51,7 +51,7 @@ class Plugin:
 
         attachment = 'photo' + owner_id + '_' + att_id + '_' + access_key
 
-        print attachment
+        print(attachment)
 
         self.vk.respond(msg, {'message': random.choice(answers),
                               'attachment': attachment})

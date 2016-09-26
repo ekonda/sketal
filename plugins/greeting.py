@@ -13,7 +13,7 @@ class Plugin:
         print('Приветствия')
 
     def getkeys(self):
-        keys = [u'приветствие', 'greeting', u'привет', u'голос', u'ку']
+        keys = ['приветствие', 'greeting', 'привет', 'голос', 'ку']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -22,10 +22,10 @@ class Plugin:
     def call(self, msg):
         greetings = []
 
-        greetings.append(u'Слава Украине!')
-        greetings.append(u'Кекеке')
-        greetings.append(u'Запущен и готов служить!')
-        greetings.append(u'У контакта ужасный флуд-контроль, %username%')
-        greetings.append(u'Хуяк-хуяк и в продакшен')
+        greetings.append('Слава Украине!')
+        greetings.append('Кекеке')
+        greetings.append('Запущен и готов служить!')
+        greetings.append('У контакта ужасный флуд-контроль, %username%')
+        greetings.append('Хуяк-хуяк и в продакшен')
 
         self.vk.respond(msg, {'message': random.choice(greetings)})

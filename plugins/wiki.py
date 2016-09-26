@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import random, requests, json, urllib
+import random, requests, json, urllib.request, urllib.parse, urllib.error
 
 
 class Plugin:
@@ -13,7 +13,7 @@ class Plugin:
         print('Поиск по вики')
 
     def getkeys(self):
-        keys = [u'вики', u'wiki', u'wikipedia', u'википедия']
+        keys = ['вики', 'wiki', 'wikipedia', 'википедия']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -38,7 +38,7 @@ class Plugin:
                 try:
                     r = requests.get(wiki_api, params=pars)  # А что если он не ответит?
                 except requests.exceptions.ConnectionError:
-                    self.vk.respond(msg, {'message': u'Не могу достучатсья до вики.'})
+                    self.vk.respond(msg, {'message': 'Не могу достучатсья до вики.'})
                     return
                 query = json.loads(r.text)
                 query = query['query']
@@ -46,14 +46,14 @@ class Plugin:
 
                 if not searchinfo.get('suggestion') is None:
                     self.vk.respond(msg,
-                                    {'message': u'Вы имели в виду ' + unicode(searchinfo.get('suggestion')) + u'?'})
+                                    {'message': 'Вы имели в виду ' + str(searchinfo.get('suggestion')) + '?'})
 
                 search = query.get('search')  # А что если он ответит криво? как?
                 if len(search) == 0:
-                    self.vk.respond(msg, {'message': u'Ошибка в запросе.'})
+                    self.vk.respond(msg, {'message': 'Ошибка в запросе.'})
                 title = search[0].get('title')
                 if not title:
-                    self.vk.respond(msg, {'message': u'Ошибка в запросе.'})
+                    self.vk.respond(msg, {'message': 'Ошибка в запросе.'})
                 pars = {
                     'action': 'query',
                     'prop': 'extracts',
@@ -68,7 +68,7 @@ class Plugin:
                 query = query['query']['pages'][query['query']['pageids'][0]]
                 # Добаить ф-цию запроса всего 'extract' сначала нужно понять, почему даже это не работает
                 # it doesnt work because of the limit for the length of the message.
-                answer = '\n' + wiki_main + urllib.quote(title.replace(' ', '_').encode('utf-8'))
+                answer = '\n' + wiki_main + urllib.parse.quote(title.replace(' ', '_').encode('utf-8'))
                 self.vk.respond(msg, {'message': answer})
         else:
             self.vk.respond(msg, {'message': 'Что искать?'})

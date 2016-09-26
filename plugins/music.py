@@ -13,7 +13,7 @@ class Plugin:
         print('Плагин музыки')
 
     def getkeys(self):
-        keys = [u'музыка', u'музыку', 'music']
+        keys = ['музыка', 'музыку', 'music']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -23,10 +23,10 @@ class Plugin:
         music = None
 
         errors = []
-        errors.append(u'Открой аудио, мудак!')
-        errors.append(u'Мудак, аудиозаписи открой!')
-        errors.append(u'У тебя аудио закрыты, мудак!')
-        errors.append(u'Я бы с радостью тебе дал музыки, но ты мудак.')
+        errors.append('Открой аудио, мудак!')
+        errors.append('Мудак, аудиозаписи открой!')
+        errors.append('У тебя аудио закрыты, мудак!')
+        errors.append('Я бы с радостью тебе дал музыки, но ты мудак.')
 
         try:
             count = self.vk.method('audio.getRecommendations',
@@ -37,7 +37,7 @@ class Plugin:
                                     'offset': random.randint(0, count['count'] - 5),
                                     'count': 5})
         except:
-            print(u'Failed get music of id' + str(msg['user_id']))
+            print(('Failed get music of id' + str(msg['user_id'])))
 
         musicatt = []
 
@@ -48,11 +48,11 @@ class Plugin:
                 musicatt.append('audio' + str(user) + '_' + str(ident))
 
         answers = []
-        answers.append(u'Вот твоя музыка:')
-        answers.append(u'Вот, послушай.')
-        answers.append(u'Мои рекомендации для тебя:')
-        answers.append(u'Музыку заказывали?')
-        answers.append(u'Бесплатная музыка!')
+        answers.append('Вот твоя музыка:')
+        answers.append('Вот, послушай.')
+        answers.append('Мои рекомендации для тебя:')
+        answers.append('Музыку заказывали?')
+        answers.append('Бесплатная музыка!')
 
         attstring = ''
 

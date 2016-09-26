@@ -14,7 +14,7 @@ class Plugin:
         print('Шутки')
 
     def getkeys(self):
-        keys = [u'пошути', u'&рассмеши', u'петросян', u'joke']
+        keys = ['пошути', '&рассмеши', 'петросян', 'joke']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -29,15 +29,15 @@ class Plugin:
         r = requests.get('http://shortiki.com/export/api.php', params=pars)
 
         answers = []
-        answers.append(u'Ахахахахха, вот я реально ржу!!!')
-        answers.append(u'&#127770;')
-        answers.append(u'Ща смешно будет, отвечаю!')
-        answers.append(u'Шуточки заказывали?')
-        answers.append(u'Петросян в душе прям бушует &#127770;')
+        answers.append('Ахахахахха, вот я реально ржу!!!')
+        answers.append('&#127770;')
+        answers.append('Ща смешно будет, отвечаю!')
+        answers.append('Шуточки заказывали?')
+        answers.append('Петросян в душе прям бушует &#127770;')
 
         try:
             joke = r.json()[0]['content']
         except:
-            self.vk.respond(msg, {'message': u'У меня шутилка сломалась &#127770;'})
+            self.vk.respond(msg, {'message': 'У меня шутилка сломалась &#127770;'})
 
-        self.vk.respond(msg, {'message': random.choice(answers) + '\n' + unicode(joke)})
+        self.vk.respond(msg, {'message': random.choice(answers) + '\n' + str(joke)})

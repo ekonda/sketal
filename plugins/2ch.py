@@ -13,7 +13,7 @@ class Plugin:
         print('Случайное с двача')
 
     def getkeys(self):
-        keys = [u'двач', u'2ch', u'двачик', u'дваче']
+        keys = ['двач', '2ch', 'двачик', 'дваче']
         ret = {}
         for key in keys:
             ret[key] = self
@@ -21,10 +21,10 @@ class Plugin:
 
     def call(self, msg):
         answers = []
-        answers.append(u"Каеф")
-        answers.append(u"Не баян (баян)")
-        answers.append(u"Ну держи!")
-        answers.append(u"&#127770;")
+        answers.append("Каеф")
+        answers.append("Не баян (баян)")
+        answers.append("Ну держи!")
+        answers.append("&#127770;")
 
         isphoto = False
         boobs = None
@@ -50,7 +50,7 @@ class Plugin:
 
         attachment = 'photo' + owner_id + '_' + att_id + '_' + access_key
 
-        print attachment
+        print(attachment)
 
         self.vk.respond(msg, {'message': random.choice(answers),
                               'attachment': attachment})
