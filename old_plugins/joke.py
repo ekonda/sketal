@@ -14,7 +14,7 @@ class Plugin:
         print('Шутки')
 
     def getkeys(self):
-        keys = ['пошути', '&рассмеши', 'петросян', 'joke']
+        keys = ['пошути', 'рассмеши', 'петросян', 'joke']
         ret = {}
         for key in keys:
             ret[key] = self

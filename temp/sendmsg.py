@@ -26,7 +26,7 @@ class Plugin:
                 uid = int(args[0])
                 body = 'Меня тут попросили тебе написать: \n'
                 for arg in args[1:]:
-                    body = body + ' ' + arg.capitalize().encode('utf-8')
+                    body = body + ' ' + arg.capitalize()
                 val = {
                     # 'user_id':uid,
                     'peer_id': uid,
