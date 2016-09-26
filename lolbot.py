@@ -126,8 +126,9 @@ def command_execute(message, plugin, params):
             cmds[plugin].call(*args)
         except Exception as error:
             vk.respond(args[0], {
-                    "message": fmt("{vk.anti_flood()}. Произошла ошибка в плагине <{plugin}>, пожалуйста, сообщите об этом разработчику!")
-                })
+                "message": fmt(
+                    "{vk.anti_flood()}. Произошла ошибка в плагине <{plugin}>, пожалуйста, сообщите об этом разработчику!")
+            })
 
             say(
                 "Произошла ошибка в плагине {plugin} при вызове команды {message['body']} с параметрами {params}. "

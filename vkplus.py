@@ -6,7 +6,8 @@ import vk_api
 import random, string, errno
 from requests.exceptions import ConnectionError
 
-from say import say
+from say import say, fmt
+
 
 class VkPlus:
     api = None
@@ -37,13 +38,15 @@ class VkPlus:
                 print('Exeption at vkservice:')
                 print(e)
         except vk_api.vk_api.ApiError as error:
-            say("Произошла ошибка при вызове метода API {key} с значениями {data}:\n{error}", style = 'red')
+            if error.code == 9:
+                raise
+            else:
+                say("Произошла ошибка при вызове метода API {key} с значениями {data}:\n{error}", style='red')
 
     def anti_flood(self):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
     def respond(self, to, values):
-        flood_bypass_message = 'Обход анти-флуд системы'
         try:
             if 'chat_id' in to:  # если это беседа
                 values['chat_id'] = to['chat_id']
@@ -54,8 +57,8 @@ class VkPlus:
         except vk_api.vk_api.ApiError as err:
             if err.code == 9:
                 if 'message' in values:
-                    print(('Respond has api error with code ' + str(err.code) + '. Try to detour.'))
-                    values['message'] += '\n {anti_flood()}'
+                    # print(('Respond has api error with code ' + str(err.code) + '. Try to detour.'))
+                    values['message'] += fmt('\n Анти-флуд (API): {self.anti_flood()}')
                     try:
                         self.api.method('messages.send', values)
                     except vk_api.vk_api.ApiError as err2:
@@ -64,7 +67,8 @@ class VkPlus:
                         else:
                             print('Обход анти-флуда API не удался =( При обходе возникла ошибка\n: ' + str(err2.code))
                     else:
-                        print('Обход анти-флуда API успешен.')
+                        pass
+                        # print('Обход анти-флуда API успешен.')
             else:
                 print('Ошибка API в методе respond с кодом {err.code}')
 
