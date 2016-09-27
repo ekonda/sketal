@@ -61,6 +61,15 @@ class Bot(object):
         # Авторизуемся в ВК
         say('Авторизация в вк...', style='yellow')
         self.vk = VkPlus(self.token, self.app_id)
+        self.ANSWER_VALUES = {
+            'out': 0,
+            'offset': 0,
+            'count': 20,
+            'time_offset': 50,
+            'filters': 0,
+            'preview_length': 0,
+            'last_message_id': self.last_message_id
+        }
         self.good('Успешная авторизация')
 
     def plugin_init(self):
@@ -78,17 +87,7 @@ class Bot(object):
 
     def check_messages(self):
 
-        values = {
-            'out': 0,
-            'offset': 0,
-            'count': 20,
-            'time_offset': 50,
-            'filters': 0,
-            'preview_length': 0,
-            'last_message_id': self.last_message_id
-        }
-
-        response = self.vk.method('messages.get', values)
+        response = self.vk.method('messages.get', self.ANSWER_VALUES)
         if response is not None and response['items']:
             self.last_message_id = response['items'][0]['id']
             for item in response['items']:
