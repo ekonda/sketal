@@ -4,7 +4,7 @@ from plugin_system import Plugin
 # Инициализируем возможные ответы
 greetings = []
 greetings.append('Слава Украине!')
-greetings.append('Кекеке')
+greetings.append('🌚 Кекеке')
 greetings.append('Запущен и готов служить!')
 greetings.append('У контакта ужасный флуд-контроль, %username%')
 greetings.append('Хуяк-хуяк и в продакшн')

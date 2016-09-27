@@ -66,7 +66,7 @@ class Bot(object):
                 exit()
         # Если не нашли ни settings.py, ни settings.py.sample
         else:
-            say('settings.py и settings.py.sample не найдены, возможно вы их удалили? ', style='red+bold')
+            say('settings.py и settings.py.sample не найдены, возможно вы их удалили?', style='red+bold')
             exit()
 
     def vk_init(self):
@@ -110,8 +110,8 @@ class Bot(object):
             for item in response['items']:
                 # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
                 if item['read_state'] == 0 and item['user_id'] not in self.BLACKLIST:
-                    self.check_if_command(item)  # выполняем команду
                     self.vk.mark_as_read(item['id'])  # Помечаем прочитанным
+                    self.check_if_command(item)  # выполняем команду
 
     def check_if_command(self, answer):
         if not answer['body']:  # Если строка пустая
