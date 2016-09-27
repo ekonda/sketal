@@ -25,7 +25,7 @@ answers.append('Весьма сомнительно.')
 answers.append('Не могу дать точный ответ.')
 
 
-@plugin.on_command('правда', 'предсказание', 'true', 'реши', 'шар')
+@plugin.on_command('правда', 'предсказание', 'реши', 'шар')
 def call(vk, msg, args):
     vk.respond(msg, {'message': "🎱" + random.choice(answers)})
 

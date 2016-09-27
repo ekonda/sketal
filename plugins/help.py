@@ -4,7 +4,7 @@ from plugin_system import Plugin
 
 plugin = Plugin('Помощь')
 
-@plugin.on_command('помощь', 'помоги', 'команды', 'commands', 'help', 'хелп')
+@plugin.on_command('помощь', 'помоги', 'команды', 'хелп')
 def call(vk, msg, args):
-    commands = vk.get_commands()  # тсс, это секрет!!!
-    vk.respond(msg, {"message": fmt("Все доступные команды: {', '.join(commands)}.")})
+    commands = [plug.first_command for plug in vk.get_plugins()]
+    vk.respond(msg, {"message": fmt("Доступные команды: {', '.join(commands)}.")})

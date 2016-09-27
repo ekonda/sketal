@@ -19,8 +19,8 @@ class Plugin:
         return ret
 
     def call(self, msg, args=None):
-        if len(args) >= 1:
-            for arg in args[1:]:
+        if len(args) > 0:
+            for arg in args[0:]:
                 query = ' '.join(args)
                 wiki_api = 'http://ru.wikipedia.org/w/api.php?'  # А что если нужна не русская вики? очевидно русская, потому что аудитория вк только русская. для гурманов можно ссылку на англ версию при желании
                 wiki_main = 'http://ru.wikipedia.org/wiki/'
@@ -67,7 +67,7 @@ class Plugin:
                 query = query['query']['pages'][query['query']['pageids'][0]]
                 # Добаить ф-цию запроса всего 'extract' сначала нужно понять, почему даже это не работает
                 # it doesnt work because of the limit for the length of the message.
-                answer = '\n' + wiki_main + urllib.parse.quote(title.replace(' ', '_').encode('utf-8'))
+                answer = '\n' + wiki_main + urllib.parse.quote(title.replace(' ', '_'))
                 self.vk.respond(msg, {'message': answer})
         else:
             self.vk.respond(msg, {'message': 'Что искать?'})

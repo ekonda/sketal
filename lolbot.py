@@ -49,8 +49,18 @@ class Bot(object):
             try:
                 self.BLACKLIST = settings.blacklist
                 self.PREFIXES = settings.prefixes
-                self.token = settings.vk_access_token
-                self.app_id = settings.vk_app_id
+
+                if settings.vk_access_token:
+                    self.is_token = True
+                    self.token = settings.vk_access_token
+                elif settings.vk_login and settings.vk_password:
+                    self.is_token = False
+                    self.vk_login = settings.vk_login
+                    self.vk_password = settings.vk_password
+                else:
+                    say('Проверьте, что у вас заполнены vk_login и vk_password, или vk_access_token!'
+                        '\nБез них бот работать НЕ СМОЖЕТ (ему же надо сидеть с какого-нибудь аккаунта?)')
+                    exit()
             except:
                 say('Проверьте содержание файла settings.py, возможно вы удалили что-то нужное!')
                 exit()
@@ -62,7 +72,12 @@ class Bot(object):
     def vk_init(self):
         # Авторизуемся в ВК
         say('Авторизация в вк...', style='yellow')
-        self.vk = VkPlus(self.token, self.app_id)
+
+        if self.is_token:
+            self.vk = VkPlus(token=self.token)
+        if not self.is_token:
+            self.vk = VkPlus(login=self.vk_login, password=self.vk_password)
+
         self.ANSWER_VALUES = {
             'out': 0,
             'offset': 0,
@@ -79,8 +94,7 @@ class Bot(object):
         say.title("Загрузка плагинов:")
         self.plugin_system = PluginSystem(folder=abspath('plugins'))
         self.plugin_system.register_commands()
-        # Чтобы плагины могли получить список команд
-        self.vk.get_commands = self.plugin_system.get_commands
+        # Чтобы плагины могли получить список плагинов
         self.vk.get_plugins = self.plugin_system.get_plugins
         say.title("Загрузка плагинов завершена")
 

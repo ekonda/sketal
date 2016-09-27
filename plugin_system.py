@@ -14,6 +14,7 @@ class Plugin(object):
         self.deferred_events = []  # events which plugin subsсribed on
         self.name = name
         self.description = description
+        self.first_command = ''
         say(name)
 
     def log(self, message):
@@ -24,6 +25,8 @@ class Plugin(object):
     def on_command(self, *commands):
         def wrapper(function):
             if commands:  # Если написали, какие команды используются
+                # Первая команда - отображается в списке команд (чтобы много команд не было)
+                self.first_command = commands[0]
                 for command in commands:
                     self.add_deferred_func(command, function)
             else:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
@@ -55,9 +58,6 @@ class PluginSystem(object):
         self.commands = {}
         self.folder = folder
         self.plugins = []
-
-    def get_commands(self):
-        return [command for command in self.commands.keys()]
 
     def get_plugins(self):
         return [plugin for plugin in self.plugins]
