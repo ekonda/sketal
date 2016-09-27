@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # This code was originally taken from https://github.com/zeuxisoo/python-pluginplot
 import builtins as builtin
 import imp
@@ -17,19 +15,22 @@ class Plugin(object):
         self.log = print
         self.log(name)
 
-    # Event wrapper (executed on first start, and when everytime when you call it)
+    # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands):
-        def wrapper(method):
-            for command in commands:
-                self.add_deferred_method(command, method)
-            return method
+        def wrapper(function):
+            if commands:  # Если написали, какие команды используются
+                for command in commands:
+                    self.add_deferred_func(command, function)
+            else:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
+                self.add_deferred_func(self.name.lower(), function)
+            return function
 
         return wrapper
 
-    def add_deferred_method(self, event_name, method):
-        if event_name is None:
-            raise ValueError("event_name can't be None")
-        self.deferred_events.append(lambda target: target.add_event(event_name, method))
+    def add_deferred_func(self, command, function):
+        if command is None:
+            raise ValueError("command can't be None")
+        self.deferred_events.append(lambda target: target.add_command(command, function))
 
     # Register events for plugin
     def register(self, plugin):
@@ -46,31 +47,35 @@ sys.modules[shared_space.__name__] = shared_space
 
 class PluginSystem(object):
     def __init__(self, folder=None):
-        self.events = {}  # key is event name, value is list of methods, those are subscribed to this method
+        self.commands = {}
         self.folder = folder
 
     def get_commands(self):
-        return [command for command, event_hanlder in self.events.items()]
+        return [command_name for command_name, event_handler in self.commands.items()]
 
-    def add_event(self, name, method):
-        if name in self.events:  # if event is already initialized, append
-            self.events[name].append(method)
-        else:  # else create a new list
-            self.events[name] = [method]
+    def add_command(self, name, function):
+        # если уже есть хоть 1 команда, добавляем к списку
+        if name in self.commands:
+            self.commands[name].append(function)
+        # если нет, создаём новый список
+        else:
+            self.commands[name] = [function]
 
-    def call_event(self, name, *args, **kwargs):
-        events_ = self.events.get(name)
-        if not events_:  # If there are not event handlers for our great event
+    def call_command(self, name, *args, **kwargs):
+        # получаем фн-ции команд для этой команды (несколько плагинов МОГУТ обрабатывать одну команду)
+        commands_ = self.commands.get(name)
+        # если нету плагинов, которые готовы обработать нашу команду
+        if not commands_:
             pass
         else:  # If there's a method handler (one or more)
-            for event_ in events_:  # Loop over all of them
-                event_(*args, **kwargs)  # Try to execute event with arguments
+            for command_function in commands_:  # Loop over all of them
+                command_function(*args, **kwargs)  # Try to execute event with arguments
             return None
 
-    def register_event(self, event):
-        event.register(self)
+    def register_command(self, command):
+        command.register(self)
 
-    def register_events(self):
+    def register_commands(self):
         if not self.folder:
             raise ValueError("Plugin.folder can not be None")
         else:
@@ -90,7 +95,7 @@ class PluginSystem(object):
                         *imp.find_module(os.path.splitext(filename)[0], [folder_path])
                     )
                     # TODO: Add support for any instance name of Plugin() class
-                    self.register_event(loaded_module.plugin)
+                    self.register_command(loaded_module.plugin)
 
     def __enter__(self):
         local_data.plugin_stacks = [self]

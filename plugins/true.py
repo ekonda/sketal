@@ -27,8 +27,8 @@ answers.append('Не могу дать точный ответ.')
 
 @plugin.on_command('правда', 'предсказание', 'true', 'реши', 'шар')
 def call(vk, msg, args):
-    vk.respond(msg, {'message': random.choice(answers)})
+    vk.respond(msg, {'message': "🎱" + random.choice(answers)})
 
-@plugin.on_command('приветмедвед')
+@plugin.on_command('админ')
 def call(vk, msg, args):
-    vk.respond(msg, {'message' : "Аллаху акбар!"})
+    vk.respond(msg, {'message' : "Нет, ты не админ! Админ - vk.com/id170831732!"})

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from say import fmt
 
 from plugin_system import Plugin

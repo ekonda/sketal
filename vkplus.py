@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Класс с некоторыми доп. методами 
+# Класс с некоторыми доп. методами
 
 import vk_api
 
@@ -24,12 +23,6 @@ class VkPlus:
             print(error_msg)
             exit()
 
-    # values передаются все, кроме user_id/chat_id
-    # Поэтому метод и называется respond, ваш кэп
-    # Сделано для упрощения ответа. В пагине или другом коде 
-    # не нужно "думать" о том, откуда пришло сообщение:
-    # из диалога, или из беседы (чата, конференции).
-
     def method(self, key, data=None):
         try:
             return self.api.method(key, data)
@@ -40,12 +33,22 @@ class VkPlus:
         except vk_api.vk_api.ApiError as error:
             if error.code == 9:
                 raise
+            if error.code == 5 and 'User authorization failed' in str(error):
+                say("Произошла ошибка при авторизации API, "
+                    "проверьте значение access_token в settings.py!", style='red')
+                exit()
             else:
-                say("Произошла ошибка при вызове метода API {key} с значениями {data}:\n{error}", style='red')
+                say("Произошла ошибка при вызове метода бота через API {key} с значениями {data}:\n{error}", style='red')
 
     def anti_flood(self):
+        '''Функция для обхода антифлуда API ВК'''
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
+    # values передаются все, кроме user_id/chat_id
+    # Поэтому метод и называется respond, ваш кэп
+    # Сделано для упрощения ответа. В пагине или другом коде
+    # не нужно "думать" о том, откуда пришло сообщение:
+    # из диалога, или из беседы (чата, конференции).
     def respond(self, to, values):
         try:
             if 'chat_id' in to:  # если это беседа
@@ -54,23 +57,16 @@ class VkPlus:
             else:  # если ЛС
                 values['user_id'] = to['user_id']
                 self.method('messages.send', values)
-        except vk_api.vk_api.ApiError as err:
-            if err.code == 9:
-                if 'message' in values:
-                    # print(('Respond has api error with code ' + str(err.code) + '. Try to detour.'))
-                    values['message'] += fmt('\n Анти-флуд (API): {self.anti_flood()}')
-                    try:
-                        self.api.method('messages.send', values)
-                    except vk_api.vk_api.ApiError as err2:
-                        if err2.code == 9:
-                            print('Обход анти-флуда API не удался =(')
-                        else:
-                            print('Обход анти-флуда API не удался =( При обходе возникла ошибка\n: ' + str(err2.code))
-                    else:
-                        pass
-                        # print('Обход анти-флуда API успешен.')
-            else:
-                print('Ошибка API в методе respond с кодом {err.code}')
+        # Эта ошибка будет поймана только если код ошибки равен 9 - см. method()
+        except vk_api.vk_api.ApiError:
+            if 'message' in values:
+                values['message'] += fmt('\n Анти-флуд (API): {self.anti_flood()}')
+                try:
+                    self.method('messages.send', values)
+                except vk_api.vk_api.ApiError:
+                    print('Обход анти-флуда API не удался =(')
+                else:
+                    pass
 
     def mark_as_read(self, message_ids):
         values = {

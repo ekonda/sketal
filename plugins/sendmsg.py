@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from plugin_system import Plugin
 
 plugin = Plugin('Послать сообщение')
