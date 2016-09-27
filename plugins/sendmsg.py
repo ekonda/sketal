@@ -5,11 +5,11 @@ plugin = Plugin('Послать сообщение')
 
 @plugin.on_command('send', 'написать', 'напиши', 'лс', 'msg')
 def write_msg(vk, msg, args):
-    if len(args) >= 2:
+    if len(args) > 1:
         if args[0].isdigit():
             uid = int(args[0])
             body = 'Меня тут попросили тебе написать: \n'
-            body += ' '.join(arg.capitalize() for arg in args[1:])
+            body += ' '.join(arg for arg in args[1:])
             val = {
                 # 'user_id':uid,
                 'peer_id': uid,

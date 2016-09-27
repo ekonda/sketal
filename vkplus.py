@@ -45,7 +45,6 @@ class VkPlus:
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
     # values передаются все, кроме user_id/chat_id
-    # Поэтому метод и называется respond, ваш кэп
     # Сделано для упрощения ответа. В пагине или другом коде
     # не нужно "думать" о том, откуда пришло сообщение:
     # из диалога, или из беседы (чата, конференции).
@@ -57,7 +56,7 @@ class VkPlus:
             else:  # если ЛС
                 values['user_id'] = to['user_id']
                 self.method('messages.send', values)
-        # Эта ошибка будет поймана только если код ошибки равен 9 - см. method()
+        # Эта ошибка будет поймана только если код ошибки равен 9 - см. def method()
         except vk_api.vk_api.ApiError:
             if 'message' in values:
                 values['message'] += fmt('\n Анти-флуд (API): {self.anti_flood()}')
@@ -65,8 +64,6 @@ class VkPlus:
                     self.method('messages.send', values)
                 except vk_api.vk_api.ApiError:
                     print('Обход анти-флуда API не удался =(')
-                else:
-                    pass
 
     def mark_as_read(self, message_ids):
         values = {

@@ -81,6 +81,7 @@ class Bot(object):
         self.plugin_system.register_commands()
         # Чтобы плагины могли получить список команд
         self.vk.get_commands = self.plugin_system.get_commands
+        self.vk.get_plugins = self.plugin_system.get_plugins
         say.title("Загрузка плагинов завершена")
 
     def run(self):

@@ -19,6 +19,7 @@ class Plugin(object):
     def log(self, message):
         with say.settings(prefix=fmt('Плагин {self.name} -> ')):
             say(message)
+
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands):
         def wrapper(function):
@@ -34,12 +35,12 @@ class Plugin(object):
     def add_deferred_func(self, command, function):
         if command is None:
             raise ValueError("command can't be None")
-        self.deferred_events.append(lambda target: target.add_command(command, function))
+        self.deferred_events.append(lambda pluginsystem_object: pluginsystem_object.add_command(command, function))
 
     # Register events for plugin
-    def register(self, plugin):
+    def register(self, plugin_system_object):
         for deferred_event in self.deferred_events:
-            deferred_event(plugin)
+            deferred_event(plugin_system_object)
 
 
 local_data = threading.local()
@@ -53,9 +54,13 @@ class PluginSystem(object):
     def __init__(self, folder=None):
         self.commands = {}
         self.folder = folder
+        self.plugins = []
 
     def get_commands(self):
-        return [command_name for command_name, event_handler in self.commands.items()]
+        return [command for command in self.commands.keys()]
+
+    def get_plugins(self):
+        return [plugin.name for plugin in self.plugins]
 
     def add_command(self, name, function):
         # если уже есть хоть 1 команда, добавляем к списку
@@ -65,19 +70,22 @@ class PluginSystem(object):
         else:
             self.commands[name] = [function]
 
-    def call_command(self, name, *args, **kwargs):
+    def call_command(self, command_name, *args, **kwargs):
         # получаем фн-ции команд для этой команды (несколько плагинов МОГУТ обрабатывать одну команду)
-        commands_ = self.commands.get(name)
+        commands_ = self.commands.get(command_name)
         # если нету плагинов, которые готовы обработать нашу команду
         if not commands_:
             pass
-        else:  # If there's a method handler (one or more)
-            for command_function in commands_:  # Loop over all of them
-                command_function(*args, **kwargs)  # Try to execute event with arguments
+        # Если есть функции, которые могут обработать нашу команду
+        else:
+            # Проходимся по всем ним
+            for command_function in commands_:
+                # Запускаем с аргументами
+                command_function(*args, **kwargs)
             return None
 
-    def register_command(self, command):
-        command.register(self)
+    def register_plugin(self, plugin_object):
+        plugin_object.register(self)
 
     def register_commands(self):
         if not self.folder:
@@ -99,7 +107,8 @@ class PluginSystem(object):
                         *imp.find_module(os.path.splitext(filename)[0], [folder_path])
                     )
                     # TODO: Add support for any instance name of Plugin() class
-                    self.register_command(loaded_module.plugin)
+                    self.plugins.append(loaded_module.plugin)
+                    self.register_plugin(loaded_module.plugin)
 
     def __enter__(self):
         local_data.plugin_stacks = [self]
