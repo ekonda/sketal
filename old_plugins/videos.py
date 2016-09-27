@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import random
-
 
 class Plugin:
     vk = None

@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 
-import random, requests, json, urllib.request, urllib.parse, urllib.error
+import requests, json, urllib.request, urllib.parse, urllib.error
 
 
 class Plugin:

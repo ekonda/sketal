@@ -1,1 +1,0 @@
-screen -A -m -d -S Bot sh loader.sh

@@ -2,6 +2,8 @@ import builtins
 from os.path import abspath, isfile
 import shutil
 import traceback  # используется в say()
+
+import time
 from say import say, fmt
 
 from plugin_system import PluginSystem
@@ -86,44 +88,58 @@ class Bot(object):
             self.check_messages()
 
     def check_messages(self):
-
+        time.sleep(0.05)
         response = self.vk.method('messages.get', self.ANSWER_VALUES)
         if response is not None and response['items']:
             self.last_message_id = response['items'][0]['id']
             for item in response['items']:
                 # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
                 if item['read_state'] == 0 and item['user_id'] not in self.BLACKLIST:
-                    self.execute_command(item)  # выполняем команду
+                    self.check_if_command(item)  # выполняем команду
                     self.vk.mark_as_read(item['id'])  # Помечаем прочитанным
 
-    def execute_command(self, message):
-        if not message['body']:  # Если строка пустая
+    def check_if_command(self, answer):
+        if not answer['body']:  # Если строка пустая
             return
-        words = message['body'].split()  # Делим строку на список слов
-        first_word = words[0]
-        if words[0].startswith(self.PREFIXES):  # Если наш бот должен реагировать на этот префикс
-            if len(words) > 1:  # Если есть команда (может и аргументы)
-                command = words[1].lower()  # Получаем команду (и приводим в нижний регистр)
-                arguments = words[2:]  # Получаем аргументы срезом
-                if 'chat_id' in message:
-                    say("Команда из конференции ({message['chat_id']}) > {message['body']}")
-                elif 'user_id' in message:
-                    say("Команда из ЛС (id{message['user_id']}) > {message['body']}")
-                try:
-                    self.plugin_system.call_command(command, self.vk, message, arguments)
-                except:
-                    self.vk.respond(message, {
-                        "message": fmt(
-                            "{self.vk.anti_flood()}. Произошла ошибка при выполнении команды <{command}>, "
-                            "пожалуйста, сообщите об этом разработчику!")
-                    })
+        message_string = answer['body']
 
-                    say(
-                        "Произошла ошибка при вызове команды '{command}'. "
-                        "Сообщение: '{message['body']}' с параметрами {arguments}. "
-                        "Ошибка:\n{traceback.format_exc()}",
-                        style='red')
-                    # print(message, command, arguments) -> for debug only
+        # Если префикс есть в начале строки, убираем его
+        for prefix in self.PREFIXES:
+            if message_string.startswith(prefix):
+                message_string = message_string.replace(prefix, '')
+                break
+        # Если нет префикса
+        else:
+            return
+
+        words = message_string.split()  # Делим строку на список слов
+
+        if len(words) < 1:  # Если нет команды, сразу прекращаем выполнение
+            return
+
+        command = words[0].lower()  # Получаем команду (и приводим в нижний регистр)
+        arguments = words[1:]  # Получаем аргументы срезом
+
+        if 'chat_id' in answer:
+            say("Команда из конференции ({answer['chat_id']}) > {answer['body']}")
+        elif 'user_id' in answer:
+            say("Команда из ЛС (id{answer['user_id']}) > {answer['body']}")
+
+        try:
+            self.plugin_system.call_command(command, self.vk, answer, arguments)
+        except:
+            self.vk.respond(answer, {
+                "message": fmt(
+                    "{self.vk.anti_flood()}. Произошла ошибка при выполнении команды <{command}>, "
+                    "пожалуйста, сообщите об этом разработчику!")
+            })
+
+            say(
+                "Произошла ошибка при вызове команды '{command}'. "
+                "Сообщение: '{answer['body']}' с параметрами {arguments}. "
+                "Ошибка:\n{traceback.format_exc()}",
+                style='red')
+            # print(message, command, arguments) -> for debug only
 
 
 if __name__ == '__main__':

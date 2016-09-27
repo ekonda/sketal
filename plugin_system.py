@@ -6,15 +6,19 @@ import sys
 import threading
 import types
 
+from say import say, fmt
+
 
 class Plugin(object):
     def __init__(self, name="Стандартное имя плагина (измени меня)", description=""):
         self.deferred_events = []  # events which plugin subsсribed on
         self.name = name
         self.description = description
-        self.log = print
-        self.log(name)
+        say(name)
 
+    def log(self, message):
+        with say.settings(prefix=fmt('Плагин {self.name} -> ')):
+            say(message)
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands):
         def wrapper(function):
