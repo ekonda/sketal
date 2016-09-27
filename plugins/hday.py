@@ -1,6 +1,8 @@
 import random
 import datetime
 
+from say import say
+
 from plugin_system import Plugin
 
 # Варианты начала ответа.
@@ -119,10 +121,8 @@ def check(vk, msg, args):
         members_list_string += '\n' + member['bdate'] + ' :: ' + member['first_name'] + ' ' + member[
             'last_name'] + ' => https://vk.com/id' + str(member['id'])
 
-    # Печатаем в "лог" отладочную информацию
-    print(mcnt)
-    print(has_bdate)
-    print(len(mbbday))
+    # Печатаем в лог отладочную информацию
+    say("Кол-во участников получено {mcnt}, из них у {has_bdate} есть дата рождения, у {len(mbbday)} скоро ДР.")
 
     # Отвечаем в ВК
     vk.respond(msg, {'message': random.choice(answers) + '\n' + random.choice(memb_name) + ': ' + str(
