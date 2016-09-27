@@ -3,7 +3,7 @@ from plugin_system import Plugin
 plugin = Plugin('Послать сообщение')
 
 
-@plugin.on_command('send', 'написать', 'напиши', 'лс', 'msg')
+@plugin.on_command('написать', 'напиши', 'лс', 'письмо')
 def write_msg(vk, msg, args):
     if len(args) > 1:
         if args[0].isdigit():

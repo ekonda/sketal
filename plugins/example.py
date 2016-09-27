@@ -4,7 +4,8 @@ from plugin_system import Plugin
 
 plugin = Plugin("Пример плагина")
 
-@plugin.on_command('примерплагина', 'тестовыйплагин')
+# Желательно первой командой указывать основную (она будет в списке команд)
+@plugin.on_command('тестовыйплагин', 'примерплагина')
 def anynameoffunctioncanbehere(vk, raw_message, args):
     print("OK!")
     vk.respond(raw_message, {'message': fmt('Пример плагина (аргументы - {args})')})

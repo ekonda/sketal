@@ -3,7 +3,7 @@ from plugin_system import Plugin
 
 plugin = Plugin('Рандом')
 
-@plugin.on_command('рандом', 'ранд', 'random', 'rand', 'dice', 'кубик')
+@plugin.on_command('рандом', 'случайно', 'кубик')
 def call(vk, msg, args):
     try:
         if len(args) == 2:
