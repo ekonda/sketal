@@ -60,7 +60,7 @@ class PluginSystem(object):
         return [command for command in self.commands.keys()]
 
     def get_plugins(self):
-        return [plugin.name for plugin in self.plugins]
+        return [plugin for plugin in self.plugins]
 
     def add_command(self, name, function):
         # если уже есть хоть 1 команда, добавляем к списку
