@@ -107,8 +107,12 @@ class PluginSystem(object):
                         *imp.find_module(os.path.splitext(filename)[0], [folder_path])
                     )
                     # TODO: Add support for any instance name of Plugin() class
-                    self.plugins.append(loaded_module.plugin)
-                    self.register_plugin(loaded_module.plugin)
+                    try:
+                        self.plugins.append(loaded_module.plugin)
+                        self.register_plugin(loaded_module.plugin)
+                    # Если возникла ошибка - значит плагин не имеет атрибута plugin
+                    except AttributeError:
+                        continue
 
     def __enter__(self):
         local_data.plugin_stacks = [self]
