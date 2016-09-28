@@ -4,6 +4,8 @@ import shutil
 import traceback  # используется в say()
 
 import time
+from threading import Thread
+
 from say import say, fmt
 
 from plugin_system import PluginSystem
@@ -137,20 +139,21 @@ class Bot(object):
 
         try:
             # Строка сообщения без пробелов
-            full_str = ''.join(message_string.split())
+            full_str = ''.join(message_string.split()).lower()
 
             for command in self.command_names:
-                command_without_spaces = ''.join(command.split())
+                command_without_spaces = ''.join(command.split()).lower()
 
                 if not full_str.startswith(command_without_spaces):
                     continue  # Если сообщение не начинается с команды, берём след. элемент
-                print(command_without_spaces)
                 # Удаляем команду из строки
                 message_string = message_string.replace(command, '')
                 # Получаем аргументы
                 arguments = message_string.split()
                 # Вызываем команды
-                self.plugin_system.call_command(command, self.vk, answer, arguments)
+                t = Thread(target=self.plugin_system.call_command, args=(command, self.vk, answer, arguments,))
+                t.start()
+                t.join()
                 break
         except:
             self.vk.respond(answer, {

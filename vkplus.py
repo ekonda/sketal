@@ -59,7 +59,8 @@ class VkPlus:
                     "проверьте значение access_token в settings.py!", style='red')
                 exit()
             else:
-                say("Произошла ошибка при вызове метода {self.api_method} бота через API {key} с значениями {data}:\n{error}",
+                say(
+                    "Произошла ошибка при вызове метода {self.api_method} бота через API {key} с значениями {data}:\n{error}",
                     style='red')
 
     def anti_flood(self):

@@ -30,6 +30,6 @@ def video_search(vk, msg, args):
             for i in range(kol):
                 respstr += 'video' + str(vids[i]['owner_id']) + '_' + str(vids[i]['id']) + ','
             vk.respond(msg, {'message': 'Приятного просмотра! ',
-                                  'attachment': respstr})
+                             'attachment': respstr})
     else:
         vk.respond(msg, {'message': 'Что мне искать?'})

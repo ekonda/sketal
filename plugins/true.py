@@ -29,6 +29,7 @@ answers.append('Не могу дать точный ответ.')
 def call(vk, msg, args):
     vk.respond(msg, {'message': "🎱" + random.choice(answers)})
 
+
 @plugin.on_command('админ')
 def call(vk, msg, args):
-    vk.respond(msg, {'message' : "Нет, ты не админ! Админ - vk.com/id170831732!"})
+    vk.respond(msg, {'message': "Нет, ты не админ! Админ - vk.com/id170831732!"})

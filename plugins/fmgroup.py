@@ -11,7 +11,6 @@ answers.append("Я сам смотреть не буду, но вы смотри
 
 @plugin.on_command('фм записи', 'записи файнмайн')
 def call(vk, msg, args):
-
     isphoto = False
     boobs = None
 
@@ -39,4 +38,4 @@ def call(vk, msg, args):
     print(attachment)
 
     vk.respond(msg, {'message': random.choice(answers),
-                          'attachment': attachment})
+                     'attachment': attachment})

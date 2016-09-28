@@ -1,23 +1,24 @@
 import random
 from plugin_system import Plugin
 
-plugin = Plugin('Случайные мемы')
+plugin = Plugin("Случайное с двача")
 
 answers = []
-answers.append("Мемы поданы!")
-answers.append("Классный мемес!")
-answers.append("Знакомься, мемасик")
+answers.append("Каеф")
+answers.append("Не баян (баян)")
+answers.append("Ну держи!")
+answers.append("🌚")
 
 
-@plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы', 'дай мемасы')
-def call(vk, msg, args):
+@plugin.on_command('двач', '2ch', 'двачик', 'мемы с двача')
+def get_memes(vk, msg, args):
     isphoto = False
     boobs = None
 
     while isphoto is False:
         values = {
             # owner_id = ид группы
-            'owner_id': -87960594,
+            'owner_id': -22751485,
             'offset': random.randint(1, 1985),
             'count': 1
         }
@@ -34,8 +35,6 @@ def call(vk, msg, args):
     access_key = str(boobs_att['access_key'])
 
     attachment = 'photo' + owner_id + '_' + att_id + '_' + access_key
-
-    print(attachment)
 
     vk.respond(msg, {'message': random.choice(answers),
                      'attachment': attachment})
