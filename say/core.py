@@ -91,18 +91,15 @@ def _sprintf(arg, caller, styles=None, override=None):
         return str(seval(str(arg)))
 
 
-class flushfile(object):
-    def __init__(self, f):
-        self.f = f
-
-    def write(self, x):
-        self.f.write(x)
-        self.f.flush()
-
-
 import sys
 
-sys.stdout = flushfile(sys.stdout)
+
+def good(obj):
+    obj.flush()
+    return sys.stdout
+
+
+sys.stdout = good(sys.stdout)
 
 def get_stdout():
     """
