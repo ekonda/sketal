@@ -116,8 +116,8 @@ class Bot(object):
                 # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
                 if item['read_state'] == 0 and item['user_id'] not in self.BLACKLIST:
                     self.vk.mark_as_read(item['id'])  # Помечаем прочитанным
-                    self.check_if_command(item)  # выполняем команду
-
+                    t = Thread(target=self.check_if_command, args=(item,))  # выполняем команду в отд. потоке
+                    t.start()
     def check_if_command(self, answer):
         if not answer['body']:  # Если строка пустая
             return
