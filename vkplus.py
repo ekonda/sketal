@@ -42,7 +42,7 @@ class VkPlus:
     def method(self, key, data=None):
         # Если у нас token, то для всех остальных методов
         # кроме разрешённых вызовем паблик API
-        api_method = None
+        self.api_method = None
 
         if key not in self.group_methods and self.is_token and 'message' not in key:
             self.api_method = self.public_api.method

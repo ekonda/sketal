@@ -121,7 +121,7 @@ class Bot(object):
                     t.start()
     def check_if_command(self, answer):
         if not answer['body']:  # Если строка пустая
-            returnБЛЯТЬ
+            return
 
         message_string = answer['body']
         # Если префикс есть в начале строки, убираем его
