@@ -91,6 +91,19 @@ def _sprintf(arg, caller, styles=None, override=None):
         return str(seval(str(arg)))
 
 
+class flushfile(object):
+    def __init__(self, f):
+        self.f = f
+
+    def write(self, x):
+        self.f.write(x)
+        self.f.flush()
+
+
+import sys
+
+sys.stdout = flushfile(sys.stdout)
+
 def get_stdout():
     """
     It used to be that Say objects had their own encoding
@@ -101,7 +114,6 @@ def get_stdout():
     In those cases, instead of returning sys.stdout per se,
     return a writer object that does the encoding we want.
     """
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)  # line buffering
     if sys.stdout.encoding == 'UTF-8':
         return sys.stdout
     else:
