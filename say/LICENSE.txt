@@ -1,0 +1,1 @@
+Code of 'say' module originally taken from https://bitbucket.org/bnorick/say and https://bitbucket.org/jeunice/say/
