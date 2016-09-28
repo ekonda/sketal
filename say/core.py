@@ -99,7 +99,6 @@ def good(obj):
     return sys.stdout
 
 
-sys.stdout = good(sys.stdout)
 
 def get_stdout():
     """

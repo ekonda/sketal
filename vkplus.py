@@ -45,12 +45,12 @@ class VkPlus:
         api_method = None
 
         if key not in self.group_methods and self.is_token and 'message' not in key:
-            api_method = self.public_api.method
+            self.api_method = self.public_api.method
         else:
-            api_method = self.api.method
+            self.api_method = self.api.method
 
         try:
-            return api_method(key, data)
+            return self.api_method(key, data)
         except vk_api.vk_api.ApiError as error:
             if error.code == 9:
                 raise
