@@ -11,6 +11,7 @@ greetings.append('Хуяк-хуяк и в продакшн')
 
 plugin = Plugin('Приветствие')
 
-@plugin.on_command('привет','приветствие', 'голос', 'ку')
+
+@plugin.on_command('привет', 'приветствие', 'голос', 'ку', 'как дела?')
 def call(vk, msg, args):
     vk.respond(msg, {'message': random.choice(greetings)})

@@ -12,7 +12,7 @@ answers.append('Шуточки заказывали?')
 answers.append('Петросян в душе прям бушует &#127770;')
 
 
-@plugin.on_command('шутка', 'пошути', 'рассмеши', 'петросян')
+@plugin.on_command('шутка', 'пошути', 'рассмеши', 'петросян', 'скажи шутку')
 def joke_get(vk, msg, args):
     resp = requests.get('http://www.umori.li/api/get?site=bash.im&name=bash&num=1')
     try:

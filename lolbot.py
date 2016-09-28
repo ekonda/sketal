@@ -96,6 +96,8 @@ class Bot(object):
         self.plugin_system.register_commands()
         # Чтобы плагины могли получить список плагинов
         self.vk.get_plugins = self.plugin_system.get_plugins
+        # Для парсинга команд с пробелом
+        self.command_names = self.plugin_system.commands.keys()
         say.title("Загрузка плагинов завершена")
 
     def run(self):
@@ -116,8 +118,8 @@ class Bot(object):
     def check_if_command(self, answer):
         if not answer['body']:  # Если строка пустая
             return
-        message_string = answer['body']
 
+        message_string = answer['body']
         # Если префикс есть в начале строки, убираем его
         for prefix in self.PREFIXES:
             if message_string.startswith(prefix):
@@ -127,21 +129,27 @@ class Bot(object):
         else:
             return
 
-        words = message_string.split()  # Делим строку на список слов
-
-        if len(words) < 1:  # Если нет команды, сразу прекращаем выполнение
-            return
-
-        command = words[0].lower()  # Получаем команду (и приводим в нижний регистр)
-        arguments = words[1:]  # Получаем аргументы срезом
-
         if 'chat_id' in answer:
             say("Команда из конференции ({answer['chat_id']}) > {answer['body']}")
         elif 'user_id' in answer:
             say("Команда из ЛС (id{answer['user_id']}) > {answer['body']}")
 
         try:
-            self.plugin_system.call_command(command, self.vk, answer, arguments)
+            # Строка сообщения без пробелов
+            full_str = ''.join(message_string.split())
+
+            for command in self.command_names:
+                command_without_spaces = ''.join(command.split())
+
+                if not full_str.startswith(command_without_spaces):
+                    continue  # Если сообщение не начинается с команды, берём след. элемент
+
+                # Удаляем команду из строки
+                message_string = message_string.replace(command, '')
+                # Получаем аргументы
+                arguments = message_string.split()
+                # Вызываем команды
+                self.plugin_system.call_command(command, self.vk, answer, arguments)
         except:
             self.vk.respond(answer, {
                 "message": fmt(

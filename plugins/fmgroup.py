@@ -8,7 +8,8 @@ answers.append("Куйня какая-то!")
 answers.append("Великолепно (Нет)")
 answers.append("Я сам смотреть не буду, но вы смотрите.")
 
-@plugin.on_command('фмзаписи', 'записи_файнмайн')
+
+@plugin.on_command('фм записи', 'записи файнмайн')
 def call(vk, msg, args):
 
     isphoto = False

@@ -8,7 +8,8 @@ answers.append("Мемы поданы!")
 answers.append("Классный мемес!")
 answers.append("Знакомься, мемасик")
 
-@plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы')
+
+@plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы', 'дай мемасы')
 def call(vk, msg, args):
 
     isphoto = False

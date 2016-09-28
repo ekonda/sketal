@@ -4,7 +4,7 @@ from plugin_system import Plugin
 plugin = Plugin('Курсы валют')
 
 
-@plugin.on_command('курс', 'валюта')
+@plugin.on_command('курс', 'валюта', 'какой курс?')
 def kurs_get(vk, msg, args):
     kurs_usd = requests.get("http://api.fixer.io/latest?base=USD")
     kursbid_usd = kurs_usd.json()["rates"]["RUB"]

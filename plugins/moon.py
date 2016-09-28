@@ -9,6 +9,6 @@ answers.append('🌚🌚')
 plugin = Plugin('Луна')
 
 
-@plugin.on_command('луна', '🌚', '')
+@plugin.on_command('луна', '🌚')
 def get_moon(vk, msg, args):
     vk.respond(msg, {'message': random.choice(answers)})

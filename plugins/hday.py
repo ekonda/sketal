@@ -33,7 +33,7 @@ there_list.append("Вот они, эти счастливчики")
 plugin = Plugin('Дни рождения')
 
 
-@plugin.on_command('деньрождения', 'др')
+@plugin.on_command('день рождения', 'др')
 def check(vk, msg, args):
     # ID группы, в которой искать
     if len(args) != 1:
