@@ -3,7 +3,7 @@ from plugin_system import Plugin
 plugin = Plugin('Поиск видео')
 
 
-@plugin.on_command('видео', 'видяшки', 'видюхи', 'видос', 'видосик', 'найди видео')
+@plugin.on_command('видео', 'видяшки', 'видюхи', 'видос', 'видосик', 'найди видео', 'найди видео про')
 def video_search(vk, msg, args):
     if len(args) > 0:
         body = ''

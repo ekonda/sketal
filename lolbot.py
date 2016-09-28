@@ -97,7 +97,8 @@ class Bot(object):
         # Чтобы плагины могли получить список плагинов
         self.vk.get_plugins = self.plugin_system.get_plugins
         # Для парсинга команд с пробелом
-        self.command_names = self.plugin_system.commands.keys()
+        self.command_names = list(self.plugin_system.commands.keys())
+        self.command_names.sort(key=len, reverse=True)
         say.title("Загрузка плагинов завершена")
 
     def run(self):
@@ -143,13 +144,14 @@ class Bot(object):
 
                 if not full_str.startswith(command_without_spaces):
                     continue  # Если сообщение не начинается с команды, берём след. элемент
-
+                print(command_without_spaces)
                 # Удаляем команду из строки
                 message_string = message_string.replace(command, '')
                 # Получаем аргументы
                 arguments = message_string.split()
                 # Вызываем команды
                 self.plugin_system.call_command(command, self.vk, answer, arguments)
+                break
         except:
             self.vk.respond(answer, {
                 "message": fmt(
