@@ -148,7 +148,8 @@ class Bot(object):
                 if not full_str.startswith(command_without_spaces):
                     continue  # Если сообщение не начинается с команды, берём след. элемент
                 # Удаляем команду из строки
-                message_string = message_string.replace(command, '')
+                message_string = message_string.lower().replace(command.lower(), '')
+                print(message_string)
                 # Получаем аргументы
                 arguments = message_string.split()
                 if 'chat_id' in answer:

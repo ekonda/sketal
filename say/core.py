@@ -101,6 +101,7 @@ def get_stdout():
     In those cases, instead of returning sys.stdout per se,
     return a writer object that does the encoding we want.
     """
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)  # line buffering
     if sys.stdout.encoding == 'UTF-8':
         return sys.stdout
     else:
