@@ -51,7 +51,7 @@ class Bot(object):
             try:
                 self.BLACKLIST = settings.blacklist
                 self.PREFIXES = settings.prefixes
-
+                self.log_messages = settings.log_messages
                 if settings.vk_access_token:
                     self.is_token = True
                     self.token = settings.vk_access_token
@@ -131,11 +131,11 @@ class Bot(object):
         # Если нет префикса
         else:
             return
-
-        if 'chat_id' in answer:
-            say("Команда из конференции ({answer['chat_id']}) > {answer['body']}")
-        elif 'user_id' in answer:
-            say("Команда из ЛС (id{answer['user_id']}) > {answer['body']}")
+        if self.log_messages:
+            if 'chat_id' in answer:
+                say("Сообщение из конференции ({answer['chat_id']}) > {answer['body']}")
+            elif 'user_id' in answer:
+                say("Сообщение из ЛС (id{answer['user_id']}) > {answer['body']}")
 
         try:
             # Строка сообщения без пробелов
@@ -150,10 +150,14 @@ class Bot(object):
                 message_string = message_string.replace(command, '')
                 # Получаем аргументы
                 arguments = message_string.split()
+                if 'chat_id' in answer:
+                    say("Команда '{command}' из конференции ({answer['chat_id']}) с аргументами {arguments}.")
+                elif 'user_id' in answer:
+                    say("Команда '{command}' из ЛС (http://vk.com/id{answer['user_id']}) с аргументами {arguments}.")
                 # Вызываем команды
                 t = Thread(target=self.plugin_system.call_command, args=(command, self.vk, answer, arguments,))
                 t.start()
-                t.join()
+                t.join(10)  # Делаем тайм-аут 10 сек
                 break
         except:
             self.vk.respond(answer, {
