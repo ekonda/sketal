@@ -1,14 +1,14 @@
+# coding: utf8-interpy
 # Класс с некоторыми доп. методами
 
 import vk_api
 
-import random, string, errno
-from requests.exceptions import ConnectionError
+import random
+import string
 
-from say import say, fmt
+from helpers import error, warning
 
-
-class VkPlus:
+class VkPlus(object):
     api = None
 
     def __init__(self, token=None, login=None, password=None):
@@ -25,7 +25,7 @@ class VkPlus:
                 self.password = password
                 self.api = vk_api.VkApi(login=login, password=password)
             else:
-                say('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!', style='red')
+                error('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
                 exit()
             self.api.authorization()  # Авторизируемся
         # Если произошла ошибка при авторизации
@@ -51,17 +51,16 @@ class VkPlus:
 
         try:
             return self.api_method(key, data)
-        except vk_api.vk_api.ApiError as error:
-            if error.code == 9:
+        except vk_api.vk_api.ApiError as exc:
+            if exc.code == 9:
                 raise
-            if error.code == 5 and 'User authorization failed' in str(error):
-                say("Произошла ошибка при авторизации API, "
-                    "проверьте значение access_token в settings.py!", style='red')
+            if exc.code == 5 and 'User authorization failed' in str(exc):
+                error("Произошла ошибка при авторизации API, "
+                    "проверьте значение access_token в settings.py!")
                 exit()
             else:
-                say(
-                    "Произошла ошибка при вызове метода {self.api_method} бота через API {key} с значениями {data}:\n{error}",
-                    style='red')
+                error("Произошла ошибка при вызове метода API #{key} "
+                    "с значениями #{data}:\n#{exc}")
 
     def anti_flood(self):
         '''Функция для обхода антифлуда API ВК'''
@@ -83,11 +82,11 @@ class VkPlus:
         except vk_api.vk_api.ApiError:
             if not 'message' in values:
                 return
-            values['message'] += fmt('\n Анти-флуд (API): {self.anti_flood()}')
+            values['message'] += '\n Анти-флуд (API): {}'.format(self.anti_flood())
             try:
                 self.method('messages.send', values)
             except vk_api.vk_api.ApiError:
-                print('Обход анти-флуда API не удался =(')
+                warning('Обход анти-флуда API не удался =(')
 
     def mark_as_read(self, message_ids):
         values = {

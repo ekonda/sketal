@@ -1,3 +1,4 @@
 vk_api
-say
+git+https://github.com/TiberiumPY/utf8_interpy
 requests
+ansicolors

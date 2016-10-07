@@ -1,7 +1,6 @@
+# coding: utf8-interpy
 import random
 import datetime
-
-from say import say
 
 from plugin_system import Plugin
 
@@ -122,7 +121,7 @@ def check(vk, msg, args):
             'last_name'] + ' => https://vk.com/id' + str(member['id'])
 
     # Печатаем в лог отладочную информацию
-    say("Кол-во участников получено {mcnt}, из них у {has_bdate} есть дата рождения, у {len(mbbday)} скоро ДР.")
+    print("Кол-во участников получено #{mcnt}, из них у #{has_bdate} есть дата рождения, у #{len(mbbday)} скоро ДР.")
 
     # Отвечаем в ВК
     vk.respond(msg, {'message': random.choice(answers) + '\n' + random.choice(memb_name) + ': ' + str(

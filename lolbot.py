@@ -1,35 +1,31 @@
-import builtins
+# coding: utf8-interpy
+# строка выше позволяет использовать
+# интерполяцию строк, как в Ruby
+
 from os.path import abspath, isfile
 import shutil
-import traceback  # используется в say()
+import traceback # используется в check_if_command
 
 import time
 from threading import Thread
 
-from say import say, fmt
 
 from plugin_system import PluginSystem
 from vkplus import VkPlus
-
-builtins.print = say  # Переопределить print функцией say (совместима с print)
-
-
+from helpers import warning, error, good, inform
+from command import CommandSystem, Command
 class Bot(object):
     '''Главный класс бота, создан для упрощённой работы с переменными'''
 
-    # Функция для упрощённого вывода зелёных сообщений
-    def good(self, string):
-        say(string, style='green')
 
     def __init__(self):
         # По умолчанию все сообщения будут жирные и синие :)
-        say.set(style='blue+bold')
 
         self.last_message_id = 0
         self.init_settings()
         self.vk_init()
         self.plugin_init()
-        self.good('Приступаю к приему сообщений')
+        inform('Приступаю к приему сообщений')
 
         self.run()
 
@@ -40,10 +36,10 @@ class Bot(object):
             try:
                 shutil.copy('settings.py.sample', 'settings.py')
             except:
-                say('У меня нет прав писать в текущую директорию, '
-                    'проверьте ваши права на неё!', style='red')
+                error('У меня нет прав писать в текущую директорию, '
+                    'проверьте ваши права на неё!')
                 exit()
-            self.good('Был создан файл settings.py, пожалуйста, измените значения на Ваши!')
+            warning('Был создан файл settings.py, пожалуйста, измените значения на Ваши!')
             exit()
         # Если у нас уже есть settings.py
         elif isfile('settings.py'):
@@ -60,20 +56,20 @@ class Bot(object):
                     self.vk_login = settings.vk_login
                     self.vk_password = settings.vk_password
                 else:
-                    say('Проверьте, что у вас заполнены vk_login и vk_password, или vk_access_token!'
-                        '\nБез них бот работать НЕ СМОЖЕТ (ему же надо сидеть с какого-нибудь аккаунта?)')
+                    error('Проверьте, что у вас заполнены vk_login и vk_password, или vk_access_token!'
+                        '\nБез них бот работать НЕ СМОЖЕТ.')
                     exit()
-            except:
-                say('Проверьте содержание файла settings.py, возможно вы удалили что-то нужное!')
+            except (ValueError, IndexError, AttributeError, NameError):
+                error('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
                 exit()
         # Если не нашли ни settings.py, ни settings.py.sample
         else:
-            say('settings.py и settings.py.sample не найдены, возможно вы их удалили?', style='red+bold')
+            error('settings.py и settings.py.sample не найдены, возможно вы их удалили?')
             exit()
 
     def vk_init(self):
         # Авторизуемся в ВК
-        say('Авторизация в вк...', style='yellow')
+        warning('Авторизация в вк...')
 
         if self.is_token:
             self.vk = VkPlus(token=self.token)
@@ -89,19 +85,22 @@ class Bot(object):
             'preview_length': 0,
             'last_message_id': self.last_message_id
         }
-        self.good('Успешная авторизация')
+        good('Успешная авторизация')
 
     def plugin_init(self):
         # Подгружаем плагины
-        say.title("Загрузка плагинов:")
+        inform("------------ Загрузка плагинов: -----------")
         self.plugin_system = PluginSystem(folder=abspath('plugins'))
         self.plugin_system.register_commands()
         # Чтобы плагины могли получить список плагинов
         self.vk.get_plugins = self.plugin_system.get_plugins
-        # Для парсинга команд с пробелом
-        self.command_names = list(self.plugin_system.commands.keys())
-        self.command_names.sort(key=len, reverse=True)
-        say.title("Загрузка плагинов завершена")
+        # Для парсинга команд с пробелом используется
+        # обратная сортировка, для того, чтобы самые
+        # длинные команды были первые в списке
+        command_names = list(self.plugin_system.commands.keys())
+        command_names.sort(key=len, reverse=True)
+        self.cmd_system = CommandSystem(command_names,self.plugin_system)
+        inform("----------- Загрузка плагинов завершена -----------")
 
     def run(self):
         while True:
@@ -115,66 +114,30 @@ class Bot(object):
             for item in response['items']:
                 # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
                 if item['read_state'] == 0 and item['user_id'] not in self.BLACKLIST:
-                    t = Thread(target=self.vk.mark_as_read, args=(item['id'],))  # Помечаем прочитанным
-                    t.start()
-                    t = Thread(target=self.check_if_command, args=(item,))  # выполняем команду в отд. потоке
-                    t.start()
+                    mark_read_process = Thread(target=self.vk.mark_as_read, args=(item['id'],))  # Помечаем прочитанным
+                    mark_read_process.start()
+                    cif_process = Thread(target=self.check_if_command, args=(item,))  # Выполняем команду в отдельном потоке
+                    cif_process.start()
     def check_if_command(self, answer):
-        if not answer['body']:  # Если строка пустая
-            return
-
-        message_string = answer['body']
-        # Если префикс есть в начале строки, убираем его
-        for prefix in self.PREFIXES:
-            if message_string.startswith(prefix):
-                message_string = message_string.replace(prefix, '')
-                break
-        # Если нет префикса
-        else:
-            return
         if self.log_messages:
             if 'chat_id' in answer:
-                say("Сообщение из конференции ({answer['chat_id']}) > {answer['body']}")
+                inform("Сообщение из конференции (#{answer['chat_id']}) > #{answer['body']}")
             elif 'user_id' in answer:
-                say("Сообщение из ЛС (id{answer['user_id']}) > {answer['body']}")
+                inform("Сообщение из ЛС (id#{answer['user_id']}) > #{answer['body']}")
+        self.cmd_system.process_command(answer, self.vk)
+        '''
+        self.vk.respond(answer, {
+            "message":
+                "#{self.vk.anti_flood()}. Произошла ошибка при выполнении команды <#{command}>, "
+                "пожалуйста, сообщите об этом разработчику!"
+        })
 
-        try:
-            # Строка сообщения без пробелов
-            full_str = ''.join(message_string.split()).lower()
-
-            for command in self.command_names:
-                command_without_spaces = ''.join(command.split()).lower()
-
-                if not full_str.startswith(command_without_spaces):
-                    continue  # Если сообщение не начинается с команды, берём след. элемент
-                # Удаляем команду из строки
-                message_string = message_string.lower().replace(command.lower(), '')
-                print(message_string)
-                # Получаем аргументы
-                arguments = message_string.split()
-                if 'chat_id' in answer:
-                    say("Команда '{command}' из конференции ({answer['chat_id']}) с аргументами {arguments}.")
-                elif 'user_id' in answer:
-                    say("Команда '{command}' из ЛС (http://vk.com/id{answer['user_id']}) с аргументами {arguments}.")
-                # Вызываем команды
-                t = Thread(target=self.plugin_system.call_command, args=(command, self.vk, answer, arguments,))
-                t.start()
-                t.join(10)  # Делаем тайм-аут 10 сек
-                break
-        except:
-            self.vk.respond(answer, {
-                "message": fmt(
-                    "{self.vk.anti_flood()}. Произошла ошибка при выполнении команды <{command}>, "
-                    "пожалуйста, сообщите об этом разработчику!")
-            })
-
-            say(
-                "Произошла ошибка при вызове команды '{command}'. "
-                "Сообщение: '{answer['body']}' с параметрами {arguments}. "
-                "Ошибка:\n{traceback.format_exc()}",
-                style='red')
-            # print(message, command, arguments) -> for debug only
-
+        error(
+            "Произошла ошибка при вызове команды '#{command}'. "
+            "Сообщение: '#{answer['body']}' с параметрами #{arguments}. "
+            "Ошибка:\n#{traceback.format_exc()}",)
+        # print(message, command, arguments) -> for debug only
+        '''
 
 if __name__ == '__main__':
     bot = Bot()
