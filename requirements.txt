@@ -1,4 +1,4 @@
+#chatterbot <- нужен для chatterbot.py
 vk_api
-git+https://github.com/TiberiumPY/utf8_interpy
+hues
 requests
-ansicolors

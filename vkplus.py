@@ -1,4 +1,3 @@
-# coding: utf8-interpy
 # Класс с некоторыми доп. методами
 
 import vk_api
@@ -6,7 +5,8 @@ import vk_api
 import random
 import string
 
-from helpers import error, warning
+import hues
+
 
 class VkPlus(object):
     api = None
@@ -25,7 +25,7 @@ class VkPlus(object):
                 self.password = password
                 self.api = vk_api.VkApi(login=login, password=password)
             else:
-                error('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
+                hues.error('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
                 exit()
             self.api.authorization()  # Авторизируемся
         # Если произошла ошибка при авторизации
@@ -55,12 +55,12 @@ class VkPlus(object):
             if exc.code == 9:
                 raise
             if exc.code == 5 and 'User authorization failed' in str(exc):
-                error("Произошла ошибка при авторизации API, "
-                    "проверьте значение access_token в settings.py!")
+                hues.error("Произошла ошибка при авторизации API, "
+                           "проверьте значение access_token в settings.py!")
                 exit()
             else:
-                error("Произошла ошибка при вызове метода API #{key} "
-                    "с значениями #{data}:\n#{exc}")
+                hues.error("Произошла ошибка при вызове метода API {k} "
+                           "с значениями {d}:\n{e}".format(k=key, d=data, e=exc))
 
     def anti_flood(self):
         '''Функция для обхода антифлуда API ВК'''
@@ -86,7 +86,7 @@ class VkPlus(object):
             try:
                 self.method('messages.send', values)
             except vk_api.vk_api.ApiError:
-                warning('Обход анти-флуда API не удался =(')
+                hues.error('Обход анти-флуда API не удался =(')
 
     def mark_as_read(self, message_ids):
         values = {

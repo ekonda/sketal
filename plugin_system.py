@@ -4,10 +4,9 @@ import imp
 import os
 import sys
 import threading
+import traceback
 import types
-
-from say import say, fmt
-
+import hues
 
 class Plugin(object):
     def __init__(self, name="Стандартное имя плагина (измени меня)", description=""):
@@ -15,22 +14,23 @@ class Plugin(object):
         self.name = name
         self.description = description
         self.first_command = ''
-        say(name)
+        hues.warn(self.name)
 
     def log(self, message):
-        with say.settings(prefix=fmt('Плагин {self.name} -> ')):
-            say(message)
+        hues.info('Плагин {name} -> {message}'.format(name=self.name, message=message))
 
     # Декоратор события (запускается при первом запуске)
-    def on_command(self, *commands):
+    def on_command(self, *commands, all_commands=False):
         def wrapper(function):
             if commands:  # Если написали, какие команды используются
                 # Первая команда - отображается в списке команд (чтобы много команд не было)
                 self.first_command = commands[0]
                 for command in commands:
                     self.add_deferred_func(command, function)
-            else:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
+            elif not all_commands:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
                 self.add_deferred_func(self.name.lower(), function)
+            else:
+                self.add_deferred_func('', function)
             return function
 
         return wrapper
@@ -102,10 +102,16 @@ class PluginSystem(object):
                     base_plugin_path = os.path.relpath(full_plugin_path, self.folder)
                     base_plugin_name = os.path.splitext(base_plugin_path)[0].replace(os.path.sep, '.')
                     module_source_name = "{0}.file_{1}".format(shared_space.__name__, base_plugin_name)
-                    loaded_module = imp.load_module(
-                        module_source_name,
-                        *imp.find_module(os.path.splitext(filename)[0], [folder_path])
-                    )
+                    try:
+                        loaded_module = imp.load_module(
+                            module_source_name,
+                            *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+                        )
+                    except Exception as ex:  # если в плагине какая-то ошибка - игнорим
+                        result = traceback.print_exc()
+                        with open('log.txt') as log:
+                            log.write(result)
+                        continue
                     # TODO: Add support for any instance name of Plugin() class
                     try:
                         self.plugins.append(loaded_module.plugin)

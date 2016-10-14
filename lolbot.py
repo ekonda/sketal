@@ -1,22 +1,16 @@
-# coding: utf8-interpy
-# строка выше позволяет использовать
-# интерполяцию строк, как в Ruby
-
 from os.path import abspath, isfile
 import shutil
-import traceback # используется в check_if_command
-
 import time
 from threading import Thread
 
-
+import hues
 from plugin_system import PluginSystem
 from vkplus import VkPlus
-from helpers import warning, error, good, inform
-from command import CommandSystem, Command
+from command import CommandSystem
+
+
 class Bot(object):
     '''Главный класс бота, создан для упрощённой работы с переменными'''
-
 
     def __init__(self):
         # По умолчанию все сообщения будут жирные и синие :)
@@ -25,7 +19,7 @@ class Bot(object):
         self.init_settings()
         self.vk_init()
         self.plugin_init()
-        inform('Приступаю к приему сообщений')
+        hues.success('Приступаю к приему сообщений')
 
         self.run()
 
@@ -36,10 +30,10 @@ class Bot(object):
             try:
                 shutil.copy('settings.py.sample', 'settings.py')
             except:
-                error('У меня нет прав писать в текущую директорию, '
-                    'проверьте ваши права на неё!')
+                hues.error('У меня нет прав писать в текущую директорию, '
+                           'проверьте ваши права на неё!')
                 exit()
-            warning('Был создан файл settings.py, пожалуйста, измените значения на Ваши!')
+            hues.warn('Был создан файл settings.py, пожалуйста, измените значения на Ваши!')
             exit()
         # Если у нас уже есть settings.py
         elif isfile('settings.py'):
@@ -56,20 +50,20 @@ class Bot(object):
                     self.vk_login = settings.vk_login
                     self.vk_password = settings.vk_password
                 else:
-                    error('Проверьте, что у вас заполнены vk_login и vk_password, или vk_access_token!'
-                        '\nБез них бот работать НЕ СМОЖЕТ.')
+                    hues.error('Проверьте, что у вас заполнены vk_login и vk_password, или vk_access_token!'
+                               '\nБез них бот работать НЕ СМОЖЕТ.')
                     exit()
             except (ValueError, IndexError, AttributeError, NameError):
-                error('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
+                hues.error('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
                 exit()
         # Если не нашли ни settings.py, ни settings.py.sample
         else:
-            error('settings.py и settings.py.sample не найдены, возможно вы их удалили?')
+            hues.error('settings.py и settings.py.sample не найдены, возможно вы их удалили?')
             exit()
 
     def vk_init(self):
         # Авторизуемся в ВК
-        warning('Авторизация в вк...')
+        hues.warn('Авторизация в вк...')
 
         if self.is_token:
             self.vk = VkPlus(token=self.token)
@@ -85,11 +79,11 @@ class Bot(object):
             'preview_length': 0,
             'last_message_id': self.last_message_id
         }
-        good('Успешная авторизация')
+        hues.success('Успешная авторизация')
 
     def plugin_init(self):
         # Подгружаем плагины
-        inform("------------ Загрузка плагинов: -----------")
+        hues.warn("Загрузка плагинов...")
         self.plugin_system = PluginSystem(folder=abspath('plugins'))
         self.plugin_system.register_commands()
         # Чтобы плагины могли получить список плагинов
@@ -99,8 +93,8 @@ class Bot(object):
         # длинные команды были первые в списке
         command_names = list(self.plugin_system.commands.keys())
         command_names.sort(key=len, reverse=True)
-        self.cmd_system = CommandSystem(command_names,self.plugin_system)
-        inform("----------- Загрузка плагинов завершена -----------")
+        self.cmd_system = CommandSystem(command_names, self.plugin_system)
+        hues.success("Загрузка плагинов завершена")
 
     def run(self):
         while True:
@@ -114,21 +108,24 @@ class Bot(object):
             for item in response['items']:
                 # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
                 if item['read_state'] == 0 and item['user_id'] not in self.BLACKLIST:
-                    mark_read_process = Thread(target=self.vk.mark_as_read, args=(item['id'],))  # Помечаем прочитанным
-                    mark_read_process.start()
-                    cif_process = Thread(target=self.check_if_command, args=(item,))  # Выполняем команду в отдельном потоке
-                    cif_process.start()
+                    # mark_read_process = Thread(target=self.vk.mark_as_read, args=(item['id'],))  # Помечаем прочитанным
+                    self.vk.mark_as_read(item['id'])
+                    # mark_read_process.start()
+                    # cif_process = Thread(target=
+                    self.check_if_command(item)  # args=(item,))  # Выполняем команду в отдельном потоке
+                    # cif_process.start()
+
     def check_if_command(self, answer):
         if self.log_messages:
             if 'chat_id' in answer:
-                inform("Сообщение из конференции (#{answer['chat_id']}) > #{answer['body']}")
+                hues.info("Сообщение из конференции (#{answer['chat_id']}) > #{answer['body']}")
             elif 'user_id' in answer:
-                inform("Сообщение из ЛС (id#{answer['user_id']}) > #{answer['body']}")
+                hues.info("Сообщение из ЛС (id#{answer['user_id']}) > #{answer['body']}")
         self.cmd_system.process_command(answer, self.vk)
         '''
         self.vk.respond(answer, {
             "message":
-                "#{self.vk.anti_flood()}. Произошла ошибка при выполнении команды <#{command}>, "
+                "{self.vk.anti_flood()}. Произошла ошибка при выполнении команды <#{command}>, "
                 "пожалуйста, сообщите об этом разработчику!"
         })
 
@@ -138,6 +135,7 @@ class Bot(object):
             "Ошибка:\n#{traceback.format_exc()}",)
         # print(message, command, arguments) -> for debug only
         '''
+
 
 if __name__ == '__main__':
     bot = Bot()

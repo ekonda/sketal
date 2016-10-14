@@ -1,4 +1,3 @@
-# coding: utf8-interpy
 import random
 import datetime
 
@@ -121,7 +120,9 @@ def check(vk, msg, args):
             'last_name'] + ' => https://vk.com/id' + str(member['id'])
 
     # Печатаем в лог отладочную информацию
-    print("Кол-во участников получено #{mcnt}, из них у #{has_bdate} есть дата рождения, у #{len(mbbday)} скоро ДР.")
+    print("Кол-во участников получено {}, из них у {} есть дата рождения, у {} скоро ДР.".format(
+        mcnt, has_bdate, len(mbbday)
+    ))
 
     # Отвечаем в ВК
     vk.respond(msg, {'message': random.choice(answers) + '\n' + random.choice(memb_name) + ': ' + str(

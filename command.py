@@ -1,10 +1,7 @@
-# coding: utf8-interpy
-
-from collections import OrderedDict
 from threading import Thread
 
 from settings import prefixes
-from helpers import good
+import hues
 
 
 class CommandSystem(object):
@@ -26,8 +23,10 @@ class CommandSystem(object):
                 continue  # Если сообщение не начинается с команды, берём след. элемент
 
             cmd.set(command)
-            t = Thread(target=self.system.call_command, args=(command, vk_object, answer, cmd.args))
-            t.start()
+            # t = Thread(target=
+            self.system.call_command(command, vk_object, answer,
+                                     cmd.args)  # , args=(command, vk_object, answer, cmd.args))
+            # t.start()
             break
 
 
@@ -50,9 +49,15 @@ class Command(object):
 
     def log(self):
         if 'chat_id' in self.values:
-            good("Команда '#{self.command}' из конференции (#{self.values['chat_id']}) с аргументами #{self.args}.")
+            chat_id = self.values['chat_id']
+            hues.info("Команда '{cmd}' из конференции ({cid}) с аргументами {args}.".format(
+                cmd=self.command, cid=chat_id, args=self.args
+            ))
         elif 'user_id' in self.values:
-            good("Команда '#{self.command}' из ЛС (http://vk.com/id#{self.values['user_id']}) с аргументами #{self.args}.")
+            user_id = self.values['user_id']
+            hues.info("Команда '{cmd}' из ЛС (http://vk.com/id{uid}) с аргументами {args}.".format(
+                cmd=self.command, uid=user_id, args=self.args
+            ))
 
     def __get_prefix(self):
         for prefix in prefixes:

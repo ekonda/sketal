@@ -1,5 +1,3 @@
-from say import fmt
-
 from plugin_system import Plugin
 
 plugin = Plugin("Пример плагина")
