@@ -105,13 +105,8 @@ class Bot(object):
             for item in response['items']:
                 # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
                 if item['read_state'] == 0 and item['user_id'] not in self.BLACKLIST:
-                    # mark_read_process = Thread(target=self.vk.mark_as_read, args=(item['id'],))  # Помечаем прочитанным
                     await self.vk.mark_as_read(item['id'])
-                    # mark_read_process.start()
-                    # cif_process = Thread(target=
-                    await self.check_if_command(item)  # args=(item,))  # Выполняем команду в отдельном потоке
-                    # cif_process.start()
-
+                    await self.check_if_command(item)
     async def check_if_command(self, answer):
         if self.log_messages:
             if 'chat_id' in answer:
