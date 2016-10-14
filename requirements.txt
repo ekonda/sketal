@@ -1,4 +1,5 @@
-#chatterbot <- нужен для chatterbot.py
-vk_api
 hues
 requests
+git+https://github.com/Fahreeve/aiovk
+vk_api
+# vk_api only to get access_token, will be removed in future

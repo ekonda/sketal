@@ -11,7 +11,7 @@ class CommandSystem(object):
         # Получаем словарь 'команда_без_пробелов' -> 'команда с пробелами'
         self.commands = commands
 
-    def process_command(self, answer: dict, vk_object):
+    async def process_command(self, answer: dict, vk_object):
 
         cmd = Command(answer)
 
@@ -24,8 +24,8 @@ class CommandSystem(object):
 
             cmd.set(command)
             # t = Thread(target=
-            self.system.call_command(command, vk_object, answer,
-                                     cmd.args)  # , args=(command, vk_object, answer, cmd.args))
+            await self.system.call_command(command, vk_object, answer,
+                                           cmd.args)  # , args=(command, vk_object, answer, cmd.args))
             # t.start()
             break
 

@@ -26,10 +26,10 @@ answers.append('Не могу дать точный ответ.')
 
 
 @plugin.on_command('правда', 'предсказание', 'реши', 'шар')
-def call(vk, msg, args):
-    vk.respond(msg, {'message': "🎱" + random.choice(answers)})
+async def call(vk, msg, args):
+    await vk.respond(msg, {'message': "🎱" + random.choice(answers)})
 
 
 @plugin.on_command('админ')
-def call(vk, msg, args):
-    vk.respond(msg, {'message': "Нет, ты не админ! Админ - vk.com/id170831732!"})
+async def call(vk, msg, args):
+    await vk.respond(msg, {'message': "Нет, ты не админ! Админ - vk.com/id170831732!"})

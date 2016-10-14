@@ -10,7 +10,7 @@ answers.append("Знакомься, мемасик")
 
 
 @plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы', 'дай мемасы')
-def call(vk, msg, args):
+async def call(vk, msg, args):
     isphoto = False
     boobs = None
 
@@ -22,7 +22,7 @@ def call(vk, msg, args):
             'count': 1
         }
 
-        boobs = vk.method('wall.get', values)
+        boobs = await vk.method('wall.get', values)
         if 'attachments' in boobs['items'][0]:
             if 'photo' in boobs['items'][0]['attachments'][0]:
                 isphoto = True
@@ -37,5 +37,5 @@ def call(vk, msg, args):
 
     print(attachment)
 
-    vk.respond(msg, {'message': random.choice(answers),
-                     'attachment': attachment})
+    await vk.respond(msg, {'message': random.choice(answers),
+                           'attachment': attachment})

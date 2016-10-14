@@ -5,7 +5,7 @@ plugin = Plugin('Онлайн серверов')
 
 
 @plugin.on_command('файнмайн', 'онлайн на файнмайн')
-def get_online(vk, raw_message, args):
+async def get_online(vk, raw_message, args):
     online_hard = requests.get("http://finemine.ru/mon/ajax.php")
     onlineid_hard = online_hard.json()["servers"]["HardTech"]["online"]
     online_tm1 = requests.get("http://finemine.ru/mon/ajax.php")
@@ -24,4 +24,4 @@ def get_online(vk, raw_message, args):
         onlineid_hard, onlineid_tm1, onlineid_tm2, onlineid_magic, onlineid_all, onlineid_redordday,
         onlineid_redord)
 
-    vk.respond(raw_message, {'message': vk_message})
+    await vk.respond(raw_message, {'message': vk_message})

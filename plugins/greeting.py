@@ -13,5 +13,5 @@ plugin = Plugin('Приветствие')
 
 
 @plugin.on_command('привет', 'приветствие', 'голос', 'ку', 'как дела?')
-def call(vk, msg, args):
-    vk.respond(msg, {'message': random.choice(greetings)})
+async def call(vk, msg, args):
+    await vk.respond(msg, {'message': random.choice(greetings)})

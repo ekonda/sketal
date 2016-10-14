@@ -9,8 +9,8 @@ answ_str_stats_null = ['Всё по нулям', 'Всё счётчики по �
 
 
 @plugin.on_command('счётчики', 'счётчик', 'статистика', 'покажи стату', 'стата')
-def stats_good(vk, msg, args):
-    stats = vk.method('account.getCounters')
+async def stats_good(vk, msg, args):
+    stats = await vk.method('account.getCounters')
     stats_str = ''
 
     for key in stats:
@@ -21,4 +21,4 @@ def stats_good(vk, msg, args):
     else:
         answ = random.choice(answ_str_stats) + ': \n' + stats_str
 
-    vk.respond(msg, {'message': answ})
+    await vk.respond(msg, {'message': answ})

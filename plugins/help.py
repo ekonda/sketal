@@ -4,6 +4,6 @@ plugin = Plugin('Помощь')
 
 
 @plugin.on_command('помощь', 'помоги', 'команды', 'хелп')
-def call(vk, msg, args):
+async def call(vk, msg, args):
     commands = [plug.first_command for plug in vk.get_plugins()]
-    vk.respond(msg, {"message": "Доступные команды: {}.".format(', '.join(commands))})
+    await vk.respond(msg, {"message": "Доступные команды: {}.".format(', '.join(commands))})

@@ -4,6 +4,6 @@ plugin = Plugin('Нет')
 
 
 @plugin.on_command('нет', 'nope')
-def call(vk, msg, args):
-    vk.respond(msg, {'message': '🌚',
-                     'attachment': 'video168815191_168798454'})
+async def call(vk, msg, args):
+    await vk.respond(msg, {'message': '🌚',
+                           'attachment': 'video168815191_168798454'})

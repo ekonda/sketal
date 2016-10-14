@@ -8,6 +8,7 @@ import traceback
 import types
 import hues
 
+
 class Plugin(object):
     def __init__(self, name="Стандартное имя плагина (измени меня)", description=""):
         self.deferred_events = []  # events which plugin subsсribed on
@@ -70,7 +71,7 @@ class PluginSystem(object):
         else:
             self.commands[name] = [function]
 
-    def call_command(self, command_name, *args, **kwargs):
+    async def call_command(self, command_name, *args, **kwargs):
         # получаем фн-ции команд для этой команды (несколько плагинов МОГУТ обрабатывать одну команду)
         commands_ = self.commands.get(command_name)
         # если нету плагинов, которые готовы обработать нашу команду
@@ -81,7 +82,7 @@ class PluginSystem(object):
             # Проходимся по всем ним
             for command_function in commands_:
                 # Запускаем с аргументами
-                command_function(*args, **kwargs)
+                await command_function(*args, **kwargs)
             return None
 
     def register_plugin(self, plugin_object):

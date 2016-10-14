@@ -13,12 +13,12 @@ answers.append('Петросян в душе прям бушует &#127770;')
 
 
 @plugin.on_command('шутка', 'пошути', 'рассмеши', 'петросян', 'скажи шутку')
-def joke_get(vk, msg, args):
+async def joke_get(vk, msg, args):
     resp = requests.get('http://www.umori.li/api/get?site=bash.im&name=bash&num=1')
     try:
         joke = resp.json()[0]['elementPureHtml']
     except:
-        vk.respond(msg, {'message': 'У меня шутилка сломалась &#127770;'})
+        await vk.respond(msg, {'message': 'У меня шутилка сломалась &#127770;'})
         return
 
-    vk.respond(msg, {'message': random.choice(answers) + '\n' + str(joke)})
+    await vk.respond(msg, {'message': random.choice(answers) + '\n' + str(joke)})

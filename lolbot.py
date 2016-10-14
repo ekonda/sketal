@@ -1,7 +1,6 @@
 from os.path import abspath, isfile
 import shutil
-import time
-from threading import Thread
+import asyncio
 
 import hues
 from plugin_system import PluginSystem
@@ -19,9 +18,7 @@ class Bot(object):
         self.init_settings()
         self.vk_init()
         self.plugin_init()
-        hues.success('Приступаю к приему сообщений')
-
-        self.run()
+        asyncio.sleep(0.25)  # успеть всё инициализировать
 
     def init_settings(self):
         '''Функция инициализации файла настроек и его создания'''
@@ -96,32 +93,32 @@ class Bot(object):
         self.cmd_system = CommandSystem(command_names, self.plugin_system)
         hues.success("Загрузка плагинов завершена")
 
-    def run(self):
+    async def run(self):
         while True:
-            self.check_messages()
+            await asyncio.sleep(0.34)  # 3 запроса  в секунду
+            await self.check_messages()
 
-    def check_messages(self):
-        time.sleep(0.05)
-        response = self.vk.method('messages.get', self.ANSWER_VALUES)
+    async def check_messages(self):
+        response = await self.vk.method('messages.get', self.ANSWER_VALUES)
         if response is not None and response['items']:
             self.last_message_id = response['items'][0]['id']
             for item in response['items']:
                 # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
                 if item['read_state'] == 0 and item['user_id'] not in self.BLACKLIST:
                     # mark_read_process = Thread(target=self.vk.mark_as_read, args=(item['id'],))  # Помечаем прочитанным
-                    self.vk.mark_as_read(item['id'])
+                    await self.vk.mark_as_read(item['id'])
                     # mark_read_process.start()
                     # cif_process = Thread(target=
-                    self.check_if_command(item)  # args=(item,))  # Выполняем команду в отдельном потоке
+                    await self.check_if_command(item)  # args=(item,))  # Выполняем команду в отдельном потоке
                     # cif_process.start()
 
-    def check_if_command(self, answer):
+    async def check_if_command(self, answer):
         if self.log_messages:
             if 'chat_id' in answer:
                 hues.info("Сообщение из конференции (#{answer['chat_id']}) > #{answer['body']}")
             elif 'user_id' in answer:
                 hues.info("Сообщение из ЛС (id#{answer['user_id']}) > #{answer['body']}")
-        self.cmd_system.process_command(answer, self.vk)
+        await self.cmd_system.process_command(answer, self.vk)
         '''
         self.vk.respond(answer, {
             "message":
@@ -139,3 +136,7 @@ class Bot(object):
 
 if __name__ == '__main__':
     bot = Bot()
+    hues.success('Приступаю к приему сообщений')
+    loop = asyncio.get_event_loop()
+    # запускаем бота
+    loop.run_until_complete(bot.run())

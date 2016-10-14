@@ -32,7 +32,7 @@ plugin = Plugin('Дни рождения')
 
 
 @plugin.on_command('день рождения', 'др')
-def check(vk, msg, args):
+async def check(vk, msg, args):
     # ID группы, в которой искать
     if len(args) != 1:
         return
@@ -40,10 +40,10 @@ def check(vk, msg, args):
     try:
         grp_id = int(args[0])  # Первый запрос, чтобы получить количество участников группы
         if grp_id < 0:
-            vk.respond(msg, {'message': 'Вы ввели отриц. число!'})
+            await vk.respond(msg, {'message': 'Вы ввели отриц. число!'})
             return
     except:
-        vk.respond(msg, {'message': 'Вы ввели не число!'})
+        await vk.respond(msg, {'message': 'Вы ввели не число!'})
         return
     GetMembersRequest = {
         'group_id': grp_id,
@@ -53,9 +53,9 @@ def check(vk, msg, args):
         # 'fields' : 'bdate',
     }
 
-    members = vk.method('groups.getMembers', GetMembersRequest)
+    members = await vk.method('groups.getMembers', GetMembersRequest)
     if not members:
-        vk.respond(msg, {'message': 'Такой группы не существует, или она только по приглашениям!'})
+        await vk.respond(msg, {'message': 'Такой группы не существует, или она только по приглашениям!'})
         return
     mcnt = members['count']
 
@@ -74,7 +74,7 @@ def check(vk, msg, args):
         'fields': 'bdate'
     }
 
-    members = vk.method('groups.getMembers', GetMembersRequest)
+    members = await vk.method('groups.getMembers', GetMembersRequest)
 
     mcnt = members[
         'count']  # Зачем? Но пока оставлю так. Можно же дальше использовать members['count'] или я его буду портить?
@@ -125,7 +125,7 @@ def check(vk, msg, args):
     ))
 
     # Отвечаем в ВК
-    vk.respond(msg, {'message': random.choice(answers) + '\n' + random.choice(memb_name) + ': ' + str(
+    await vk.respond(msg, {'message': random.choice(answers) + '\n' + random.choice(memb_name) + ': ' + str(
         mcnt) + '\n' + random.choice(has_bddate) + ': ' + str(has_bdate) + '\n Скоро (В ближайшие ' + str(
         dayshift) + ' дней)  : ' + str(len(mbbday)) + '\n' + random.choice(
         there_list) + ':' + members_list_string})

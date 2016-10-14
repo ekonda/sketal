@@ -18,15 +18,15 @@ answers.append('Бесплатная музыка!')
 
 
 @plugin.on_command('музыка', 'музыку', 'музон', 'музло')
-def music_pro(vk, msg, args):
+async def music_pro(vk, msg, args):
     music = None
 
     try:
-        count = vk.method('audio.getRecommendations',
-                          {'user_id': msg['user_id'], 'count': 1})
+        count = await vk.method('audio.getRecommendations',
+                                {'user_id': msg['user_id'], 'count': 1})
 
-        music = vk.method('audio.getRecommendations',
-                          {'user_id': msg['user_id'],
+        music = await vk.method('audio.getRecommendations',
+                                {'user_id': msg['user_id'],
                            'offset': random.randint(0, count['count'] - 5),
                            'count': 5})
     except:
@@ -47,7 +47,7 @@ def music_pro(vk, msg, args):
             attstring += item + ','
 
     if attstring == '':
-        vk.respond(msg, {'message': random.choice(errors)})
+        await vk.respond(msg, {'message': random.choice(errors)})
     else:
-        vk.respond(msg, {'message': random.choice(answers),
-                         'attachment': attstring})
+        await vk.respond(msg, {'message': random.choice(answers),
+                               'attachment': attstring})
