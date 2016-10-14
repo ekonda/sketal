@@ -5,7 +5,6 @@ import asyncio
 import hues
 from plugin_system import PluginSystem
 from vkplus import VkPlus
-from command import CommandSystem
 
 
 class Bot(object):
@@ -90,6 +89,7 @@ class Bot(object):
         # длинные команды были первые в списке
         command_names = list(self.plugin_system.commands.keys())
         command_names.sort(key=len, reverse=True)
+        from command import CommandSystem
         self.cmd_system = CommandSystem(command_names, self.plugin_system)
         hues.success("Загрузка плагинов завершена")
 
