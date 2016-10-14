@@ -2,6 +2,7 @@
 import random
 import string
 
+import asyncio
 import hues
 import aiovk
 from aiovk import API
@@ -70,12 +71,10 @@ class VkPlus(object):
         else:
             api_method = self.api
         try:
-            if data:
-                result = await api_method(key, **data)
-                return result
-            else:
-                result = await api_method(key)
-                return result
+            # 3 запроса в секунду
+            await asyncio.sleep(0.35)
+            result = await api_method(key, **data) if data else await api_method(key)
+            return result
         except aiovk.exceptions.VkAuthError as exc:
             if not str(exc) == 'User authorization failed':
                 raise NotHavePerms
@@ -115,6 +114,7 @@ class VkPlus(object):
                 return
             values['message'] += '\n Анти-флуд (API): {}'.format(self.anti_flood())
             try:
+                await asyncio.sleep(0.25)
                 await self.method('messages.send', values)
             except aiovk.exceptions.VkAPIError:
                 hues.error('Обход анти-флуда API не удался =(')
@@ -123,4 +123,5 @@ class VkPlus(object):
         values = {
             'message_ids': message_ids
         }
+        await asyncio.sleep(0.34)
         await self.method('messages.markAsRead', values)

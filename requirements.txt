@@ -2,4 +2,5 @@ hues
 requests
 git+https://github.com/Fahreeve/aiovk
 vk_api
+aiohttp
 # vk_api only to get access_token, will be removed in future

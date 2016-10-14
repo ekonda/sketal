@@ -95,7 +95,6 @@ class Bot(object):
 
     async def run(self):
         while True:
-            await asyncio.sleep(0.34)  # 3 запроса  в секунду
             await self.check_messages()
 
     async def check_messages(self):
@@ -107,6 +106,7 @@ class Bot(object):
                 if item['read_state'] == 0 and item['user_id'] not in self.BLACKLIST:
                     await self.vk.mark_as_read(item['id'])
                     await self.check_if_command(item)
+
     async def check_if_command(self, answer):
         if self.log_messages:
             if 'chat_id' in answer:
