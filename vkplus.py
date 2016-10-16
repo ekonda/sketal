@@ -20,7 +20,7 @@ class NotHavePerms(Exception): pass
 # Driver for 3 requests per sec limitation
 class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 3
-    period = 1.15
+    period = 1.1
 
 class VkPlus(object):
     api = None

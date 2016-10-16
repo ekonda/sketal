@@ -34,7 +34,6 @@ async def call(vk, msg, args):
 
     attachment = 'photo' + owner_id + '_' + att_id + '_' + access_key
 
-    print(attachment)
 
     await vk.respond(msg, {'message': random.choice(answers),
                            'attachment': attachment})
