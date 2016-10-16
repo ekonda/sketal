@@ -1,5 +1,4 @@
 # This code was originally taken from https://github.com/zeuxisoo/python-pluginplot
-import builtins as builtin
 import imp
 import os
 import sys
@@ -109,8 +108,8 @@ class PluginSystem(object):
                             module_source_name,
                             *imp.find_module(os.path.splitext(filename)[0], [folder_path])
                         )
-                    except Exception as ex:  # если в плагине какая-то ошибка - игнорим
-                        result = traceback.print_exc()
+                    except Exception:
+                        result = traceback.format_exc()
                         # если файла нет - создаём
                         if not isfile('log.txt'):
                             open('log.txt', 'w').close()

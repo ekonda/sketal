@@ -6,7 +6,7 @@ plugin = Plugin('Записи файнмайн')
 answers = '''Куйня какая-то!
 Великолепно (Нет)
 Я сам смотреть не буду, но вы смотрите.
-'''
+'''.splitlines()
 
 @plugin.on_command('фм записи', 'записи файнмайн')
 async def call(vk, msg, args):

@@ -106,7 +106,6 @@ class Bot(object):
         response = await self.vk.method('messages.get', self.ANSWER_VALUES)
         if response and response['items']:
             self.last_message_id = response['items'][0]['id']
-            print(response['items'])
             for item in response['items']:
                 # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
                 if not item['read_state'] and item['user_id'] not in self.BLACKLIST:

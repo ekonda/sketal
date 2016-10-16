@@ -9,7 +9,7 @@ answers = '''Вот список со днями рождения в групп�
 Вот твой список именинников.
 '''.splitlines()
 
-# Варианты фразы, назвающей количество участников в группе
+# Варианты фразы, называющей количество участников в группе
 memb_name = '''Лалочек
 Участников в группе
 Человек в группе
@@ -42,7 +42,8 @@ async def check(vk, msg, args):
         if grp_id < 0:
             await vk.respond(msg, {'message': 'Вы ввели отриц. число!'})
             return
-    except:
+
+    except ValueError:
         await vk.respond(msg, {'message': 'Вы ввели не число!'})
         return
     GetMembersRequest = {
@@ -55,7 +56,7 @@ async def check(vk, msg, args):
 
     members = await vk.method('groups.getMembers', GetMembersRequest)
     if not members:
-        await vk.respond(msg, {'message': 'Такой группы не существует, или она только по приглашениям!'})
+        await vk.respond(msg, {'message': 'Такой группы не существует, или она частная!'})
         return
     mcnt = members['count']
 
@@ -92,21 +93,22 @@ async def check(vk, msg, args):
 
     # Поиск участников по списку
     for member in members:
-        if 'bdate' in member:
+        if not 'bdate' in member:
+            continue
             has_bdate += 1
-            if len(member['bdate'].split('.')) > 2:
-                mbdate = datetime.datetime.strptime(member['bdate'], '%d.%m.%Y')  # Если дата указана с годом
-            else:
-                try:
-                    mbdate = datetime.datetime.strptime(member['bdate'], '%d.%m')  # Если дата указана без года
-                except ValueError:  # Если человек указал дату типа 69.11
-                    continue
+        if len(member['bdate'].split('.')) > 2:
+            mbdate = datetime.datetime.strptime(member['bdate'], '%d.%m.%Y')  # Если дата указана с годом
+        else:
+            try:
+                mbdate = datetime.datetime.strptime(member['bdate'], '%d.%m')  # Если дата указана без года
+            except ValueError:  # Если человек указал дату типа 69.11
+                continue
 
-            if ((today.month, today.day) <= (mbdate.month, mbdate.day)) and (
-                        (lastdate.month, lastdate.day) >= (mbdate.month, mbdate.day)):
-                member[
-                    'mbdate'] = mbdate  # Добавляем в словарь дату в формате datetime.datetime.strptime для дальнейшей сортировки списка.
-                mbbday.append(member)
+        if ((today.month, today.day) <= (mbdate.month, mbdate.day)) and (
+                    (lastdate.month, lastdate.day) >= (mbdate.month, mbdate.day)):
+            member[
+                'mbdate'] = mbdate  # Добавляем в словарь дату в формате datetime.datetime.strptime для дальнейшей сортировки списка.
+            mbbday.append(member)
 
     # Очищаем строку списка ответа
     members_list_string = ''
