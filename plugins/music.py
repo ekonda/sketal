@@ -3,18 +3,11 @@ from plugin_system import Plugin
 
 plugin = Plugin('Рекомендация музыки')
 
-errors = []
-errors.append('Открой аудио!')
-errors.append('Аудиозаписи открой!')
-errors.append('У тебя аудио закрыты!')
-errors.append('Я бы с радостью тебе дал музыки, но у тебя закрыты аудиозаписи.')
+errors = ['Открой аудио!', 'Аудиозаписи открой!', 'У тебя аудио закрыты!',
+          'Я бы с радостью тебе дал музыки, но у тебя закрыты аудиозаписи.']
 
-answers = []
-answers.append('Вот твоя музыка:')
-answers.append('Вот, послушай.')
-answers.append('Мои рекомендации для тебя:')
-answers.append('Музыку заказывали?')
-answers.append('Бесплатная музыка!')
+answers = ['Вот твоя музыка:', 'Вот, послушай.', 'Мои рекомендации для тебя:', 'Музыку заказывали?',
+           'Бесплатная музыка!']
 
 
 @plugin.on_command('музыка', 'музыку', 'музон', 'музло')
@@ -27,8 +20,8 @@ async def music_pro(vk, msg, args):
 
         music = await vk.method('audio.getRecommendations',
                                 {'user_id': msg['user_id'],
-                           'offset': random.randint(0, count['count'] - 5),
-                           'count': 5})
+                                 'offset': random.randint(0, count['count'] - 5),
+                                 'count': 5})
     except:
         print('Failed get music of id' + str(msg['user_id']))
 

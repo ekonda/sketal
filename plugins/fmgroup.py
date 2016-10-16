@@ -3,11 +3,10 @@ from plugin_system import Plugin
 
 plugin = Plugin('Записи файнмайн')
 
-answers = []
-answers.append("Куйня какая-то!")
-answers.append("Великолепно (Нет)")
-answers.append("Я сам смотреть не буду, но вы смотрите.")
-
+answers = '''Куйня какая-то!
+Великолепно (Нет)
+Я сам смотреть не буду, но вы смотрите.
+'''
 
 @plugin.on_command('фм записи', 'записи файнмайн')
 async def call(vk, msg, args):
@@ -34,8 +33,6 @@ async def call(vk, msg, args):
     access_key = str(boobs_att['access_key'])
 
     attachment = 'photo' + owner_id + '_' + att_id + '_' + access_key
-
-    print(attachment)
 
     await vk.respond(msg, {'message': random.choice(answers),
                            'attachment': attachment})

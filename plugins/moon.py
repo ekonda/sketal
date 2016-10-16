@@ -1,10 +1,7 @@
 import random
 from plugin_system import Plugin
 
-answers = []
-
-answers.append('🌚')
-answers.append('🌚🌚')
+answers = ['🌚', '🌚🌚']
 
 plugin = Plugin('Луна')
 

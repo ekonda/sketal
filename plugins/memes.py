@@ -3,11 +3,10 @@ from plugin_system import Plugin
 
 plugin = Plugin('Случайные мемы')
 
-answers = []
-answers.append("Мемы поданы!")
-answers.append("Классный мемес!")
-answers.append("Знакомься, мемасик")
-
+answers = '''Мемы поданы!
+Классный мемес!
+Знакомься, мемасик
+'''.splitlines()
 
 @plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы', 'дай мемасы')
 async def call(vk, msg, args):

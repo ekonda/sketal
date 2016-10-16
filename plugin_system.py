@@ -7,6 +7,7 @@ import threading
 import traceback
 import types
 import hues
+from os.path import isfile
 
 
 class Plugin(object):
@@ -17,19 +18,20 @@ class Plugin(object):
         self.first_command = ''
         hues.warn(self.name)
 
-    def log(self, message):
+    def log(self, message: str):
         hues.info('Плагин {name} -> {message}'.format(name=self.name, message=message))
 
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands, all_commands=False):
         def wrapper(function):
             if commands:  # Если написали, какие команды используются
-                # Первая команда - отображается в списке команд (чтобы много команд не было)
+                # Первая команда - отображается в списке команд (чтобы не было много команд не было)
                 self.first_command = commands[0]
                 for command in commands:
                     self.add_deferred_func(command, function)
             elif not all_commands:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
                 self.add_deferred_func(self.name.lower(), function)
+            # если команд нет, плагин будет реагировать на ВСЕ команды
             else:
                 self.add_deferred_func('', function)
             return function
@@ -38,7 +40,7 @@ class Plugin(object):
 
     def add_deferred_func(self, command, function):
         if command is None:
-            raise ValueError("command can't be None")
+            raise ValueError("Command can not be None")
         self.deferred_events.append(lambda pluginsystem_object: pluginsystem_object.add_command(command, function))
 
     # Register events for plugin
@@ -58,10 +60,10 @@ class PluginSystem(object):
     def __init__(self, folder=None):
         self.commands = {}
         self.folder = folder
-        self.plugins = []
+        self.plugins = set()
 
-    def get_plugins(self):
-        return [plugin for plugin in self.plugins]
+    def get_plugins(self) -> set:
+        return self.plugins
 
     def add_command(self, name, function):
         # если уже есть хоть 1 команда, добавляем к списку
@@ -72,18 +74,17 @@ class PluginSystem(object):
             self.commands[name] = [function]
 
     async def call_command(self, command_name, *args, **kwargs):
-        # получаем фн-ции команд для этой команды (несколько плагинов МОГУТ обрабатывать одну команду)
+        # Получаем функции команд для этой команды (несколько плагинов МОГУТ обрабатывать одну команду)
         commands_ = self.commands.get(command_name)
-        # если нету плагинов, которые готовы обработать нашу команду
+
+        # Если нет плагинов, которые готовы обработать нашу команду
         if not commands_:
-            pass
-        # Если есть функции, которые могут обработать нашу команду
-        else:
-            # Проходимся по всем ним
-            for command_function in commands_:
-                # Запускаем с аргументами
-                await command_function(*args, **kwargs)
-            return None
+            return
+
+        # Если есть плагины, которые могут обработать нашу команду
+        for command_function in commands_:
+            # Запускаем с аргументами
+            await command_function(*args, **kwargs)
 
     def register_plugin(self, plugin_object):
         plugin_object.register(self)
@@ -110,12 +111,15 @@ class PluginSystem(object):
                         )
                     except Exception as ex:  # если в плагине какая-то ошибка - игнорим
                         result = traceback.print_exc()
-                        with open('log.txt') as log:
+                        # если файла нет - создаём
+                        if not isfile('log.txt'):
+                            open('log.txt', 'w').close()
+
+                        with open('log.txt', 'a') as log:
                             log.write(result)
                         continue
-                    # TODO: Add support for any instance name of Plugin() class
                     try:
-                        self.plugins.append(loaded_module.plugin)
+                        self.plugins.add(loaded_module.plugin)
                         self.register_plugin(loaded_module.plugin)
                     # Если возникла ошибка - значит плагин не имеет атрибута plugin
                     except AttributeError:
@@ -132,6 +136,7 @@ class PluginSystem(object):
             pass
 
 
+'''
 def override_import(import_method):
     def wrapper(name, globals=None, locals=None, fromlist=None, level=0):
         # Try to get current plugin object
@@ -146,3 +151,4 @@ def override_import(import_method):
 
 # Overrides default import method
 builtin.__import__ = override_import(builtin.__import__)
+'''

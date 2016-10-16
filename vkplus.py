@@ -1,28 +1,12 @@
-
 import random
 import string
+from time import time
 
 import asyncio
 import hues
 import aiovk
-from aiovk import API
 
-
-# Will be removed after fix in aiovk or aiohttp
-def get_token_from_user(login, password):
-    import vk_api
-    vk_session = vk_api.VkApi(
-        login, password
-    )
-
-    try:
-        vk_session.authorization()
-        return vk_session.token['access_token']
-
-    except:
-        hues.error('Ошибка авторизации.. Проверьте данные vk_login и vk_password')
-        exit()
-
+from utils import fatal
 
 class FloodError(Exception): pass
 
@@ -48,20 +32,40 @@ class VkPlus(object):
         elif self.login and self.password:
             self.login = self.login
             self.password = self.password
-            self.api = aiovk.TokenSession(access_token=get_token_from_user(self.login, self.password))
-            # self.api = aiovk.TokenSession(self.login, self.password, 5668099)
+            self.api = aiovk.ImplicitSession(self.login, self.password, 5668099,
+                                             scope=140489887)  # all scopes
         else:
-            hues.error('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
-            exit()
-        self.api.authorize()  # Авторизируемся
-        self.api = API(self.api)
+            fatal('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
+        self._api = aiovk.API(self.api)
+        self._q = asyncio.Queue()
+        self.last_time = 0
+        asyncio.ensure_future(self.dispatcher())
 
         # Паблик API используется для методов, которые не нуждаются в регистрации (users.get и т.д)
         # Используется только при access_token вместо аккаунта
         if self.is_token:
-            self.public_api = aiovk.TokenSession()
-            self.public_api = API(self.public_api)
-            self.public_api.authorize()
+            self.public_api = aiovk.API(aiovk.TokenSession())
+
+    # Если нас вызывают
+    async def __call__(self, *args, **kwargs):
+        fut = asyncio.Future()
+        coro = self._api(*args, **kwargs)
+        await self._q.put((coro, fut))
+        return await fut
+
+    # Функция, которая ограничивает кол-во запросов до 3 в секунду
+    async def dispatcher(self):
+        c = 0
+        while True:
+            coro, fut = await self._q.get()
+            if c >= 3:
+                if time() - self.last_time <= 1:
+                    await asyncio.sleep(1.1)
+                c = 0
+            r = await coro
+            fut.set_result(r)
+            self.last_time = time()
+            c += 1
 
     async def method(self, key, data=None):
         # Если у нас token, то для всех остальных методов
@@ -69,19 +73,16 @@ class VkPlus(object):
         if key not in self.group_methods and self.is_token and 'message' not in key:
             api_method = self.public_api
         else:
-            api_method = self.api
+            api_method = self
         try:
-            # 3 запроса в секунду
-            await asyncio.sleep(0.35)
-            result = await api_method(key, **data) if data else await api_method(key)
-            return result
+            return await api_method(key, **data) if data else await api_method(key)
+
         except aiovk.exceptions.VkAuthError as exc:
             if not str(exc) == 'User authorization failed':
                 raise NotHavePerms
             message = 'access_token' if self.is_token else 'vk_login и vk_password'
-            hues.error("Произошла ошибка при авторизации API, "
-                       "проверьте значение {} в settings.py!".format(message))
-            exit()
+            fatal("Произошла ошибка при авторизации API, "
+                  "проверьте значение {} в settings.py!".format(message))
 
         except (aiovk.exceptions.VkAPIError, NotHavePerms) as exc:
             if exc.error_code == 9:
@@ -108,13 +109,12 @@ class VkPlus(object):
             else:  # если ЛС
                 values['user_id'] = to['user_id']
                 await self.method('messages.send', values)
-        # Эта ошибка будет поймана только если код ошибки равен 9 - см. def method()
+        # Эта ошибка будет поймана только если ошибка - слишком много запросов в секунду
         except FloodError:
             if not 'message' in values:
                 return
             values['message'] += '\n Анти-флуд (API): {}'.format(self.anti_flood())
             try:
-                await asyncio.sleep(0.25)
                 await self.method('messages.send', values)
             except aiovk.exceptions.VkAPIError:
                 hues.error('Обход анти-флуда API не удался =(')
@@ -123,5 +123,4 @@ class VkPlus(object):
         values = {
             'message_ids': message_ids
         }
-        await asyncio.sleep(0.34)
         await self.method('messages.markAsRead', values)
