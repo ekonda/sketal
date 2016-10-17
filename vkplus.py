@@ -34,9 +34,9 @@ class VkPlus(object):
         self.is_token = token
         self.login = login
         self.password = password
-        self.init_vk()
         self.appid = app_id
         self.scope = scope
+        self.init_vk()
 
     def init_vk(self):
         if self.is_token:
