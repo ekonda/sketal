@@ -25,13 +25,13 @@ answers = '''Абсолютно точно!
 '''.splitlines()
 
 @plugin.on_command('правда', 'предсказание', 'реши', 'шар')
-async def call(vk, msg, args):
-    await vk.respond(msg, {'message': "🎱" + random.choice(answers)})
+async def call(msg, args):
+    await msg.answer("🎱" + random.choice(answers))
 
 
 @plugin.on_command('админ')
-async def call(vk, msg, args):
-    uid = msg.get('user_id')
-    if not uid:
-        return await vk.respond(msg, {'message': "Нет, ты не админ! Админ - vk.com/id170831732!"})
-    await vk.respond(msg, {'message': 'Слушаю и повинуюсь!'})
+async def call(msg, args):
+    uid = msg.id
+    if uid != 170831732:
+        return await msg.answer("Нет, ты не админ! Админ - vk.com/id170831732!")
+    await msg.answer('Слушаю и повинуюсь!')

@@ -4,8 +4,8 @@ plugin = Plugin('Послать сообщение')
 
 
 @plugin.on_command('написать', 'напиши', 'лс', 'письмо')
-async def write_msg(vk, msg, args):
-    if len(args) > 1:
+async def write_msg(msg, args):
+    if len(args):
         if args[0].isdigit():
             uid = int(args[0])
             body = 'Меня тут попросили тебе написать: \n'
@@ -15,9 +15,9 @@ async def write_msg(vk, msg, args):
                 'peer_id': uid,
                 'message': body
             }
-            await vk.method('messages.send', val)
-            await vk.respond(msg, {'message': 'Сообщение успешно отправлено!'})
+            await msg.vk.method('messages.send', val)
+            await msg.answer('Сообщение успешно отправлено!')
         else:
-            await vk.respond(msg, {'message': 'Не могу найти такой ID пользователя'})
+            await msg.answer('Не могу найти такой ID пользователя')
     else:
-        await vk.respond(msg, {'message': 'Введи ID пользователя и сообщение для него'})
+        await msg.answer('Введите ID пользователя и сообщение для него')

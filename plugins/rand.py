@@ -5,7 +5,7 @@ plugin = Plugin('Рандом')
 
 
 @plugin.on_command('рандом', 'случайно', 'кубик')
-async def call(vk, msg, args):
+async def call(msg, args):
     try:
         # Если у нас два аргумента - это диапазон
         if len(args) == 2:
@@ -20,6 +20,6 @@ async def call(vk, msg, args):
         else:
             num = random.randint(1, 6)
 
-        await vk.respond(msg, {'message': "Вот ваше число: " + str(num)})
+        await msg.answer("Вот ваше число: " + str(num))
     except ValueError:
         return

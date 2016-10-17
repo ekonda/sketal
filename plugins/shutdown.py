@@ -4,10 +4,8 @@ plugin = Plugin('Выключение', description='Выключить бота
 
 
 @plugin.on_command('выключить', 'выкл', 'вырубись')
-async def shutdown(vk, msg, args):
-    uid = msg.get('user_id', None)
-    if not uid:
-        return
-    if str(uid) == '170831732':
-        await vk.respond(msg, {'message': 'Выключаюсь...'})
+async def shutdown(msg, args):
+    uid = msg.id
+    if uid == 170831732:
+        await msg.answer('Выключаюсь...')
         exit()

@@ -8,7 +8,7 @@ import hues
 
 # Custom
 from plugin_system import PluginSystem
-from vkplus import VkPlus
+from vkplus import VkPlus, Message
 from utils import fatal
 class Bot(object):
     '''Главный класс бота, создан для упрощённой работы с переменными'''
@@ -122,21 +122,8 @@ class Bot(object):
                 hues.info("Сообщение из ЛС http://vk.com/id{} > {}".format(
                     answer['user_id'], answer['body']
                 ))
-        await self.cmd_system.process_command(answer, self.vk)
-        '''
-        self.vk.respond(answer, {
-            "message":
-                "{self.vk.anti_flood()}. Произошла ошибка при выполнении команды <#{command}>, "
-                "пожалуйста, сообщите об этом разработчику!"
-        })
-
-        error(
-            "Произошла ошибка при вызове команды '#{command}'. "
-            "Сообщение: '#{answer['body']}' с параметрами #{arguments}. "
-            "Ошибка:\n#{traceback.format_exc()}",)
-        # print(message, command, arguments) -> for debug only
-        '''
-
+        msg_obj = Message(self.vk, answer)
+        await self.cmd_system.process_command(msg_obj)
 
 if __name__ == '__main__':
     bot = Bot()

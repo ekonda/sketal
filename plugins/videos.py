@@ -4,10 +4,10 @@ plugin = Plugin('Поиск видео')
 
 
 @plugin.on_command('видео', 'видяшки', 'видюхи', 'видос', 'видосик', 'найди видео', 'найди видео про')
-async def video_search(vk, msg, args):
+async def video_search(msg, args):
     # Если нет аргументов
     if not args:
-        return await vk.respond(msg, {'message': 'Что мне искать?'})
+        return await msg.answer('Что мне искать?')
 
     query = ' '.join(args).capitalize()
     params = {
@@ -17,18 +17,17 @@ async def video_search(vk, msg, args):
         'count': 4
     }
     # r = api.query(u'video.search', pars)
-    resp = await vk.method('video.search', params)
+    resp = await msg.vk.method('video.search', params)
     vids = resp.get('items')
     # Если не нашли ни одного видео
     if not vids:
-        await vk.respond(msg, {'message': 'Ничего не найдено'})
+        await msg.answer('Ничего не найдено')
         return
 
     kol = len(vids)  # Сколько видео нашли
     if not kol:
-        await vk.respond(msg, {'message': 'Ничего не найдено'})
+        await msg.answer('Ничего не найдено')
     respstr = ''
     for i in range(kol):
         respstr += 'video' + str(vids[i]['owner_id']) + '_' + str(vids[i]['id']) + ','
-    await vk.respond(msg, {'message': 'Приятного просмотра! ',
-                           'attachment': respstr})
+    await msg.answer('Приятного просмотра!', attachment=respstr)

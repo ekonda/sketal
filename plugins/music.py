@@ -11,19 +11,19 @@ answers = ['Вот твоя музыка:', 'Вот, послушай.', 'Мои
 
 
 @plugin.on_command('музыка', 'музыку', 'музон', 'музло')
-async def music_pro(vk, msg, args):
+async def music_pro(msg, args):
     music = None
 
     try:
-        count = await vk.method('audio.getRecommendations',
-                                {'user_id': msg['user_id'], 'count': 1})
+        count = await msg.vk.method('audio.getRecommendations',
+                                    {'user_id': msg['user_id'], 'count': 1})
 
-        music = await vk.method('audio.getRecommendations',
-                                {'user_id': msg['user_id'],
-                                 'offset': random.randint(0, count['count'] - 5),
-                                 'count': 5})
+        music = await msg.vk.method('audio.getRecommendations',
+                                    {'user_id': msg['user_id'],
+                                     'offset': random.randint(0, count['count'] - 5),
+                                     'count': 5})
     except:
-        print('Failed get music of id' + str(msg['user_id']))
+        print('Failed get music of id' + str(msg.id))
 
     musicatt = []
 
@@ -40,7 +40,6 @@ async def music_pro(vk, msg, args):
             attstring += item + ','
 
     if attstring == '':
-        await vk.respond(msg, {'message': random.choice(errors)})
+        await msg.answer(random.choice(errors))
     else:
-        await vk.respond(msg, {'message': random.choice(answers),
-                               'attachment': attstring})
+        await msg.answer(random.choice(answers), attachment=attstring)

@@ -6,20 +6,20 @@ memoes = {}
 
 
 @plugin.on_command('запомни', 'запиши', 'не забудь')
-async def memo(vk, msg, args):
+async def memo(msg, args):
     string = ' '.join(args)
-    if 'chat_id' in msg:
-        memoes[msg['chat_id']] = string
+    if msg.conf:
+        memoes[msg.cid] = string
     else:
-        memoes[msg['user_id']] = string
-    await vk.respond(msg, {'message': 'Вроде запомнил...'})
+        memoes[msg.uid] = string
+    await msg.answer('Вроде запомнил...')
 
 
 @plugin.on_command('напомни', 'вспомни', 'посмотри блокнот')
-async def memo(vk, msg, args):
+async def memo(msg, args):
     string = ''
-    if 'chat_id' in msg:
-        string = memoes[msg['chat_id']]
+    if msg.conf:
+        string = memoes.get(msg.cid, "Ничего")
     else:
-        string = memoes[msg['user_id']]
-    await vk.respond(msg, {'message': 'Вот что я вспомнил:\n' + string})
+        string = memoes.get(msg.uid, "Ничего")
+    await msg.answer('Вот что я вспомнил:\n' + string)

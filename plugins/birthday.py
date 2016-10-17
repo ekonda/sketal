@@ -16,9 +16,9 @@ memb_name = '''Лалочек
 '''.splitlines()
 
 # Варианты информации сколько участников указали дату рождения в профиле (и не скрыли её)
-has_bddate = '''У стольких указана дата рождения
-Указана дата рождения у
-Указали дату рождения
+has_bddate = '''У стольких указана дата рождения (из тысячи)
+Указана дата рождения у (из тысячи)
+Указали дату рождения (из тысячи)
 '''.splitlines()
 
 # Фраза, начинающая список в ответе
@@ -32,20 +32,18 @@ plugin = Plugin('Дни рождения')
 
 
 @plugin.on_command('день рождения', 'др')
-async def check(vk, msg, args):
+async def check(msg, args):
     # ID группы, в которой искать
     if len(args) != 1:
         return
 
     try:
-        grp_id = int(args[0])  # Первый запрос, чтобы получить количество участников группы
-        if grp_id < 0:
-            await vk.respond(msg, {'message': 'Вы ввели отриц. число!'})
-            return
+        grp_id = int(args[0].replace('-', ''))  # Первый запрос, чтобы получить количество участников группы
 
     except ValueError:
-        await vk.respond(msg, {'message': 'Вы ввели не число!'})
+        await msg.answer('Вы ввели не число!')
         return
+
     GetMembersRequest = {
         'group_id': grp_id,
         'sort': 'id_asc',
@@ -54,9 +52,9 @@ async def check(vk, msg, args):
         # 'fields' : 'bdate',
     }
 
-    members = await vk.method('groups.getMembers', GetMembersRequest)
+    members = await msg.vk.method('groups.getMembers', GetMembersRequest)
     if not members:
-        await vk.respond(msg, {'message': 'Такой группы не существует, или она частная!'})
+        await msg.answer('Такой группы не существует, или же она частная!')
         return
     mcnt = members['count']
 
@@ -75,7 +73,7 @@ async def check(vk, msg, args):
         'fields': 'bdate'
     }
 
-    members = await vk.method('groups.getMembers', GetMembersRequest)
+    members = await msg.vk.method('groups.getMembers', GetMembersRequest)
 
     mcnt = members[
         'count']  # Зачем? Но пока оставлю так. Можно же дальше использовать members['count'] или я его буду портить?
@@ -95,7 +93,7 @@ async def check(vk, msg, args):
     for member in members:
         if not 'bdate' in member:
             continue
-            has_bdate += 1
+        has_bdate += 1
         if len(member['bdate'].split('.')) > 2:
             mbdate = datetime.datetime.strptime(member['bdate'], '%d.%m.%Y')  # Если дата указана с годом
         else:
@@ -127,7 +125,7 @@ async def check(vk, msg, args):
     ))
 
     # Отвечаем в ВК
-    await vk.respond(msg, {'message': random.choice(answers) + '\n' + random.choice(memb_name) + ': ' + str(
+    await msg.answer(random.choice(answers) + '\n' + random.choice(memb_name) + ': ' + str(
         mcnt) + '\n' + random.choice(has_bddate) + ': ' + str(has_bdate) + '\n Скоро (В ближайшие ' + str(
         dayshift) + ' дней)  : ' + str(len(mbbday)) + '\n' + random.choice(
-        there_list) + ':' + members_list_string})
+        there_list) + ':' + members_list_string)

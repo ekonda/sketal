@@ -52,8 +52,8 @@ plugin = Plugin('Имя плагина')
 
 # использование async и await обязательно, т.к. бот асинхронный
 @plugin.on_command('ты тута?')
-async def test(vk, msg, args):
-    await vk.respond(msg, {'message':'Я тутачки!'})
+async def test(msg, args):
+    await msg.answer('Я тутачки!')
 ```
 
 Плагины размещаются в папке `plugins`. Если два плагина имеют одинаковые команды - они обрабатываются в обоих плагинах.

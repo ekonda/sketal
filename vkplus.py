@@ -1,7 +1,7 @@
 # Standart library
 import random
 import string
-
+from enum import Enum
 # PyPI
 import hues
 import aiovk
@@ -11,6 +11,7 @@ from aiovk.mixins import LimitRateDriverMixin
 # Custom
 from utils import fatal
 
+
 class FloodError(Exception): pass
 
 
@@ -19,8 +20,9 @@ class NotHavePerms(Exception): pass
 
 # Driver for 3 requests per sec limitation
 class RatedDriver(LimitRateDriverMixin, HttpDriver):
-    requests_per_period = 3
-    period = 1.17
+    requests_per_period = 1
+    period = 0.4
+
 
 class VkPlus(object):
     api = None
@@ -70,7 +72,13 @@ class VkPlus(object):
 
         except (aiovk.exceptions.VkAPIError, NotHavePerms) as exc:
             if exc.error_code == 9:
-                raise FloodError
+                if not 'message' in data:
+                    return
+                data['message'] += '\n Анти-флуд (API): {}'.format(self.anti_flood())
+                try:
+                    await self.method('messages.send', data)
+                except aiovk.exceptions.VkAPIError:
+                    hues.error('Обход анти-флуда API не удался =(')
             else:
                 hues.error("Произошла ошибка при вызове метода API {k} "
                            "с значениями {d}:\n{e}".format(k=key, d=data, e=exc))
@@ -81,19 +89,13 @@ class VkPlus(object):
         '''Функция для обхода антифлуда API ВК'''
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-    # values передаются все, кроме user_id/chat_id
     # Сделано для упрощения ответа. В пагине или другом коде
     # не нужно "думать" о том, откуда пришло сообщение:
     # из диалога, или из беседы (чата, конференции).
-    async def respond(self, to, values):
+    async def respond(self, values):
         try:
-            if 'chat_id' in to:  # если это беседа
-                values['chat_id'] = to['chat_id']
-                await self.method('messages.send', values)
-            else:  # если ЛС
-                values['user_id'] = to['user_id']
-                await self.method('messages.send', values)
-        # Эта ошибка будет поймана только если ошибка - слишком много запросов в секунду
+            await self.method('messages.send', values)
+        # Эта ошибка будет поймана только если ошибка - одинаковое сообщение
         except FloodError:
             if not 'message' in values:
                 return
@@ -108,3 +110,42 @@ class VkPlus(object):
             'message_ids': message_ids
         }
         await self.method('messages.markAsRead', values)
+
+
+class Message(object):
+    '''Класс, передаваемый в плагин для упрощённого ответа'''
+
+    def __init__(self, vk_api_object, answer_values: dict):
+        self._values = answer_values
+        self.vk = vk_api_object
+        self.conf = False
+        self.user = False
+        if 'chat_id' in answer_values:
+            self.conf = True
+            self.cid = int(answer_values['chat_id'])
+            self.id = self.cid
+
+        elif 'user_id' in answer_values:
+            self.user = True
+            self.uid = int(answer_values['user_id'])
+            self.id = self.uid
+
+        else:
+            raise ValueError('answer_values dict must contain chat_id or user_id')
+        self.body = answer_values['body']
+        self.timestamp = answer_values['date']
+
+        # Словарь для отправки к ВК при ответе
+        if self.conf:
+            self.answer_values = {'chat_id': self.cid}
+        elif self.user:
+            self.answer_values = {'user_id': self.uid}
+
+    async def answer(self, msg, **additional_values):
+        '''Функция ответа для упрощения создания плагинов. Так же может принимать доп.параметры'''
+        if additional_values is None:
+            additional_values = dict()
+        values = dict(self.answer_values, message=msg, **additional_values)
+        await self.vk.respond(values)
+
+# msg = Message({'date': 1476711755, 'title': ' ... ', 'user_id': 170831732, 'read_state': 0, 'out': 0, 'body': 'плагины', 'id': 33286})

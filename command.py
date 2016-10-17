@@ -1,4 +1,7 @@
+import traceback
+
 import hues
+import re
 
 from utils import convert_to_rus, convert_to_en
 from settings import PREFIXES
@@ -12,10 +15,11 @@ class CommandSystem(object):
         self.commands = commands
         # Конвертировать ли команду в русскую раскладку?
         self.convert = convert_layout
-    async def process_command(self, answer: dict, vk_object):
+
+    async def process_command(self, msg_obj):
         '''Обработать команду'''
         # Создаём объект cmd
-        cmd = Command(answer)
+        cmd = Command(msg_obj._values)
 
         if not cmd.good_cmd:
             return
@@ -36,7 +40,20 @@ class CommandSystem(object):
             else:  # Если сообщение не начинается с команды, берём след. элемент
                 continue
             # Вызываем команду в плагинах
-            await self.system.call_command(command, vk_object, answer, cmd.args)
+            try:
+                await self.system.call_command(command, msg_obj, cmd.args)
+            # Если в плагине какая-то ошибка
+            except Exception:
+                await msg_obj.answer("{}.".format(msg_obj.vk.anti_flood()) +
+                                     "Произошла ошибка при выполнении команды <{}>, ".format(command) +
+                                     "пожалуйста, сообщите об этом разработчику!")
+                hues.error(
+                    "Произошла ошибка при вызове команды '{cmd}'. "
+                    "Сообщение: '{body}' с параметрами {args}. "
+                    "Ошибка:\n{traceback}".format(
+                        cmd=command, body=msg_obj._values, args=cmd.args,
+                        traceback=traceback.format_exc()
+                    ))
             break
 
 
@@ -51,9 +68,11 @@ class Command(object):
     def set(self, command: str, convert=False):
         self.command = command
         if convert:
-            self.text = self.text.replace(convert_to_en(command), '')
+            self.text = re.sub(re.escape(convert_to_en(command)), '', self.text, flags=re.IGNORECASE)
+            # self.text = self.text.replace(convert_to_en(command), '')
         else:
-            self.text = self.text.replace(self.command, '')
+            self.text = re.sub(re.escape(command), '', self.text, flags=re.IGNORECASE)
+            # self.text = self.text.replace(self.command, '')
         if self.good_cmd:
             self.__get_args()  # Получаем свои аргументы
             self.log()

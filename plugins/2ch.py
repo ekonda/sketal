@@ -11,7 +11,7 @@ answers.append("🌚")
 
 
 @plugin.on_command('двач', '2ch', 'двачик', 'мемы с двача')
-async def get_memes(vk, msg, args):
+async def get_memes(msg, args):
     isphoto = False
     boobs = None
 
@@ -23,7 +23,7 @@ async def get_memes(vk, msg, args):
             'count': 1
         }
 
-        boobs = await vk.method('wall.get', values)
+        boobs = await msg.vk.method('wall.get', values)
         if 'attachments' in boobs['items'][0]:
             if 'photo' in boobs['items'][0]['attachments'][0]:
                 isphoto = True
@@ -36,5 +36,4 @@ async def get_memes(vk, msg, args):
 
     attachment = 'photo' + owner_id + '_' + att_id + '_' + access_key
 
-    await vk.respond(msg, {'message': random.choice(answers),
-                           'attachment': attachment})
+    await msg.answer(random.choice(answers), attachment=attachment)

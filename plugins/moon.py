@@ -7,5 +7,5 @@ plugin = Plugin('Луна')
 
 
 @plugin.on_command('луна', '🌚')
-async def get_moon(vk, msg, args):
-    await vk.respond(msg, {'message': random.choice(answers)})
+async def get_moon(msg, args):
+    await msg.answer(random.choice(answers))
