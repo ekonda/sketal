@@ -70,7 +70,7 @@ class Bot(object):
         elif not self.is_token:
             self.vk = VkPlus(login=self.vk_login, password=self.vk_password, scope=self.scope, app_id=self.app_id)
 
-            self.ANSWER_VALUES = {
+        self.ANSWER_VALUES = {
             'out': 0,
             'offset': 0,
             'count': 20,
