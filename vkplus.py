@@ -2,6 +2,7 @@
 import random
 import string
 # PyPI
+import asyncio
 import hues
 import aiovk
 from aiovk.drivers import HttpDriver
@@ -26,7 +27,7 @@ class RatedDriver(LimitRateDriverMixin, HttpDriver):
 class VkPlus(object):
     api = None
 
-    def __init__(self, token=None, login=None, password=None):
+    def __init__(self, token=None, login=None, password=None, app_id=5668099, scope=140489887):
 
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
@@ -34,6 +35,8 @@ class VkPlus(object):
         self.login = login
         self.password = password
         self.init_vk()
+        self.appid = app_id
+        self.scope = scope
 
     def init_vk(self):
         if self.is_token:
@@ -41,8 +44,8 @@ class VkPlus(object):
         elif self.login and self.password:
             self.login = self.login
             self.password = self.password
-            self.api_session = aiovk.ImplicitSession(self.login, self.password, 5668099,
-                                                     scope=140489887, driver=RatedDriver())  # all scopes
+            self.api_session = aiovk.ImplicitSession(self.login, self.password, self.appid,
+                                                     scope=self.scope, driver=RatedDriver())  # all scopes
         else:
             fatal('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
         self.api = aiovk.API(self.api_session)
@@ -61,6 +64,9 @@ class VkPlus(object):
         else:
             api_method = self.api
         try:
+            return await api_method(key, **data) if data else await api_method(key)
+
+        except asyncio.TimeoutError:
             return await api_method(key, **data) if data else await api_method(key)
 
         except aiovk.exceptions.VkAuthError as exc:

@@ -42,6 +42,8 @@ class Bot(object):
                 self.PREFIXES = settings.PREFIXES
                 self.log_messages = settings.NEED_LOG
                 self.convert_layout = settings.NEED_CONVERT
+                self.app_id = settings.APP_ID
+                self.scope = settings.SCOPE
                 if settings.TOKEN:
                     self.is_token = True
                     self.token = settings.TOKEN
@@ -64,11 +66,11 @@ class Bot(object):
         hues.warn('Авторизация в вк...')
 
         if self.is_token:
-            self.vk = VkPlus(token=self.token)
+            self.vk = VkPlus(token=self.token, scope=self.scope, app_id=self.app_id)
         elif not self.is_token:
-            self.vk = VkPlus(login=self.vk_login, password=self.vk_password)
+            self.vk = VkPlus(login=self.vk_login, password=self.vk_password, scope=self.scope, app_id=self.app_id)
 
-        self.ANSWER_VALUES = {
+            self.ANSWER_VALUES = {
             'out': 0,
             'offset': 0,
             'count': 20,
@@ -143,6 +145,7 @@ if __name__ == '__main__':
 
         hues.error("Фатальная ошибка при выполнении бота:\n")
         traceback.print_exc()
+        # Закрываем сессии API (чтобы не было предупреждения)
         bot.vk.api_session.close()
         if bot.is_token:
             bot.vk.public_api_session.close()
