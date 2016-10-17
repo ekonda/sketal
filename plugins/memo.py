@@ -6,7 +6,7 @@ memoes = {}
 
 
 @plugin.on_command('запомни', 'запиши', 'не забудь')
-async def memo(msg, args):
+async def memo_write(msg, args):
     string = ' '.join(args)
     if msg.conf:
         memoes[msg.cid] = string
@@ -16,7 +16,7 @@ async def memo(msg, args):
 
 
 @plugin.on_command('напомни', 'вспомни', 'посмотри блокнот')
-async def memo(msg, args):
+async def memo_read(msg, args):
     string = ''
     if msg.conf:
         string = memoes.get(msg.cid, "Ничего")

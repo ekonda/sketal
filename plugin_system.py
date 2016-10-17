@@ -108,6 +108,7 @@ class PluginSystem(object):
                             module_source_name,
                             *imp.find_module(os.path.splitext(filename)[0], [folder_path])
                         )
+                    # Если при загрузке плагина какая-либо ошибка
                     except Exception:
                         result = traceback.format_exc()
                         # если файла нет - создаём
@@ -131,23 +132,5 @@ class PluginSystem(object):
     def __exit__(self, exc_type, exc_value, traceback):
         try:
             local_data.plugin_stacks.pop()
-        except:
+        except Exception:
             pass
-
-
-'''
-def override_import(import_method):
-    def wrapper(name, globals=None, locals=None, fromlist=None, level=0):
-        # Try to get current plugin object
-        try:
-            plugin_object = local_data.plugin_stacks[-1]
-        except (AttributeError, IndexError):
-            plugin_object = None
-        return import_method(name, globals, locals, fromlist, level)
-
-    return wrapper
-
-
-# Overrides default import method
-builtin.__import__ = override_import(builtin.__import__)
-'''

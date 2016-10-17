@@ -1,5 +1,5 @@
-LOLBOT
-========
+LOLBOT [![Code Health](https://landscape.io/github/TiberiumPY/LOLBot/master/landscape.svg?style=flat)](https://landscape.io/github/TiberiumPY/LOLBot/master)
+======
 
 Асинхронный чат-бот для ВКонтакте.
 Идеально подходит как помощник в конференциях.
@@ -15,7 +15,7 @@ LOLBOT
 4. Запустите `python3 lolbot.py` (если вам нужно запустить бота в фоне, используйте `screen` под Linux).
 
 ## Смена префиксов
-По умолчанию бот отзывается на шесть префиксов: `lolbot`, `лолбот`, `лб`, `файнбот`, `фб`,`!`. 
+По умолчанию бот отзывается на три префикса: `лолбот`, `лб`, `!`. 
 Сменить их можно в `settings.py` на 10 строке.
 
 ## Плагины

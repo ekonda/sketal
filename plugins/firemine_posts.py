@@ -8,6 +8,7 @@ answers = '''Куйня какая-то!
 Я сам смотреть не буду, но вы смотрите.
 '''.splitlines()
 
+
 @plugin.on_command('фм записи', 'записи файнмайн')
 async def call(msg, args):
     isphoto = False

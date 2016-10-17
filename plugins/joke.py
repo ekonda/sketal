@@ -11,12 +11,13 @@ answers = '''Ахахахахха, вот я реально ржу!!!
 Петросян в душе прям бушует 🌚
 '''.splitlines()
 
+
 @plugin.on_command('шутка', 'пошути', 'рассмеши', 'петросян', 'скажи шутку')
 async def joke_get(msg, args):
     resp = requests.get('http://www.umori.li/api/get?site=bash.im&name=bash&num=1')
     try:
         joke = resp.json()[0]['elementPureHtml']
-    except:
+    except Exception:
         await msg.answer('У меня шутилка сломалась &#127770;')
         return
 

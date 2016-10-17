@@ -22,7 +22,7 @@ async def music_pro(msg, args):
                                     {'user_id': msg['user_id'],
                                      'offset': random.randint(0, count['count'] - 5),
                                      'count': 5})
-    except:
+    except Exception:
         print('Failed get music of id' + str(msg.id))
 
     musicatt = []

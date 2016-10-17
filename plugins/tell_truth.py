@@ -24,13 +24,14 @@ answers = '''Абсолютно точно!
 Не могу дать точный ответ.
 '''.splitlines()
 
+
 @plugin.on_command('правда', 'предсказание', 'реши', 'шар')
-async def call(msg, args):
+async def tell_truth(msg, args):
     await msg.answer("🎱" + random.choice(answers))
 
 
 @plugin.on_command('админ')
-async def call(msg, args):
+async def im_admin(msg, args):
     uid = msg.id
     if uid != 170831732:
         return await msg.answer("Нет, ты не админ! Админ - vk.com/id170831732!")

@@ -1,7 +1,6 @@
 # Standart library
 import random
 import string
-from enum import Enum
 # PyPI
 import hues
 import aiovk

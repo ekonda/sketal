@@ -10,6 +10,8 @@ import hues
 from plugin_system import PluginSystem
 from vkplus import VkPlus, Message
 from utils import fatal
+
+
 class Bot(object):
     '''Главный класс бота, создан для упрощённой работы с переменными'''
 
@@ -28,9 +30,9 @@ class Bot(object):
         if isfile('settings.py.sample') and not isfile('settings.py'):
             try:
                 shutil.copy('settings.py.sample', 'settings.py')
-            except:
+            except Exception:
                 fatal('У меня нет прав писать в текущую директорию, '
-                           'проверьте ваши права на неё!')
+                      'проверьте ваши права на неё!')
             fatal('Был создан файл settings.py, пожалуйста, измените значения на Ваши!')
         # Если у нас уже есть settings.py
         elif isfile('settings.py'):
@@ -125,6 +127,7 @@ class Bot(object):
         msg_obj = Message(self.vk, answer)
         await self.cmd_system.process_command(msg_obj)
 
+
 if __name__ == '__main__':
     bot = Bot()
     hues.success('Приступаю к приему сообщений')
@@ -138,6 +141,6 @@ if __name__ == '__main__':
     except Exception as ex:
         import traceback
 
-        hues.error("Ошибка при выполнении бота:\n")
+        hues.error("Фатальная ошибка при выполнении бота:\n")
         traceback.print_exc()
         exit()

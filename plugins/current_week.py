@@ -1,5 +1,4 @@
 import datetime
-import calendar
 from plugin_system import Plugin
 
 plugin = Plugin('Недели')

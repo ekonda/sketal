@@ -1,4 +1,3 @@
 hues
-aiohttp
 requests
 git+https://github.com/Fahreeve/aiovk
