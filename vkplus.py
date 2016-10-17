@@ -37,20 +37,21 @@ class VkPlus(object):
 
     def init_vk(self):
         if self.is_token:
-            self.api = aiovk.TokenSession(access_token=self.is_token, driver=RatedDriver())
+            self.api_session = aiovk.TokenSession(access_token=self.is_token, driver=RatedDriver())
         elif self.login and self.password:
             self.login = self.login
             self.password = self.password
-            self.api = aiovk.ImplicitSession(self.login, self.password, 5668099,
-                                             scope=140489887, driver=RatedDriver())  # all scopes
+            self.api_session = aiovk.ImplicitSession(self.login, self.password, 5668099,
+                                                     scope=140489887, driver=RatedDriver())  # all scopes
         else:
             fatal('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
-        self.api = aiovk.API(self.api)
+        self.api = aiovk.API(self.api_session)
 
         # Паблик API используется для методов, которые не нуждаются в регистрации (users.get и т.д)
         # Используется только при access_token вместо аккаунта
         if self.is_token:
-            self.public_api = aiovk.API(aiovk.TokenSession())
+            self.public_api_session = aiovk.TokenSession()
+            self.public_api = aiovk.API(self.public_api_session)
 
     async def method(self, key, data=None):
         # Если у нас token, то для всех остальных методов

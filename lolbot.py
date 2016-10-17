@@ -143,4 +143,7 @@ if __name__ == '__main__':
 
         hues.error("Фатальная ошибка при выполнении бота:\n")
         traceback.print_exc()
+        bot.vk.api_session.close()
+        if bot.is_token:
+            bot.vk.public_api_session.close()
         exit()
