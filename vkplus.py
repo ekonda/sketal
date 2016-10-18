@@ -1,4 +1,5 @@
 # Standart library
+import json
 import random
 import string
 # PyPI
@@ -66,15 +67,14 @@ class VkPlus(object):
         try:
             return await api_method(key, **data) if data else await api_method(key)
 
-        except asyncio.TimeoutError:
+        except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
             return await api_method(key, **data) if data else await api_method(key)
-
         except aiovk.exceptions.VkAuthError:
             message = 'TOKEN' if self.is_token else 'LOGIN и PASSWORD'
             fatal("Произошла ошибка при авторизации API, "
                   "проверьте значение {} в settings.py!".format(message))
 
-        except aiovk.exceptions.VkAPIError as exc:
+        except (aiovk.exceptions.VkAPIError, aiovk.exceptions.VkCaptchaNeeded) as exc:
             if exc.error_code == 9:
                 if not 'message' in data:
                     return
@@ -120,6 +120,7 @@ class VkPlus(object):
             return result['object_id']
         else:
             return None
+
 
 class Message(object):
     '''Класс, объект которого передаётся в плагин для упрощённого ответа'''

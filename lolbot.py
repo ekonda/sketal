@@ -66,7 +66,8 @@ class Bot(object):
 
     def vk_init(self):
         hues.warn('Авторизация в вк...')
-
+        # Словарь вида ID -> время
+        self.messages_date = {}
         if self.is_token:
             self.vk = VkPlus(token=self.token, scope=self.scope, app_id=self.app_id)
         elif not self.is_token:
@@ -121,6 +122,7 @@ class Bot(object):
             'mode': 2,
             'version': 1
         }
+
     async def run(self):
         '''Главная функция бота - тут происходит ожидание новых событий (сообщений)'''
         await self.init_long_polling()
@@ -151,11 +153,21 @@ class Bot(object):
                             continue
                         # Тип сообщения - конференция или ЛС?
                         type = 'chat_id' if peer_id - 2000000000 > 0 else 'user_id'
-                        await self.check_if_command({
+                        data = {
                             type: peer_id,
-                            'body': text,
+                            'body': text.replace('<br>', '\n'),
                             'date': timestamp
-                        })
+                        }
+                        try:
+                            # Если разница между сообщениями меньше 1 сек - игнорим
+                            if timestamp - self.messages_date[peer_id] <= 1:
+                                self.messages_date[peer_id] = timestamp
+                                continue
+                            else:
+                                self.messages_date[peer_id] = timestamp
+                        except KeyError:
+                            self.messages_date[peer_id] = timestamp
+                        await self.check_if_command(data)
                         await self.vk.mark_as_read(msg_id)
 
     async def check_if_command(self, answer: dict):
