@@ -75,6 +75,9 @@ class VkPlus(object):
                   "проверьте значение {} в settings.py!".format(message))
 
         except (aiovk.exceptions.VkAPIError, aiovk.exceptions.VkCaptchaNeeded) as exc:
+            if not hasattr(exc, 'error_code'):
+                print("FUCKING CAPTCHA!")
+                return {}
             if exc.error_code == 9:
                 if not 'message' in data:
                     return

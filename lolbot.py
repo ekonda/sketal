@@ -153,6 +153,7 @@ class Bot(object):
                             continue
                         # Тип сообщения - конференция или ЛС?
                         type = 'chat_id' if peer_id - 2000000000 > 0 else 'user_id'
+                        if type == 'chat_id': peer_id = peer_id - 2000000000
                         data = {
                             type: peer_id,
                             'body': text.replace('<br>', '\n'),
