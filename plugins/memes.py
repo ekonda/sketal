@@ -17,9 +17,9 @@ async def call(msg, args):
     while isphoto is False:
         values = {
             # owner_id = ид группы
-            'owner_id': -87960594,
-            'offset': random.randint(1, 1985),
-            'count': 1
+            'owner_id': -129950840,
+            'offset': random.randint(1, 400),
+            'count': 5
         }
 
         boobs = await msg.vk.method('wall.get', values)

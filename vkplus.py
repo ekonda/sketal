@@ -18,7 +18,7 @@ class FloodError(Exception): pass
 class NotHavePerms(Exception): pass
 
 
-# Driver for 3 requests per sec limitation
+# Driver for 3 requests per sec limitation (actually 1.2 sec)
 class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 1
     period = 0.4
@@ -53,7 +53,7 @@ class VkPlus(object):
         # Паблик API используется для методов, которые не нуждаются в регистрации (users.get и т.д)
         # Используется только при access_token вместо аккаунта
         if self.is_token:
-            self.public_api_session = aiovk.TokenSession()
+            self.public_api_session = aiovk.TokenSession(driver=RatedDriver())
             self.public_api = aiovk.API(self.public_api_session)
 
     async def method(self, key, data=None):
@@ -69,14 +69,12 @@ class VkPlus(object):
         except asyncio.TimeoutError:
             return await api_method(key, **data) if data else await api_method(key)
 
-        except aiovk.exceptions.VkAuthError as exc:
-            if not str(exc) == 'User authorization failed':
-                raise NotHavePerms
-            message = 'access_token' if self.is_token else 'vk_login и vk_password'
+        except aiovk.exceptions.VkAuthError:
+            message = 'TOKEN' if self.is_token else 'LOGIN и PASSWORD'
             fatal("Произошла ошибка при авторизации API, "
                   "проверьте значение {} в settings.py!".format(message))
 
-        except (aiovk.exceptions.VkAPIError, NotHavePerms) as exc:
+        except aiovk.exceptions.VkAPIError as exc:
             if exc.error_code == 9:
                 if not 'message' in data:
                     return
@@ -95,10 +93,8 @@ class VkPlus(object):
         '''Функция для обхода антифлуда API ВК'''
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-    # Сделано для упрощения ответа. В пагине или другом коде
-    # не нужно "думать" о том, откуда пришло сообщение:
-    # из диалога, или из беседы (чата, конференции).
     async def respond(self, values):
+        '''Функция для отправки сообщения и проверки на ошибки'''
         try:
             await self.method('messages.send', values)
         # Эта ошибка будет поймана только если ошибка - одинаковое сообщение
@@ -117,9 +113,16 @@ class VkPlus(object):
         }
         await self.method('messages.markAsRead', values)
 
+    async def resolve_name(self, screen_name):
+        '''Функция для перевода короткого имени в числовой ID'''
+        result = await self.method('utils.resolveScreenName', {'screen_name': screen_name})
+        if result:
+            return result['object_id']
+        else:
+            return None
 
 class Message(object):
-    '''Класс, передаваемый в плагин для упрощённого ответа'''
+    '''Класс, объект которого передаётся в плагин для упрощённого ответа'''
 
     def __init__(self, vk_api_object, answer_values: dict):
         self._values = answer_values
@@ -153,5 +156,3 @@ class Message(object):
             additional_values = dict()
         values = dict(self.answer_values, message=msg, **additional_values)
         await self.vk.respond(values)
-
-# msg = Message({'date': 1476711755, 'title': ' ... ', 'user_id': 170831732, 'read_state': 0, 'out': 0, 'body': 'плагины', 'id': 33286})

@@ -28,3 +28,28 @@ def convert_to_rus(text: str) -> str:
 def convert_to_en(text: str) -> str:
     '''Конвертировать текст, написанный на русском с русской раскладкой в английскую раскладку'''
     return text.translate(en_trans)
+
+
+keys = [
+    'unread',
+    'outbox',
+    'replied',
+    'important',
+    'chat',
+    'friends',
+    'spam',
+    'deleted',
+    'fixed',
+    'media'
+]
+
+
+def parse_msg_flags(bitmask: int):
+    '''Функция для чтения битовой маски и возврата словаря значений'''
+    start = 1
+    values = []
+    for x in range(1, 11):
+        result = bitmask & start
+        start *= 2
+        values.append(bool(result))
+    return dict(zip(keys, values))

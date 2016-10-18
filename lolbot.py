@@ -1,15 +1,17 @@
 # Standart library
+import json
 from os.path import abspath, isfile
 import shutil
 import asyncio
 
 # PyPI
+import aiohttp
 import hues
 
 # Custom
 from plugin_system import PluginSystem
 from vkplus import VkPlus, Message
-from utils import fatal
+from utils import fatal, parse_msg_flags
 
 
 class Bot(object):
@@ -102,19 +104,59 @@ class Bot(object):
 
         hues.success("Загрузка плагинов завершена")
 
+    async def init_long_polling(self):
+        '''Функция для инициализации Long Polling'''
+        result = await self.vk.method('messages.getLongPollServer', {'use_ssl': 1})
+        if not result:
+            fatal('Не удалось подключиться к Long Poll серверу!')
+        self.longpoll_server = "https://" + result['server']
+        self.longpoll_key = result['key']
+        # Последний timestamp
+        self.last_ts = result['ts']
+        self.longpoll_values = {
+            'act': 'a_check',
+            'key': self.longpoll_key,
+            'ts': self.last_ts,
+            'wait': 20,  # timeout -> если не будет событий за этот период, сервер пришлёт ответ
+            'mode': 2,
+            'version': 1
+        }
     async def run(self):
-        while True:
-            await self.check_messages()
-
-    async def check_messages(self):
-        response = await self.vk.method('messages.get', self.ANSWER_VALUES)
-        if response and response['items']:
-            self.last_message_id = response['items'][0]['id']
-            for item in response['items']:
-                # Если сообщение не прочитано и ID пользователя не в чёрном списке бота
-                if not item['read_state'] and item['user_id'] not in self.BLACKLIST:
-                    await self.vk.mark_as_read(item['id'])
-                    await self.check_if_command(item)
+        '''Главная функция бота - тут происходит ожидание новых событий (сообщений)'''
+        await self.init_long_polling()
+        async with aiohttp.ClientSession() as session:
+            while True:
+                async with session.get(self.longpoll_server, params=self.longpoll_values) as resp:
+                    # Тут не используется resp.json() по простой причине:
+                    # aiohttp будет писать warning'и из-за плохого mimetype
+                    # неизвестно, почему он у ВК такой - text/javascript; charset=utf-8
+                    updates = json.loads(await resp.text())
+                    # Обновляем время, чтобы не приходили старые события
+                    self.longpoll_values['ts'] = updates['ts']
+                    for new_event in updates['updates']:
+                        if not new_event:
+                            continue
+                        # Если событие - не новое сообщение
+                        if not new_event[0] == 4:
+                            continue
+                        msg_id, flags, peer_id, timestamp, subject, text, attaches = new_event[1:]
+                        # Если ID в чёрном списке - игнорим :)
+                        if peer_id in self.BLACKLIST:
+                            continue
+                        # Получаем параметры сообщения
+                        # https://vk.com/dev/using_longpoll_2
+                        flags = parse_msg_flags(flags)
+                        if flags['outbox']:
+                            # Если сообщение мы же и отправили - зачем нам оно нужно?
+                            continue
+                        # Тип сообщения - конференция или ЛС?
+                        type = 'chat_id' if peer_id - 2000000000 > 0 else 'user_id'
+                        await self.check_if_command({
+                            type: peer_id,
+                            'body': text,
+                            'date': timestamp
+                        })
+                        await self.vk.mark_as_read(msg_id)
 
     async def check_if_command(self, answer: dict):
         if self.log_messages:

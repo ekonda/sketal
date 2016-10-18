@@ -38,8 +38,13 @@ async def check(msg, args):
         return
 
     try:
-        grp_id = int(args[0].replace('-', ''))  # Первый запрос, чтобы получить количество участников группы
-
+        # Пытаемся получить ID группы по короткому имени
+        grp_id = await msg.vk.resolve_name(args[0])
+        # Если не получилось, конвертируем аргумент в число
+        if not grp_id:
+            grp_id = int(args[0].replace('-', ''))
+        if not grp_id:
+            return
     except ValueError:
         await msg.answer('Вы ввели не число!')
         return

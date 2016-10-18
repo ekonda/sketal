@@ -11,7 +11,7 @@ LOLBOT [![Code Health](https://landscape.io/github/TiberiumPY/LOLBot/master/land
 ## Начальная настройка
 1. Зайдите в папку с ботом (через консоль) и выполните команду `pip3 install -r requirements.txt`. Это автоматически установит все нужные модули.
 2. Запустите бота, чтобы он создал файл `settings.py` - `python3 lolbot.py`.
-3. **В `settings.py` замените `token` на access_token группы или `vk_login` и `vk_password` на логин и пароль аккаунта ВК соответственно.** 
+3. **В `settings.py` замените `TOKEN` на access_token группы или `LOGIN` и `PASSWORD` на логин и пароль аккаунта ВК соответственно.** 
 4. Запустите `python3 lolbot.py` (если вам нужно запустить бота в фоне, используйте `screen` под Linux).
 
 ## Смена префиксов
