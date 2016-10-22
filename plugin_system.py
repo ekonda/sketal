@@ -129,7 +129,7 @@ class PluginSystem(object):
         local_data.plugin_stacks = [self]
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, tbc):
         try:
             local_data.plugin_stacks.pop()
         except Exception:

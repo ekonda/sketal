@@ -3,11 +3,7 @@ from plugin_system import Plugin
 
 plugin = Plugin("Случайное с двача")
 
-answers = []
-answers.append("Каеф")
-answers.append("Не баян (баян)")
-answers.append("Ну держи!")
-answers.append("🌚")
+answers = ["Каеф", "Не баян (баян)", "Ну держи!", "🌚"]
 
 
 @plugin.on_command('двач', '2ch', 'двачик', 'мемы с двача')

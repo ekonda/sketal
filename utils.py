@@ -3,7 +3,7 @@ import hues
 
 
 def fatal(*args):
-    '''Passes args to hues.error and then exits'''
+    """Passes args to hues.error and then exits"""
     hues.error(*args)
     exit()
 
@@ -21,12 +21,12 @@ en_trans = str.maketrans(russian, english)
 
 
 def convert_to_rus(text: str) -> str:
-    '''Конвертировать текст, написанный на русском с английской раскладкой в русский'''
+    """Конвертировать текст, написанный на русском с английской раскладкой в русский"""
     return text.translate(translate_table)
 
 
 def convert_to_en(text: str) -> str:
-    '''Конвертировать текст, написанный на русском с русской раскладкой в английскую раскладку'''
+    """Конвертировать текст, написанный на русском с русской раскладкой в английскую раскладку"""
     return text.translate(en_trans)
 
 
@@ -45,7 +45,7 @@ keys = [
 
 
 def parse_msg_flags(bitmask: int):
-    '''Функция для чтения битовой маски и возврата словаря значений'''
+    """Функция для чтения битовой маски и возврата словаря значений"""
     start = 1
     values = []
     for x in range(1, 11):

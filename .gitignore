@@ -1,7 +1,6 @@
 *.pyc
 config
 *.nja
-vk_config.json
 __pycache__
 settings.py
 .idea/

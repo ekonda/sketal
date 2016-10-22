@@ -49,7 +49,7 @@ async def check(msg, args):
         await msg.answer('Вы ввели не число!')
         return
 
-    GetMembersRequest = {
+    get_members_request = {
         'group_id': grp_id,
         'sort': 'id_asc',
         'offset': 0,
@@ -57,20 +57,21 @@ async def check(msg, args):
         # 'fields' : 'bdate',
     }
 
-    members = await msg.vk.method('groups.getMembers', GetMembersRequest)
+    members = await msg.vk.method('groups.getMembers', get_members_request)
     if not members:
         await msg.answer('Такой группы не существует, или же она частная!')
         return
     mcnt = members['count']
 
-    # Костыль. Этот метод возвращает не более 1000 записей. По этому пока что на всякий случай стоит ограничитель.
+    # Костыль. Этот метод возвращает не более 1000 записей. 
+    # Поэтому пока что на всякий случай стоит ограничитель.
     # В будущем нужно будет реализовать получение списка несколькими запросами.
     if mcnt > 1000:
         mcnt = 1000
 
     # Второй запрос. Получает информацию о пользователях сообщества.
     # Пока что за один раз.
-    GetMembersRequest = {
+    get_members_request = {
         'group_id': grp_id,
         'sort': 'id_asc',
         'offset': 0,
@@ -78,21 +79,24 @@ async def check(msg, args):
         'fields': 'bdate'
     }
 
-    members = await msg.vk.method('groups.getMembers', GetMembersRequest)
+    members = await msg.vk.method('groups.getMembers', get_members_request)
 
     mcnt = members[
         'count']  # Зачем? Но пока оставлю так. Можно же дальше использовать members['count'] или я его буду портить?
 
     members = members['items']  # Отделяю записи пользователей в список словарей.
 
-    has_bdate = 0  # Счётчик - сколько участников указали дату рождения. На данный момент практического значения не имеет. Просто показатель.
+    has_bdate = 0  # Счётчик - сколько участников указали дату рождения. 
+    # На данный момент практического значения не имеет. Просто показатель.
 
-    dayshift = 6  # Указывается промежуток в днях от текущей даты, в который должны попадать люди с днём рождения.
+    dayshift = 6  # Указывается промежуток в днях от текущей даты, 
+    # в который должны попадать люди с днём рождения.
 
     lastdate = datetime.date.today() + datetime.timedelta(dayshift)  # Последний день - конец промежутка
     today = datetime.date.today()  # Сегодня - начало промежутка
 
-    mbbday = []  # Список участников, с датой рождения, попадающий в указанный промежуток времени. Обнуляем его.
+    mbbday = []  # Список участников, с датой рождения, 
+    # попадающий в указанный промежуток времени. Обнуляем его.
 
     # Поиск участников по списку
     for member in members:
@@ -107,10 +111,11 @@ async def check(msg, args):
             except ValueError:  # Если человек указал дату типа 69.11
                 continue
 
-        if ((today.month, today.day) <= (mbdate.month, mbdate.day)) and (
-                    (lastdate.month, lastdate.day) >= (mbdate.month, mbdate.day)):
-            member[
-                'mbdate'] = mbdate  # Добавляем в словарь дату в формате datetime.datetime.strptime для дальнейшей сортировки списка.
+        if ((today.month, today.day) <= (mbdate.month, mbdate.day)) and \
+                ((lastdate.month, lastdate.day) >= (mbdate.month, mbdate.day)):
+            member['mbdate'] = mbdate
+            # Добавляем в словарь дату в формате datetime.datetime.strptime 
+            # для дальнейшей сортировки списка.
             mbbday.append(member)
 
     # Очищаем строку списка ответа

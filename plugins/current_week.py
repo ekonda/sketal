@@ -3,9 +3,7 @@ from plugin_system import Plugin
 
 plugin = Plugin('Недели')
 
-answers = {}
-answers[True] = "Неделя чётная"
-answers[False] = "Неделя нечётная (верхняя)."
+answers = {True: "Неделя чётная", False: "Неделя нечётная (верхняя)."}
 
 
 @plugin.on_command('неделя', 'какая неделя')

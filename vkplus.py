@@ -13,10 +13,12 @@ from aiovk.mixins import LimitRateDriverMixin
 from utils import fatal
 
 
-class FloodError(Exception): pass
+class FloodError(Exception):
+    pass
 
 
-class NotHavePerms(Exception): pass
+class NotHavePerms(Exception):
+    pass
 
 
 # Driver for 3 requests per sec limitation (actually 1.2 sec)
@@ -66,7 +68,6 @@ class VkPlus(object):
             api_method = self.api
         try:
             return await api_method(key, **data) if data else await api_method(key)
-
         except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
             return await api_method(key, **data) if data else await api_method(key)
         except aiovk.exceptions.VkAuthError:
@@ -79,7 +80,7 @@ class VkPlus(object):
                 print("FUCKING CAPTCHA!")
                 return {}
             if exc.error_code == 9:
-                if not 'message' in data:
+                if 'message' not in data:
                     return
                 data['message'] += '\n Анти-флуд (API): {}'.format(self.anti_flood())
                 try:
@@ -92,17 +93,18 @@ class VkPlus(object):
                 # except Exception as exc:
                 #   hues.error('Неизвестная ошибка: \n{}'.format(exc))
 
-    def anti_flood(self):
+    @staticmethod
+    def anti_flood():
         '''Функция для обхода антифлуда API ВК'''
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
     async def respond(self, values):
-        '''Функция для отправки сообщения и проверки на ошибки'''
+        """Функция для отправки сообщения и проверки на ошибки"""
         try:
             await self.method('messages.send', values)
         # Эта ошибка будет поймана только если ошибка - одинаковое сообщение
         except FloodError:
-            if not 'message' in values:
+            if 'message' not in values:
                 return
             values['message'] += '\n Анти-флуд (API): {}'.format(self.anti_flood())
             try:
@@ -117,7 +119,7 @@ class VkPlus(object):
         await self.method('messages.markAsRead', values)
 
     async def resolve_name(self, screen_name):
-        '''Функция для перевода короткого имени в числовой ID'''
+        """Функция для перевода короткого имени в числовой ID"""
         result = await self.method('utils.resolveScreenName', {'screen_name': screen_name})
         if result:
             return result['object_id']
@@ -126,7 +128,7 @@ class VkPlus(object):
 
 
 class Message(object):
-    '''Класс, объект которого передаётся в плагин для упрощённого ответа'''
+    """Класс, объект которого передаётся в плагин для упрощённого ответа"""
 
     def __init__(self, vk_api_object, answer_values: dict):
         self._values = answer_values
@@ -155,7 +157,7 @@ class Message(object):
             self.answer_values = {'user_id': self.uid}
 
     async def answer(self, msg, **additional_values):
-        '''Функция ответа для упрощения создания плагинов. Так же может принимать доп.параметры'''
+        """Функция ответа для упрощения создания плагинов. Так же может принимать доп.параметры"""
         if additional_values is None:
             additional_values = dict()
         values = dict(self.answer_values, message=msg, **additional_values)

@@ -15,7 +15,7 @@ from utils import fatal, parse_msg_flags
 
 
 class Bot(object):
-    '''Главный класс бота, создан для упрощённой работы с переменными'''
+    """Главный класс бота, создан для упрощённой работы с переменными"""
 
     def __init__(self):
         # По умолчанию все сообщения будут жирные и синие :)
@@ -27,7 +27,7 @@ class Bot(object):
         asyncio.sleep(0.35)  # успеть всё инициализировать
 
     def init_settings(self):
-        '''Функция инициализации файла настроек и его создания'''
+        """Функция инициализации файла настроек и его создания"""
         # Если у нас есть только settings.py.sample
         if isfile('settings.py.sample') and not isfile('settings.py'):
             try:
@@ -106,7 +106,7 @@ class Bot(object):
         hues.success("Загрузка плагинов завершена")
 
     async def init_long_polling(self):
-        '''Функция для инициализации Long Polling'''
+        """Функция для инициализации Long Polling"""
         result = await self.vk.method('messages.getLongPollServer', {'use_ssl': 1})
         if not result:
             fatal('Не удалось подключиться к Long Poll серверу!')
@@ -123,8 +123,44 @@ class Bot(object):
             'version': 1
         }
 
+    async def check_event(self, new_event):
+        if not new_event:
+            return
+            # Если событие - не новое сообщение
+        if not new_event[0] == 4:
+            return
+        msg_id, flags, peer_id, timestamp, subject, text, attaches = new_event[1:]
+        # Если ID в чёрном списке - игнорим :)
+        if peer_id in self.BLACKLIST:
+            return
+        # Получаем параметры сообщения
+        # https://vk.com/dev/using_longpoll_2
+        flags = parse_msg_flags(flags)
+        if flags['outbox']:
+            # Если сообщение мы же и отправили - зачем нам оно нужно?
+            return
+        # Тип сообщения - конференция или ЛС?
+        msg_type = 'chat_id' if peer_id - 2000000000 > 0 else 'user_id'
+        if msg_type == 'chat_id': peer_id -= 2000000000
+        data = {
+            msg_type: peer_id,
+            'body': text.replace('<br>', '\n'),
+            'date': timestamp
+        }
+        try:
+            # Если разница между сообщениями меньше 1 сек - игнорим
+            if timestamp - self.messages_date[peer_id] <= 1:
+                self.messages_date[peer_id] = timestamp
+                return
+            else:
+                self.messages_date[peer_id] = timestamp
+        except KeyError:
+            self.messages_date[peer_id] = timestamp
+        await self.check_if_command(data)
+        await self.vk.mark_as_read(msg_id)
+
     async def run(self):
-        '''Главная функция бота - тут происходит ожидание новых событий (сообщений)'''
+        """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
         await self.init_long_polling()
         async with aiohttp.ClientSession() as session:
             while True:
@@ -136,40 +172,7 @@ class Bot(object):
                     # Обновляем время, чтобы не приходили старые события
                     self.longpoll_values['ts'] = updates['ts']
                     for new_event in updates['updates']:
-                        if not new_event:
-                            continue
-                        # Если событие - не новое сообщение
-                        if not new_event[0] == 4:
-                            continue
-                        msg_id, flags, peer_id, timestamp, subject, text, attaches = new_event[1:]
-                        # Если ID в чёрном списке - игнорим :)
-                        if peer_id in self.BLACKLIST:
-                            continue
-                        # Получаем параметры сообщения
-                        # https://vk.com/dev/using_longpoll_2
-                        flags = parse_msg_flags(flags)
-                        if flags['outbox']:
-                            # Если сообщение мы же и отправили - зачем нам оно нужно?
-                            continue
-                        # Тип сообщения - конференция или ЛС?
-                        type = 'chat_id' if peer_id - 2000000000 > 0 else 'user_id'
-                        if type == 'chat_id': peer_id = peer_id - 2000000000
-                        data = {
-                            type: peer_id,
-                            'body': text.replace('<br>', '\n'),
-                            'date': timestamp
-                        }
-                        try:
-                            # Если разница между сообщениями меньше 1 сек - игнорим
-                            if timestamp - self.messages_date[peer_id] <= 1:
-                                self.messages_date[peer_id] = timestamp
-                                continue
-                            else:
-                                self.messages_date[peer_id] = timestamp
-                        except KeyError:
-                            self.messages_date[peer_id] = timestamp
-                        await self.check_if_command(data)
-                        await self.vk.mark_as_read(msg_id)
+                        await self.check_event(new_event)
 
     async def check_if_command(self, answer: dict):
         if self.log_messages:
