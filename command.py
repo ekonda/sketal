@@ -17,7 +17,7 @@ class CommandSystem(object):
         self.convert = convert_layout
 
     async def process_command(self, msg_obj):
-        """Обработать команду"""
+        """Обработать объект Message"""
         # Создаём объект cmd
         cmd = Command(msg_obj._values)
 

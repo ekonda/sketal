@@ -20,6 +20,12 @@ class Plugin(object):
     def log(self, message: str):
         hues.info('Плагин {name} -> {message}'.format(name=self.name, message=message))
 
+    def on_friend_request(self):
+        def wrapper(function):
+            self.add_deferred_func(self.name.lower(), function)
+            return function
+
+        return wrapper
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands, all_commands=False):
         def wrapper(function):

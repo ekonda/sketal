@@ -162,30 +162,32 @@ class Bot(object):
     async def run(self):
         """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
         await self.init_long_polling()
-        async with aiohttp.ClientSession() as session:
-            while True:
-                async with session.get(self.longpoll_server, params=self.longpoll_values) as resp:
-                    # Тут не используется resp.json() по простой причине:
-                    # aiohttp будет писать warning'и из-за плохого mimetype
-                    # неизвестно, почему он у ВК такой - text/javascript; charset=utf-8
-                    updates = json.loads(await resp.text())
-                    # Обновляем время, чтобы не приходили старые события
-                    self.longpoll_values['ts'] = updates['ts']
-                    for new_event in updates['updates']:
-                        await self.check_event(new_event)
+        session = aiohttp.ClientSession()
+        while True:
+            resp = await session.get(self.longpoll_server, params=self.longpoll_values)
+            # Тут не используется resp.json() по простой причине:
+            # aiohttp будет писать warning'и из-за плохого mimetype
+            # неизвестно, почему он у ВК такой - text/javascript; charset=utf-8
+            updates = json.loads(await resp.text())
+            # Обновляем время, чтобы не приходили старые события
+            if not updates.get('ts'):
+                continue
+            self.longpoll_values['ts'] = updates['ts']
+            for new_event in updates['updates']:
+                await self.check_event(new_event)
 
-    async def check_if_command(self, answer: dict):
-        if self.log_messages:
-            if 'chat_id' in answer:
-                hues.info("Сообщение из конференции ({}) > {}".format(
-                    answer['chat_id'], answer['body']
-                ))
-            elif 'user_id' in answer:
-                hues.info("Сообщение из ЛС http://vk.com/id{} > {}".format(
-                    answer['user_id'], answer['body']
-                ))
-        msg_obj = Message(self.vk, answer)
-        await self.cmd_system.process_command(msg_obj)
+    async def check_if_command(self, answer: dict) -> None:
+        if not self.log_messages:
+            msg_obj = Message(self.vk, answer)
+            return await self.cmd_system.process_command(msg_obj)
+        if 'chat_id' in answer:
+            hues.info("Сообщение из конференции ({}) > {}".format(
+                answer['chat_id'], answer['body']
+            ))
+        elif 'user_id' in answer:
+            hues.info("Сообщение из ЛС http://vk.com/id{} > {}".format(
+                answer['user_id'], answer['body']
+            ))
 
 
 if __name__ == '__main__':
