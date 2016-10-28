@@ -168,7 +168,13 @@ class Bot(object):
             # Тут не используется resp.json() по простой причине:
             # aiohttp будет писать warning'и из-за плохого mimetype
             # неизвестно, почему он у ВК такой - text/javascript; charset=utf-8
-            updates = json.loads(await resp.text())
+            # вместо JSON может быть HTML, так что будем проверять
+            updates_text = await resp.text()
+            try:
+                updates = json.loads(updates_text)
+            except ValueError:
+                continue
+                # отправляем запрос ещё раз
             # Обновляем время, чтобы не приходили старые события
             if not updates.get('ts'):
                 continue
