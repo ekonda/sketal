@@ -181,7 +181,7 @@ class Bot(object):
                 err_num = int(failed)
                 # Нам нужно обновить time stamp
                 if err_num == 1:
-                    self.longpoll_values['ts'] = failed['ts']
+                    self.longpoll_values['ts'] = events['ts']
                 # коды 2 и 3 - нужно переподключиться к long polling серверу
                 elif err_num == 2:
                     self.init_long_polling()
