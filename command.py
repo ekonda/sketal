@@ -91,7 +91,7 @@ class Command(object):
         for prefix in PREFIXES:
             if self.text.startswith(prefix):
                 self.prefix = prefix
-                self.text = self.text.replace(prefix, '')
+                self.text = self.text.replace(prefix, '', 1).lstrip()
                 break
         else:
             self.good_cmd = False

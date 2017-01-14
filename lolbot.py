@@ -109,7 +109,7 @@ class Bot(object):
         """Функция для инициализации Long Polling"""
         result = await self.vk.method('messages.getLongPollServer', {'use_ssl': 1})
         if not result:
-            fatal('Не удалось подключиться к Long Poll серверу!')
+            fatal('Не удалось получить значения Long Poll сервера!')
         self.longpoll_server = "https://" + result['server']
         self.longpoll_key = result['key']
         # Последний timestamp
@@ -169,18 +169,29 @@ class Bot(object):
             # aiohttp будет писать warning'и из-за плохого mimetype
             # неизвестно, почему он у ВК такой - text/javascript; charset=utf-8
             # вместо JSON может быть HTML, так что будем проверять
-            updates_text = await resp.text()
+            events_text = await resp.text()
             try:
-                updates = json.loads(updates_text)
+                events = json.loads(events_text)
             except ValueError:
                 continue
                 # отправляем запрос ещё раз
-            # Обновляем время, чтобы не приходили старые события
-            if not updates.get('ts'):
+
+            failed = events.get('failed')
+            if failed:
+                err_num = int(failed)
+                # Нам нужно обновить time stamp
+                if err_num == 1:
+                    self.longpoll_values['ts'] = failed['ts']
+                # коды 2 и 3 - нужно переподключиться к long polling серверу
+                elif err_num == 2:
+                    self.init_long_polling()
+                elif err_num == 3:
+                    self.init_long_polling()
                 continue
-            self.longpoll_values['ts'] = updates['ts']
-            for new_event in updates['updates']:
-                await self.check_event(new_event)
+            # Обновляем время, чтобы не приходили старые события
+            self.longpoll_values['ts'] = events['ts']
+            for event in events['updates']:
+                await self.check_event(event)
 
     async def check_if_command(self, answer: dict) -> None:
         if not self.log_messages:
