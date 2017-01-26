@@ -22,12 +22,11 @@ async def video_search(msg, args):
     vids = resp.get('items')
     # Если не нашли ни одного видео
     if not vids:
-        await msg.answer('Ничего не найдено')
-        return
+        return await msg.answer('Ничего не найдено')
     count = len(vids)  # Сколько видео мы нашли
     if not count:
-        await msg.answer('Ничего не найдено')
-    respstr = ''
-    for i in range(count):
-        respstr += 'video' + str(vids[i]['owner_id']) + '_' + str(vids[i]['id']) + ','
-    await msg.answer('Приятного просмотра!', attachment=respstr)
+        return await msg.answer('Ничего не найдено')
+    resp = ''
+    for vid in vids:
+        resp += 'video{oid}_{id},'.format(oid=vid['owner_id'],id=vid['id'])
+    await msg.answer('Приятного просмотра!', attachment=resp)
