@@ -2,7 +2,7 @@
 
 import random
 from plugin_system import Plugin
-
+from settings import ADMINS
 plugin = Plugin('Правда')
 
 # Инициализируем возможные ответы
@@ -33,6 +33,6 @@ async def tell_truth(msg, args):
 @plugin.on_command('админ')
 async def im_admin(msg, args):
     uid = msg.id
-    if uid != 170831732:
-        return await msg.answer("Нет, ты не админ! Админ - vk.com/id170831732!")
+    if uid not in ADMINS:
+        return await msg.answer("Нет, ты не админ!")
     await msg.answer('Слушаю и повинуюсь!')

@@ -30,7 +30,7 @@ class RatedDriver(LimitRateDriverMixin, HttpDriver):
 class VkPlus(object):
     api = None
 
-    def __init__(self, token=None, login=None, password=None, app_id=5668099, scope=140489887):
+    def __init__(self, token=None, login=None, password=None, app_id=5668099, scope=140492191):
 
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
@@ -59,7 +59,7 @@ class VkPlus(object):
             self.public_api_session = aiovk.TokenSession(driver=RatedDriver())
             self.public_api = aiovk.API(self.public_api_session)
 
-    async def method(self, key, data=None):
+    async def method(self, key: str, data: dict={}):
         # Если у нас token, то для всех остальных методов
         # кроме разрешённых вызовем паблик API
         if key not in self.group_methods and self.is_token and 'message' not in key:
@@ -82,6 +82,7 @@ class VkPlus(object):
             if exc.error_code == 9:
                 if 'message' not in data:
                     return
+                # Анти-флуд (рандомные 5 символов)
                 data['message'] += '\n Анти-флуд (API): {}'.format(self.anti_flood())
                 try:
                     await self.method('messages.send', data)
@@ -95,14 +96,14 @@ class VkPlus(object):
 
     @staticmethod
     def anti_flood():
-        '''Функция для обхода антифлуда API ВК'''
+        """Функция для обхода антифлуда API ВК"""
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
     async def respond(self, values):
         """Функция для отправки сообщения и проверки на ошибки"""
         try:
             await self.method('messages.send', values)
-        # Эта ошибка будет поймана только если ошибка - одинаковое сообщение
+        # Если мы послали слишком много одинаковых сообщений
         except FloodError:
             if 'message' not in values:
                 return
@@ -113,6 +114,7 @@ class VkPlus(object):
                 hues.error('Обход анти-флуда API не удался =(')
 
     async def mark_as_read(self, message_ids):
+        """Пометить сообщение(я) как прочитанное"""
         values = {
             'message_ids': message_ids
         }
@@ -138,15 +140,13 @@ class Message(object):
         if 'chat_id' in answer_values:
             self.conf = True
             self.cid = int(answer_values['chat_id'])
-            self.id = self.cid
 
         elif 'user_id' in answer_values:
             self.user = True
             self.uid = int(answer_values['user_id'])
-            self.id = self.uid
-
         else:
             raise ValueError('answer_values dict must contain chat_id or user_id')
+        self.id = answer_values['uid']
         self.body = answer_values['body']
         self.timestamp = answer_values['date']
 
@@ -160,5 +160,5 @@ class Message(object):
         """Функция ответа для упрощения создания плагинов. Так же может принимать доп.параметры"""
         if additional_values is None:
             additional_values = dict()
-        values = dict(self.answer_values, message=msg, **additional_values)
+        values = dict(**self.answer_values, message=msg, **additional_values)
         await self.vk.respond(values)

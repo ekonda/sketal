@@ -1,5 +1,18 @@
 # Various helpers
+import asyncio
 import hues
+
+
+def schedule(seconds):
+    def decor(func):
+        async def wrapper(*args, **kwargs):
+            while True:
+                await asyncio.sleep(seconds)
+                await func(*args, **kwargs)
+
+        return wrapper
+
+    return decor
 
 
 def fatal(*args):

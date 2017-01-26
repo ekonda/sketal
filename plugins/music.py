@@ -1,7 +1,7 @@
 import random
 from plugin_system import Plugin
 
-plugin = Plugin('Рекомендация музыки')
+# plugin = Plugin('Рекомендация музыки')
 
 errors = ['Открой аудио!', 'Аудиозаписи открой!', 'У тебя аудио закрыты!',
           'Я бы с радостью тебе дал музыки, но у тебя закрыты аудиозаписи.']
@@ -10,23 +10,19 @@ answers = ['Вот твоя музыка:', 'Вот, послушай.', 'Мои
            'Бесплатная музыка!']
 
 
-@plugin.on_command('музыка', 'музыку', 'музон', 'музло')
+# Плагин сломан в данный момент :(
+# @plugin.on_command('музыка', 'музыку', 'музон', 'музло')
 async def music_pro(msg, args):
     music = None
-
     try:
-        count = await msg.vk.method('audio.getRecommendations',
-                                    {'user_id': msg['user_id'], 'count': 1})
-
         music = await msg.vk.method('audio.getRecommendations',
-                                    {'user_id': msg['user_id'],
-                                     'offset': random.randint(0, count['count'] - 5),
-                                     'count': 5})
-    except Exception:
+                                    {'user_id': msg.id, 'shuffle': 1})
+    except Exception as ex:
+        print(ex)
         print('Failed get music of id' + str(msg.id))
 
     musicatt = []
-
+    print(music)
     if music is not None and music['items']:
         for attach in music['items']:
             user = attach['owner_id']

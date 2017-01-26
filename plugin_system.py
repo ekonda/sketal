@@ -5,13 +5,17 @@ import sys
 import threading
 import traceback
 import types
+from typing import Set
+
+import asyncio
 import hues
 from os.path import isfile
 
 
 class Plugin(object):
-    def __init__(self, name="Стандартное имя плагина (измени меня)", description=""):
-        self.deferred_events = []  # events which plugin subsсribed on
+    def __init__(self, name: str = "Example", description: str = ''):
+        self.deferred_events = []  # события, на которые подписан плагин
+        self.scheduled_funcs = []
         self.name = name
         self.description = description
         self.first_command = ''
@@ -26,6 +30,18 @@ class Plugin(object):
             return function
 
         return wrapper
+
+    def schedule(self, seconds):
+        def decor(func):
+            async def wrapper(*args, **kwargs):
+                while True:
+                    await asyncio.sleep(seconds)
+                    await func(*args, **kwargs)
+
+            return wrapper
+
+        return decor
+
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands, all_commands=False):
         def wrapper(function):
@@ -36,7 +52,7 @@ class Plugin(object):
                     self.add_deferred_func(command, function)
             elif not all_commands:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
                 self.add_deferred_func(self.name.lower(), function)
-            # если команд нет, плагин будет реагировать на ВСЕ команды
+            # Если нужно, реагируем на все команды
             else:
                 self.add_deferred_func('', function)
             return function
@@ -46,12 +62,17 @@ class Plugin(object):
     def add_deferred_func(self, command, function):
         if command is None:
             raise ValueError("Command can not be None")
-        self.deferred_events.append(lambda pluginsystem_object: pluginsystem_object.add_command(command, function))
+
+        def event(system: PluginSystem):
+            system.add_command(command, function)
+
+        self.deferred_events.append(event)
 
     # Register events for plugin
-    def register(self, plugin_system_object):
+    def register(self, system):
         for deferred_event in self.deferred_events:
-            deferred_event(plugin_system_object)
+            deferred_event(system)
+        system.scheduled_events += self.scheduled_funcs
 
 
 local_data = threading.local()
@@ -66,8 +87,9 @@ class PluginSystem(object):
         self.commands = {}
         self.folder = folder
         self.plugins = set()
+        self.scheduled_events = []
 
-    def get_plugins(self) -> set:
+    def get_plugins(self) -> Set[Plugin]:
         return self.plugins
 
     def add_command(self, name, function):
@@ -78,20 +100,19 @@ class PluginSystem(object):
         else:
             self.commands[name] = [function]
 
-    async def call_command(self, command_name, *args, **kwargs):
-        # Получаем функции команд для этой команды (несколько плагинов МОГУТ обрабатывать одну команду)
+    async def call_command(self, command_name: str, *args, **kwargs):
+        # Получаем функции команд для этой команды
+        # Несколько плагинов МОГУТ обрабатывать одну команду
         commands_ = self.commands.get(command_name)
 
-        # Если нет плагинов, которые готовы обработать нашу команду
         if not commands_:
             return
 
         # Если есть плагины, которые могут обработать нашу команду
         for command_function in commands_:
-            # Запускаем с аргументами
             await command_function(*args, **kwargs)
 
-    def register_plugin(self, plugin_object):
+    def register_plugin(self, plugin_object: Plugin):
         plugin_object.register(self)
 
     def register_commands(self):

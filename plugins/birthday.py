@@ -100,7 +100,7 @@ async def check(msg, args):
 
     # Поиск участников по списку
     for member in members:
-        if not 'bdate' in member:
+        if 'bdate' not in member:
             continue
         has_bdate += 1
         if len(member['bdate'].split('.')) > 2:

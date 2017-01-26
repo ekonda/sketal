@@ -16,6 +16,8 @@ timemsg = "Текущие дата и время по МСК: "
 delta = datetime.timedelta(hours=3)
 utc = datetime.timezone.utc
 fmt = '%d-%m-%Y %H:%M:%S'
+
+
 @plugin.on_command('время', 'дата', 'тайм', 'сколько время?', 'сколько время', 'сколько времени?')
 async def get_time(msg, args):
     # Знаю, быдлокод. В идеале нужно брать временную зону Москвы и т.д

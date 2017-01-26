@@ -4,14 +4,14 @@ from os.path import abspath, isfile
 import shutil
 import asyncio
 
-# PyPI
+# 3rd party packages
 import aiohttp
 import hues
 
-# Custom
+# Custom packages
 from plugin_system import PluginSystem
 from vkplus import VkPlus, Message
-from utils import fatal, parse_msg_flags
+from utils import fatal, parse_msg_flags, schedule
 
 
 class Bot(object):
@@ -91,98 +91,124 @@ class Bot(object):
         # Подгружаем плагины
         self.plugin_system = PluginSystem(folder=abspath('plugins'))
         self.plugin_system.register_commands()
-        # Чтобы плагины могли получить список плагинов
+        # Чтобы плагины могли получить список плагинов (костыль)
         self.vk.get_plugins = self.plugin_system.get_plugins
 
         # Для парсинга команд с пробелом используется
         # обратная сортировка, для того, чтобы самые
-        # длинные команды были первые в списке
+        # длинные команды были первыми в списке
         command_names = list(self.plugin_system.commands.keys())
         command_names.sort(key=len, reverse=True)
 
         from command import CommandSystem
         self.cmd_system = CommandSystem(command_names, self.plugin_system, self.convert_layout)
-
+        self.scheduled_funcs = self.plugin_system.scheduled_events
         hues.success("Загрузка плагинов завершена")
 
     async def init_long_polling(self):
         """Функция для инициализации Long Polling"""
-        result = await self.vk.method('messages.getLongPollServer', {'use_ssl': 1})
+        result = await self.vk.method('messages.getLongPollServer',
+                                      {'use_ssl': 1})
         if not result:
             fatal('Не удалось получить значения Long Poll сервера!')
         self.longpoll_server = "https://" + result['server']
         self.longpoll_key = result['key']
-        # Последний timestamp
-        self.last_ts = result['ts']
+        self.last_ts = result['ts']  # Последний timestamp
         self.longpoll_values = {
             'act': 'a_check',
             'key': self.longpoll_key,
             'ts': self.last_ts,
-            'wait': 20,  # timeout -> если не будет событий за этот период, сервер пришлёт ответ
+            'wait': 20,  # Тайм-аут запроса
             'mode': 2,
             'version': 1
         }
 
     async def check_event(self, new_event):
         if not new_event:
-            return
-            # Если событие - не новое сообщение
+            return  # На всякий случай
         if not new_event[0] == 4:
-            return
-        msg_id, flags, peer_id, timestamp, subject, text, attaches = new_event[1:]
-        # Если ID в чёрном списке - игнорим :)
+            return  # Если событие - не новое сообщение
+
+        msg_id, flags, peer_id, ts, subject, text, attaches = new_event[1:]
+        # Если ID находится в чёрном списке
         if peer_id in self.BLACKLIST:
             return
         # Получаем параметры сообщения
         # https://vk.com/dev/using_longpoll_2
         flags = parse_msg_flags(flags)
         if flags['outbox']:
-            # Если сообщение мы же и отправили - зачем нам оно нужно?
+            # Если сообщение - исходящее
             return
+
         # Тип сообщения - конференция или ЛС?
-        msg_type = 'chat_id' if peer_id - 2000000000 > 0 else 'user_id'
-        if msg_type == 'chat_id': peer_id -= 2000000000
+        try:
+            # Пробуем получить ID пользователя, который отправил
+            # сообщение в беседе
+            user_id = attaches['from']
+            peer_id -= 2000000000
+            msg_type = 'chat_id'
+        except KeyError:
+            # Если ключа from нет - это ЛС
+            user_id = peer_id
+            msg_type = 'user_id'
         data = {
             msg_type: peer_id,
+            'uid': user_id,  # uid - ID пользователя (в беседе или в ЛС)
             'body': text.replace('<br>', '\n'),
-            'date': timestamp
+            'date': ts
         }
         try:
             # Если разница между сообщениями меньше 1 сек - игнорим
-            if timestamp - self.messages_date[peer_id] <= 1:
-                self.messages_date[peer_id] = timestamp
+            if ts - self.messages_date[user_id] <= 1:
+                self.messages_date[user_id] = ts
                 return
             else:
-                self.messages_date[peer_id] = timestamp
+                self.messages_date[user_id] = ts
         except KeyError:
-            self.messages_date[peer_id] = timestamp
-        await self.check_if_command(data)
-        await self.vk.mark_as_read(msg_id)
+            self.messages_date[user_id] = ts
+        await self.check_if_command(data, msg_id)
 
-    async def run(self):
+    def schedule_coroutine(self, target):
+        """Schedules target coroutine in the given event loop
+
+        If not given, *loop* defaults to the current thread's event loop
+
+        Returns the scheduled task.
+        """
+        if asyncio.iscoroutine(target):
+            return asyncio.ensure_future(target, loop=self.event_loop)
+        else:
+            raise TypeError("target must be a coroutine, "
+                            "not {!r}".format(type(target)))
+
+    async def run(self, event_loop):
         """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
+        self.event_loop = event_loop  # Нужен для шедулинга функций
+        #for func in self.scheduled_funcs:
+        #    self.schedule_coroutine(func)
         await self.init_long_polling()
         session = aiohttp.ClientSession()
         while True:
-            resp = await session.get(self.longpoll_server, params=self.longpoll_values)
-            # Тут не используется resp.json() по простой причине:
-            # aiohttp будет писать warning'и из-за плохого mimetype
-            # неизвестно, почему он у ВК такой - text/javascript; charset=utf-8
-            # вместо JSON может быть HTML, так что будем проверять
+            resp = await session.get(self.longpoll_server,
+                                     params=self.longpoll_values)
+            """
+            Тут не используется resp.json() по простой причине:
+            aiohttp будет писать warning'и из-за плохого mimetype
+            Неизвестно, почему он у ВК такой - text/javascript; charset=utf-8
+            """
             events_text = await resp.text()
             try:
                 events = json.loads(events_text)
             except ValueError:
-                continue
-                # отправляем запрос ещё раз
-
+                continue  # Отправляем запрос ещё раз
+            # Проверяем на код ошибки
             failed = events.get('failed')
             if failed:
                 err_num = int(failed)
-                # Нам нужно обновить time stamp
+                # Код 1 - Нам нужно обновить time stamp
                 if err_num == 1:
                     self.longpoll_values['ts'] = events['ts']
-                # коды 2 и 3 - нужно переподключиться к long polling серверу
+                # Коды 2 и 3 - нужно переподключиться к long polling серверу
                 elif err_num == 2:
                     self.init_long_polling()
                 elif err_num == 3:
@@ -193,10 +219,14 @@ class Bot(object):
             for event in events['updates']:
                 await self.check_event(event)
 
-    async def check_if_command(self, answer: dict) -> None:
+    async def check_if_command(self, answer: dict, msg_id: int) -> None:
+        # Если не нужно логгировать сообщения
         if not self.log_messages:
             msg_obj = Message(self.vk, answer)
-            return await self.cmd_system.process_command(msg_obj)
+            result = await self.cmd_system.process_command(msg_obj)
+            if result:
+                # Если мы распознали команду, то помечаем её прочитанной
+                return await self.vk.mark_as_read(msg_id)
         if 'chat_id' in answer:
             hues.info("Сообщение из конференции ({}) > {}".format(
                 answer['chat_id'], answer['body']
@@ -213,7 +243,7 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     # запускаем бота
     try:
-        loop.run_until_complete(bot.run())
+        loop.run_until_complete(bot.run(loop))
     except KeyboardInterrupt:
         hues.warn("Выключение бота...")
         exit()
@@ -226,4 +256,4 @@ if __name__ == '__main__':
         bot.vk.api_session.close()
         if bot.is_token:
             bot.vk.public_api_session.close()
-        exit()
+        exit(1)
