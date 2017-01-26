@@ -210,9 +210,9 @@ class Bot(object):
                     self.longpoll_values['ts'] = events['ts']
                 # Коды 2 и 3 - нужно переподключиться к long polling серверу
                 elif err_num == 2:
-                    self.init_long_polling()
+                    await self.init_long_polling()
                 elif err_num == 3:
-                    self.init_long_polling()
+                    await self.init_long_polling()
                 continue
             # Обновляем время, чтобы не приходили старые события
             self.longpoll_values['ts'] = events['ts']
