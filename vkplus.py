@@ -115,7 +115,8 @@ class VkPlus(object):
 
 class Message(object):
     """Класс, объект которого передаётся в плагин для упрощённого ответа"""
-
+    __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id' ,
+                 'body', 'timestamp', 'answer_values')
     def __init__(self, vk_api_object, data: MessageEventData):
         self._data = data
         self.vk = vk_api_object

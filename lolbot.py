@@ -54,17 +54,17 @@ class Bot(object):
                     self.VK_LOGIN = settings.LOGIN
                     self.VK_PASSWORD = settings.PASSWORD
                 else:
-                    fatal('Проверьте, что у вас заполнены LOGIN и PASSWORD, или же TOKEN!'
-                          'Без них бот работать НЕ СМОЖЕТ.')
+                    fatal("Проверьте, что у вас заполнены LOGIN и PASSWORD, или же TOKEN!"
+                          "Без них бот работать НЕ СМОЖЕТ.")
 
             except (ValueError, AttributeError, NameError):
                 fatal('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
         # Если не нашли ни settings.py, ни settings.py.sample
         else:
-            fatal('settings.py и settings.py.sample не найдены, возможно вы их удалили?')
+            fatal("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
 
     def vk_init(self):
-        hues.warn('Авторизация в вк...')
+        hues.warn("Авторизация в ВКонтакте...")
         # Словарь вида ID -> время
         self.messages_date = {}
         if self.IS_TOKEN:
@@ -74,7 +74,7 @@ class Bot(object):
                              password=self.VK_PASSWORD,
                              scope=self.SCOPE, app_id=self.APP_ID)
 
-        hues.success('Успешная авторизация')
+        hues.success("Успешная авторизация")
 
     def plugin_init(self):
         hues.warn("Загрузка плагинов...")
@@ -102,7 +102,7 @@ class Bot(object):
         result = await self.vk.method('messages.getLongPollServer',
                                       {'use_ssl': 1})
         if not result:
-            fatal('Не удалось получить значения Long Poll сервера!')
+            fatal("Не удалось получить значения Long Poll сервера!")
         self.longpoll_server = "https://" + result['server']
         self.longpoll_key = result['key']
         self.last_ts = result['ts']  # Последний timestamp
@@ -142,7 +142,6 @@ class Bot(object):
         except KeyError:
             # Если ключа from нет - это ЛС
             user_id = peer_id
-            msg_type = 'user_id'
             conf = False
 
         cleaned_body = text.replace('<br>', '\n')
@@ -177,7 +176,7 @@ class Bot(object):
         # for func in self.scheduled_funcs:
         #    self.schedule_coroutine(func)
         await self.init_long_polling()
-        session = aiohttp.ClientSession()
+        session = aiohttp.ClientSession(loop=event_loop)
         while True:
             resp = await session.get(self.longpoll_server,
                                      params=self.longpoll_values)
@@ -214,23 +213,17 @@ class Bot(object):
         msg_obj = Message(self.vk, data)
         result = await self.cmd_system.process_command(msg_obj)
         if result:
-            # Если мы распознали команду, то помечаем её прочитанной
+            # Если мы это -  команда, то помечаем сообщение прочитанным
+            # Сделано для того, чтобы бот не читал обычные сообщения
             return await self.vk.mark_as_read(msg_id)
         if self.LOG_MESSAGES:
-
-            if data.conf:
-                hues.info("Сообщение из конференции ({}) > {}".format(
-                    data.peer_id, data.body
-                ))
-            else:
-                hues.info("Сообщение из ЛС http://vk.com/id{} > {}".format(
-                    data.user_id, data.body
-                ))
+            who = ("конференции {}" if data.conf else "ЛС {}").format(data.peer_id)
+            hues.info("Сообщение из {} > {}".format(who, data.body))
 
 
 if __name__ == '__main__':
     bot = Bot()
-    hues.success('Приступаю к приему сообщений')
+    hues.success("Приступаю к приему сообщений")
     loop = asyncio.get_event_loop()
     # запускаем бота
     try:

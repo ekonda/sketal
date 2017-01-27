@@ -13,8 +13,9 @@ answers = '''А вот и шуточки подъехали!!!
 
 @plugin.on_command('шутка', 'пошути', 'рассмеши', 'петросян', 'расскажи шутку')
 async def joke_get(msg, args):
-    resp = requests.post('http://randstuff.ru/joke/generate/')
+    resp = requests.post('http://www.umori.li/api/random?num=10')
     try:
+        print(resp.content)
         joke = resp.json()['joke']['text']
     except:
         return await msg.answer("У меня шутилка сломалась :(")
