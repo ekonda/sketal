@@ -11,20 +11,17 @@ import hues
 # Custom packages
 from plugin_system import PluginSystem
 from vkplus import VkPlus, Message
-from utils import fatal, parse_msg_flags, schedule
+from utils import fatal, parse_msg_flags, schedule, MessageEventData
 
 
 class Bot(object):
-    """Главный класс бота, создан для упрощённой работы с переменными"""
+    """Главный класс бота"""
 
     def __init__(self):
-        # По умолчанию все сообщения будут жирные и синие :)
-
         self.last_message_id = 0
         self.init_settings()
         self.vk_init()
         self.plugin_init()
-        asyncio.sleep(0.35)  # успеть всё инициализировать
 
     def init_settings(self):
         """Функция инициализации файла настроек и его создания"""
@@ -33,32 +30,34 @@ class Bot(object):
             try:
                 shutil.copy('settings.py.sample', 'settings.py')
             except Exception:
-                fatal('У меня нет прав писать в текущую директорию, '
+                fatal('Я не могу копировать файлы в текущей папке, '
                       'проверьте ваши права на неё!')
-            fatal('Был создан файл settings.py, пожалуйста, измените значения на Ваши!')
+            fatal('Был создан файл settings.py, '
+                  'не забудьте добавить данные для авторизации!')
         # Если у нас уже есть settings.py
         elif isfile('settings.py'):
             import settings
             try:
                 self.BLACKLIST = settings.BLACKLIST
                 self.PREFIXES = settings.PREFIXES
-                self.log_messages = settings.NEED_LOG
-                self.convert_layout = settings.NEED_CONVERT
-                self.app_id = settings.APP_ID
-                self.scope = settings.SCOPE
+                self.LOG_MESSAGES = settings.LOG_MESSAGES
+                self.LOG_COMMANDS = settings.LOG_COMMANDS
+                self.NEED_CONVERT = settings.NEED_CONVERT
+                self.APP_ID = settings.APP_ID
+                self.SCOPE = settings.SCOPE
                 if settings.TOKEN:
-                    self.is_token = True
-                    self.token = settings.TOKEN
+                    self.IS_TOKEN = True
+                    self.TOKEN = settings.TOKEN
 
                 elif settings.LOGIN and settings.PASSWORD:
-                    self.is_token = False
-                    self.vk_login = settings.LOGIN
-                    self.vk_password = settings.PASSWORD
+                    self.IS_TOKEN = False
+                    self.VK_LOGIN = settings.LOGIN
+                    self.VK_PASSWORD = settings.PASSWORD
                 else:
                     fatal('Проверьте, что у вас заполнены LOGIN и PASSWORD, или же TOKEN!'
                           'Без них бот работать НЕ СМОЖЕТ.')
 
-            except (ValueError, IndexError, AttributeError, NameError):
+            except (ValueError, AttributeError, NameError):
                 fatal('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
         # Если не нашли ни settings.py, ни settings.py.sample
         else:
@@ -68,20 +67,12 @@ class Bot(object):
         hues.warn('Авторизация в вк...')
         # Словарь вида ID -> время
         self.messages_date = {}
-        if self.is_token:
-            self.vk = VkPlus(token=self.token, scope=self.scope, app_id=self.app_id)
-        elif not self.is_token:
-            self.vk = VkPlus(login=self.vk_login, password=self.vk_password, scope=self.scope, app_id=self.app_id)
-
-        self.ANSWER_VALUES = {
-            'out': 0,
-            'offset': 0,
-            'count': 20,
-            'time_offset': 15,
-            'filters': 0,
-            'preview_length': 0,
-            'last_message_id': self.last_message_id
-        }
+        if self.IS_TOKEN:
+            self.vk = VkPlus(token=self.TOKEN, scope=self.SCOPE, app_id=self.APP_ID)
+        elif not self.IS_TOKEN:
+            self.vk = VkPlus(login=self.VK_LOGIN,
+                             password=self.VK_PASSWORD,
+                             scope=self.SCOPE, app_id=self.APP_ID)
 
         hues.success('Успешная авторизация')
 
@@ -91,7 +82,7 @@ class Bot(object):
         # Подгружаем плагины
         self.plugin_system = PluginSystem(folder=abspath('plugins'))
         self.plugin_system.register_commands()
-        # Чтобы плагины могли получить список плагинов (костыль)
+        # Чтобы плагины могли получить список всех плагинов (костыль)
         self.vk.get_plugins = self.plugin_system.get_plugins
 
         # Для парсинга команд с пробелом используется
@@ -101,7 +92,8 @@ class Bot(object):
         command_names.sort(key=len, reverse=True)
 
         from command import CommandSystem
-        self.cmd_system = CommandSystem(command_names, self.plugin_system, self.convert_layout)
+        self.cmd_system = CommandSystem(command_names,
+                                        self.plugin_system, self.NEED_CONVERT)
         self.scheduled_funcs = self.plugin_system.scheduled_events
         hues.success("Загрузка плагинов завершена")
 
@@ -126,18 +118,18 @@ class Bot(object):
     async def check_event(self, new_event):
         if not new_event:
             return  # На всякий случай
-        if not new_event[0] == 4:
+        if not new_event.pop(0) == 4:
             return  # Если событие - не новое сообщение
 
-        msg_id, flags, peer_id, ts, subject, text, attaches = new_event[1:]
+        msg_id, flags, peer_id, ts, subject, text, attaches = new_event
         # Если ID находится в чёрном списке
         if peer_id in self.BLACKLIST:
             return
         # Получаем параметры сообщения
         # https://vk.com/dev/using_longpoll_2
         flags = parse_msg_flags(flags)
+        # Если сообщение - исходящее
         if flags['outbox']:
-            # Если сообщение - исходящее
             return
 
         # Тип сообщения - конференция или ЛС?
@@ -146,17 +138,15 @@ class Bot(object):
             # сообщение в беседе
             user_id = attaches['from']
             peer_id -= 2000000000
-            msg_type = 'chat_id'
+            conf = True
         except KeyError:
             # Если ключа from нет - это ЛС
             user_id = peer_id
             msg_type = 'user_id'
-        data = {
-            msg_type: peer_id,
-            'uid': user_id,  # uid - ID пользователя (в беседе или в ЛС)
-            'body': text.replace('<br>', '\n'),
-            'date': ts
-        }
+            conf = False
+
+        cleaned_body = text.replace('<br>', '\n')
+        data = MessageEventData(conf, peer_id, user_id, cleaned_body, ts)
         try:
             # Если разница между сообщениями меньше 1 сек - игнорим
             if ts - self.messages_date[user_id] <= 1:
@@ -184,7 +174,7 @@ class Bot(object):
     async def run(self, event_loop):
         """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
         self.event_loop = event_loop  # Нужен для шедулинга функций
-        #for func in self.scheduled_funcs:
+        # for func in self.scheduled_funcs:
         #    self.schedule_coroutine(func)
         await self.init_long_polling()
         session = aiohttp.ClientSession()
@@ -208,7 +198,8 @@ class Bot(object):
                 # Код 1 - Нам нужно обновить time stamp
                 if err_num == 1:
                     self.longpoll_values['ts'] = events['ts']
-                # Коды 2 и 3 - нужно переподключиться к long polling серверу
+                # Коды 2 и 3 - нужно запросить данные нового
+                # Long Polling сервера
                 elif err_num == 2:
                     await self.init_long_polling()
                 elif err_num == 3:
@@ -219,22 +210,22 @@ class Bot(object):
             for event in events['updates']:
                 await self.check_event(event)
 
-    async def check_if_command(self, answer: dict, msg_id: int) -> None:
-        # Если не нужно логгировать сообщения
-        if not self.log_messages:
-            msg_obj = Message(self.vk, answer)
-            result = await self.cmd_system.process_command(msg_obj)
-            if result:
-                # Если мы распознали команду, то помечаем её прочитанной
-                return await self.vk.mark_as_read(msg_id)
-        if 'chat_id' in answer:
-            hues.info("Сообщение из конференции ({}) > {}".format(
-                answer['chat_id'], answer['body']
-            ))
-        elif 'user_id' in answer:
-            hues.info("Сообщение из ЛС http://vk.com/id{} > {}".format(
-                answer['user_id'], answer['body']
-            ))
+    async def check_if_command(self, data: MessageEventData, msg_id: int) -> None:
+        msg_obj = Message(self.vk, data)
+        result = await self.cmd_system.process_command(msg_obj)
+        if result:
+            # Если мы распознали команду, то помечаем её прочитанной
+            return await self.vk.mark_as_read(msg_id)
+        if self.LOG_MESSAGES:
+
+            if data.conf:
+                hues.info("Сообщение из конференции ({}) > {}".format(
+                    data.peer_id, data.body
+                ))
+            else:
+                hues.info("Сообщение из ЛС http://vk.com/id{} > {}".format(
+                    data.user_id, data.body
+                ))
 
 
 if __name__ == '__main__':
@@ -254,6 +245,6 @@ if __name__ == '__main__':
         traceback.print_exc()
         # Закрываем сессии API (чтобы не было предупреждения)
         bot.vk.api_session.close()
-        if bot.is_token:
+        if bot.IS_TOKEN:
             bot.vk.public_api_session.close()
         exit(1)

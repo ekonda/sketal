@@ -4,7 +4,7 @@ import hues
 import re
 
 from plugin_system import PluginSystem
-from utils import convert_to_rus, convert_to_en
+from utils import convert_to_rus, convert_to_en, MessageEventData
 from settings import PREFIXES
 from vkplus import Message
 
@@ -21,7 +21,7 @@ class CommandSystem(object):
     async def process_command(self, msg_obj: Message):
         """Обработать объект Message"""
         # Создаём объект cmd
-        cmd = Command(msg_obj._values)
+        cmd = Command(msg_obj._data)
 
         if not cmd.good_cmd:
             return False
@@ -54,17 +54,20 @@ class CommandSystem(object):
                     "Произошла ошибка при вызове команды '{cmd}'. "
                     "Сообщение: '{body}' с параметрами {args}. "
                     "Ошибка:\n{traceback}".format(
-                        cmd=command, body=msg_obj._values, args=cmd.args,
+                        cmd=command, body=msg_obj._data, args=cmd.args,
                         traceback=traceback.format_exc()
                     ))
             break
 
 
 class Command(object):
-    def __init__(self, answer: dict):
+    __slots__ = ('good_cmd', '_data', 'text', 'joined_text', 'command',
+                 'prefix', 'args')
+
+    def __init__(self, data: MessageEventData):
         self.good_cmd = True  # переменная для обозначения, всё ли хорошо с командой
-        self.values = answer
-        self.text = answer['body']
+        self._data = data
+        self.text = data.body
         self.__get_prefix()  # Узнаём свой префикс
         self.joined_text = ''.join(self.text).lower()  # команда без пробелов в нижнем регистре
         self.command = None
@@ -72,23 +75,19 @@ class Command(object):
     def set(self, command: str, convert: bool = False):
         self.command = command
         if convert:
-            self.text = re.sub(re.escape(convert_to_en(command)), '', self.text, flags=re.IGNORECASE)
-            # self.text = self.text.replace(convert_to_en(command), '')
+            self.text = re.sub(re.escape(convert_to_en(command)), '',
+                               self.text, flags=re.IGNORECASE)
         else:
             self.text = re.sub(re.escape(command), '', self.text, flags=re.IGNORECASE)
-            # self.text = self.text.replace(self.command, '')
         if self.good_cmd:
             self.__get_args()  # Получаем свои аргументы
             self.log()
 
     def log(self):
-        conversation_id = str(self.values.get('user_id', self.values.get('chat_id')))
-        if 'user_id' in self.values:
-            conversation_id = 'ЛС от http://vk.com/id' + conversation_id
-        else:
-            conversation_id = "конференции " + conversation_id
-        hues.info("Команда '{cmd}' из ({cid}) с аргументами {args}.".format(
-            cmd=self.command, cid=conversation_id, args=self.args
+        cid = self._data.peer_id
+        who = ("конференции {}" if self._data.conf else "ЛС {}").format(cid)
+        hues.info("Команда '{cmd}' из {who} с аргументами {args}.".format(
+            cmd=self.command, who=who, args=self.args
         ))
 
     def __get_prefix(self):

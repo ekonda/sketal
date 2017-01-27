@@ -15,6 +15,21 @@ def schedule(seconds):
     return decor
 
 
+class MessageEventData():
+    # __slots__ используется для оптимизации объектов этого класса
+    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time')
+
+    def __init__(self, conf: bool, pid: int, uid: int, body: str, time: int):
+        self.conf = conf
+        self.peer_id = pid
+        self.user_id = uid
+        self.body = body
+        self.time = time
+
+    def __repr__(self):
+        return self.body
+
+
 def fatal(*args):
     """Passes args to hues.error and then exits"""
     hues.error(*args)
