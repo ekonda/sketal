@@ -14,8 +14,12 @@ def schedule(seconds):
 
     return decor
 
+# http://stackoverflow.com/questions/18854620/whats-the-best-way-to-split-a-string-into-fixed-length-chunks-and-work-with-the
+def string_chunks(string, length):
+    return (string[0 + i:length + i] for i in range(0, len(string), length))
 
-class MessageEventData():
+
+class MessageEventData(object):
     # __slots__ используется для оптимизации объектов этого класса
     __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time')
 
@@ -35,9 +39,8 @@ def fatal(*args):
     hues.error(*args)
     exit()
 
- # ":", "\^", "~", "`", "\{", "\[", "\}", "\]", """, "'", "<", ",", ">", "\.", ";", "\?", "\/", "&", "@", "#", "\$"]
-# "Ж", ":", "Ё", "ё", "Х", "х", "Ъ", "ъ", "Э", "э", "Б", "б", "Ю", "ю", "ж", ",", ".", "?", """, "№", ";"
-# Code adopted from http://gsgen.ru/tools/perevod-raskladki-online/
+
+# Characters are taken from http://gsgen.ru/tools/perevod-raskladki-online/
 english = "Q-W-E-R-T-Y-U-I-O-P-A-S-D-F-G-H-J-K-L-Z-X-C-V-B-N-M"
 eng_expr = english + english.lower() + "-" + ":-^-~-`-{-[-}-]-\"-'-<-,->-.-;-?-/-&-@-#-$"
 russian = "Й-Ц-У-К-Е-Н-Г-Ш-Щ-З-Ф-Ы-В-А-П-Р-О-Л-Д-Я-Ч-С-М-И-Т-Ь"
@@ -71,7 +74,7 @@ keys = [
 ]
 
 
-def parse_msg_flags(bitmask: int):
+def parse_msg_flags(bitmask: int) -> dict:
     """Функция для чтения битовой маски и возврата словаря значений"""
     start = 1
     values = []

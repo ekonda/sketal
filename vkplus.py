@@ -10,14 +10,15 @@ from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 
 # Custom
-from utils import fatal, MessageEventData
+from utils import fatal, MessageEventData, string_chunks
 
 
 class NotHavePerms(Exception):
     pass
 
 
-# Driver for 3 requests per sec limitation (actually 1.2 sec)
+# Драйвер для ограничения запросов к API - 3 раза в секунду
+# На самом деле 3 запроса в 1.2 секунд (для безопасности)
 class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 1
     period = 0.4
@@ -56,8 +57,8 @@ class VkPlus(object):
             self.public_api = aiovk.API(self.public_api_session)
 
     async def method(self, key: str, data: dict = {}):
-        # Если у нас token, то для всех остальных методов
-        # кроме разрешённых вызовем паблик API
+        # Если у нас TOKEN, то для всех остальных методов,
+        # кроме разрешённых, вызовем публичное API
         if key not in self.group_methods and self.token and 'message' not in key:
             api_method = self.public_api
         else:
@@ -115,8 +116,9 @@ class VkPlus(object):
 
 class Message(object):
     """Класс, объект которого передаётся в плагин для упрощённого ответа"""
-    __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id' ,
+    __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id',
                  'body', 'timestamp', 'answer_values')
+
     def __init__(self, vk_api_object, data: MessageEventData):
         self._data = data
         self.vk = vk_api_object
@@ -139,7 +141,12 @@ class Message(object):
 
     async def answer(self, msg, **additional_values):
         """Функция ответа для упрощения создания плагинов. Так же может принимать доп.параметры"""
+        if len(msg) > 600:
+            messages = string_chunks(msg, 500)
+        else:
+            messages = [msg]
         if additional_values is None:
             additional_values = dict()
-        values = dict(**self.answer_values, message=msg, **additional_values)
-        await self.vk.method('messages.send', values)
+        for msg in messages:
+            values = dict(**self.answer_values, message=msg, **additional_values)
+            await self.vk.method('messages.send', values)

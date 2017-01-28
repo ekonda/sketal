@@ -1,12 +1,10 @@
 from plugin_system import Plugin
 
-plugin = Plugin('Поиск видео')
-
-possible_commands = ('видео', 'видяшки', 'видос', 'видосик', 'найди видео',
-                     'найди видео про', 'видео про', 'видос про')
+plugin = Plugin('Поиск видео',
+                usage='видео [строка для поиска] - найти видео по запросу')
 
 
-@plugin.on_command(*possible_commands)
+@plugin.on_command('видео', 'видяшки', 'видос', 'видосик')
 async def video_search(msg, args):
     # Если нет аргументов
     if not args:

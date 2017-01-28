@@ -1,7 +1,8 @@
 import random
 from plugin_system import Plugin
 
-plugin = Plugin('Случайные мемы')
+plugin = Plugin('Случайные мемы',
+                usage='мемы - показать случайный мем')
 
 answers = '''Мемы поданы!
 Классный мемес!
@@ -9,7 +10,7 @@ answers = '''Мемы поданы!
 '''.splitlines()
 
 
-@plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы', 'дай мемасы')
+@plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы')
 async def call(msg, args):
     isphoto = False
     boobs = None

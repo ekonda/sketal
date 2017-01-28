@@ -2,7 +2,8 @@ import random
 import requests
 from plugin_system import Plugin
 
-plugin = Plugin('Шутки')
+plugin = Plugin('Шутки',
+                usage='пошути - написать случайный анекдот')
 
 answers = '''А вот и шуточки подъехали!!!
 Сейчас будет смешно, зуб даю!
@@ -11,7 +12,7 @@ answers = '''А вот и шуточки подъехали!!!
 '''.splitlines()
 
 
-@plugin.on_command('шутка', 'пошути', 'рассмеши', 'петросян', 'расскажи шутку')
+@plugin.on_command('шутка', 'пошути', 'рассмеши')
 async def joke_get(msg, args):
     resp = requests.post('http://www.umori.li/api/random?num=10')
     try:

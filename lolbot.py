@@ -213,7 +213,7 @@ class Bot(object):
         msg_obj = Message(self.vk, data)
         result = await self.cmd_system.process_command(msg_obj)
         if result:
-            # Если мы это -  команда, то помечаем сообщение прочитанным
+            # Если это - команда, то помечаем сообщение прочитанным
             # Сделано для того, чтобы бот не читал обычные сообщения
             return await self.vk.mark_as_read(msg_id)
         if self.LOG_MESSAGES:
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     except Exception as ex:
         import traceback
 
-        hues.error("Фатальная ошибка при выполнении бота:\n")
+        hues.error("Произошла фатальная ошибка во время работы:\n")
         traceback.print_exc()
         # Закрываем сессии API (чтобы не было предупреждения)
         bot.vk.api_session.close()

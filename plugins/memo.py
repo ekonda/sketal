@@ -1,25 +1,20 @@
 from plugin_system import Plugin
 
-plugin = Plugin('Запоминатель')
+plugin = Plugin('Блокнот',
+                usage='запомни [строка] - запомнить строку\n'
+                      'напомни - напомнить строку')
 
 memoes = {}
 
 
-@plugin.on_command('запомни', 'запиши', 'не забудь')
+@plugin.on_command('запомни', 'запиши')
 async def memo_write(msg, args):
     string = ' '.join(args)
-    if msg.conf:
-        memoes[msg.cid] = string
-    else:
-        memoes[msg.uid] = string
+    memoes[msg.id] = string
     await msg.answer('Вроде запомнил...')
 
 
-@plugin.on_command('напомни', 'вспомни', 'посмотри блокнот')
+@plugin.on_command('напомни', 'вспомни')
 async def memo_read(msg, args):
-    string = ''
-    if msg.conf:
-        string = memoes.get(msg.cid, "Ничего")
-    else:
-        string = memoes.get(msg.uid, "Ничего")
+    string = memoes.get(msg.id, "Ничего")
     await msg.answer('Вот что я вспомнил:\n' + string)

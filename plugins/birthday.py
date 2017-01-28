@@ -28,26 +28,26 @@ there_list = '''Вот список
 Вот они, эти счастливчики
 '''.splitlines()
 
-plugin = Plugin('Дни рождения')
+plugin = Plugin('Дни рождения в группе')
 
 
-@plugin.on_command('день рождения', 'др')
+@plugin.on_command('др')
 async def check(msg, args):
     # ID группы, в которой искать
-    if len(args) != 1:
+    if not args:
         return
 
     try:
+        possible_id = args[0]
         # Пытаемся получить ID группы по короткому имени
-        grp_id = await msg.vk.resolve_name(args[0])
+        grp_id = await msg.vk.resolve_name(possible_id)
         # Если не получилось, конвертируем аргумент в число
         if not grp_id:
-            grp_id = int(args[0].replace('-', ''))
+            grp_id = int(possible_id.replace('-', ''))
         if not grp_id:
             return
     except ValueError:
-        await msg.answer('Вы ввели не число!')
-        return
+        return await msg.answer('Вы ввели не число!')
 
     get_members_request = {
         'group_id': grp_id,

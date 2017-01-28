@@ -4,7 +4,8 @@ import random
 from plugin_system import Plugin
 from settings import ADMINS
 
-plugin = Plugin('Правда')
+plugin = Plugin('Шар предсказаний',
+                usage='шар [строка] - вероятность того, что высказывание правдиво')
 
 # Инициализируем возможные ответы
 answers = '''Абсолютно точно!
@@ -26,14 +27,6 @@ answers = '''Абсолютно точно!
 '''.splitlines()
 
 
-@plugin.on_command('правда', 'предсказание', 'реши', 'шар')
+@plugin.on_command('правда', 'предсказание', 'реши', 'шар', 'инфа')
 async def tell_truth(msg, args):
-    await msg.answer("🎱" + random.choice(answers))
-
-
-@plugin.on_command('админ')
-async def im_admin(msg, args):
-    uid = msg.id
-    if uid not in ADMINS:
-        return await msg.answer("Нет, ты не админ!")
-    await msg.answer('Слушаю и повинуюсь!')
+    await msg.answer("🔮" + random.choice(answers))

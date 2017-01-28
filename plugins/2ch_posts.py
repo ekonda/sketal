@@ -1,12 +1,12 @@
 import random
 from plugin_system import Plugin
 
-plugin = Plugin("Случайное с двача")
+plugin = Plugin("Случайные посты с 2ch")
 
 answers = ["Каеф", "Не баян (баян)", "Ну держи!", "🌚"]
 
 
-@plugin.on_command('двач', '2ch', 'двачик', 'мемы с двача')
+@plugin.on_command('двач', '2ch', 'двачик')
 async def get_memes(msg, args):
     isphoto = False
     boobs = None

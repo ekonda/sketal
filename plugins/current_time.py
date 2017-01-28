@@ -1,7 +1,8 @@
 import datetime
 from plugin_system import Plugin
 
-plugin = Plugin('Время')
+plugin = Plugin('Время',
+                usage="время - узнать текущее время")
 
 days = {
     0: 'понедельник',
@@ -18,7 +19,7 @@ utc = datetime.timezone.utc
 fmt = '%d-%m-%Y %H:%M:%S'
 
 
-@plugin.on_command('время', 'дата', 'тайм', 'сколько время?', 'сколько время', 'сколько времени?')
+@plugin.on_command('время', 'дата')
 async def get_time(msg, args):
     # Знаю, быдлокод. В идеале нужно брать временную зону Москвы и т.д
 

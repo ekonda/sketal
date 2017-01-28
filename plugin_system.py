@@ -5,7 +5,6 @@ import sys
 import threading
 import traceback
 import types
-from typing import Set
 
 import asyncio
 import hues
@@ -28,7 +27,10 @@ class Plugin(object):
         def decor(func):
             async def wrapper(*args, **kwargs):
                 while True:
+                    # Спим указанное кол-во секунд
+                    # При этом другие корутины могут работать
                     await asyncio.sleep(seconds)
+                    # Выполняем саму функцию
                     await func(*args, **kwargs)
 
             return wrapper
@@ -41,18 +43,22 @@ class Plugin(object):
             if commands:  # Если написали, какие команды используются
                 # Первая команда - отображается в списке команд (чтобы не было много команд не было)
                 self.first_command = commands[0]
+                # Если хоть в 1 команде есть пробел - она состоит из двух слов
+                if any(' ' in cmd.strip() for cmd in commands):
+                    hues.error('В плагине {} была использована команда из двух слов'
+                               .format(self.name))
                 for command in commands:
-                    self.add_deferred_func(command, function)
+                    self.add_func(command, function)
             elif not all_commands:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
-                self.add_deferred_func(self.name.lower(), function)
+                self.add_func(self.name.lower(), function)
             # Если нужно, реагируем на все команды
             else:
-                self.add_deferred_func('', function)
+                self.add_func('', function)
             return function
 
         return wrapper
 
-    def add_deferred_func(self, command, function):
+    def add_func(self, command, function):
         if command is None:
             raise ValueError("Command can not be None")
 
@@ -82,14 +88,14 @@ class PluginSystem(object):
         self.plugins = set()
         self.scheduled_events = []
 
-    def get_plugins(self) -> Set[Plugin]:
+    def get_plugins(self) -> set:
         return self.plugins
 
     def add_command(self, name, function):
         # если уже есть хоть 1 команда, добавляем к списку
         if name in self.commands:
             self.commands[name].append(function)
-        # если нет, создаём новый список
+        # если нет, создаём новый кортеж
         else:
             self.commands[name] = [function]
 

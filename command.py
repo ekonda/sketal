@@ -1,8 +1,6 @@
 import traceback
 
 import hues
-import re
-
 import settings
 from plugin_system import PluginSystem
 from utils import convert_to_rus, convert_to_en, MessageEventData
@@ -23,82 +21,81 @@ class CommandSystem(object):
         """Обработать объект Message"""
         cmd = Command(msg_obj._data, self.convert)
 
-        if not cmd.good_cmd:
+        if not cmd.has_prefix:
             return False
-
-        if self.convert:
-            translated_cmd_text = convert_to_rus(cmd.joined_text)
+        # Если команда есть в списке команд
+        if cmd.command in self.commands:
+            command = cmd.command
+        # Или нужно попробовать конвертировать и изменённая команда в командах
+        elif self.convert and cmd.try_convert() in self.commands:
+            cmd.convert()
+            command = cmd.command
         else:
-            translated_cmd_text = ''
-
-        for command in self.commands:
-            command = command.lower()
-            if command in cmd.
-            try:
-                await self.system.call_command(command, msg_obj, cmd.args)
-                return True
-            # Если в плагине какая-то ошибка
-            except Exception:
-                await msg_obj.answer("{}.".format(msg_obj.vk.anti_flood()) +
-                                     "Произошла ошибка при выполнении команды <{}>, ".format(command) +
-                                     "пожалуйста, сообщите об этом разработчику!")
-                hues.error(
-                    "Произошла ошибка при вызове команды '{cmd}'. "
-                    "Сообщение: '{body}' с параметрами {args}. "
-                    "Ошибка:\n{traceback}".format(
-                        cmd=command, body=msg_obj._data, args=cmd.args,
-                        traceback=traceback.format_exc()
-                    ))
-            break
+            return False
+        # Логгируем команду, если нужно
+        if settings.LOG_COMMANDS:
+            cmd.log()
+        try:
+            await self.system.call_command(command, msg_obj, cmd.args)
+            return True
+        # Если в плагине произошла какая-то ошибка
+        except Exception:
+            await msg_obj.answer("{}.".format(msg_obj.vk.anti_flood()) +
+                                 "Произошла ошибка при выполнении команды <{}>, ".format(command) +
+                                 "пожалуйста, сообщите об этом разработчику!")
+            hues.error(
+                "Произошла ошибка при вызове команды '{cmd}' с аргументами {args}"
+                "Текст сообщения: '{body}'."
+                "Ошибка:\n{tbk}".format(
+                    cmd=command, body=msg_obj._data, args=cmd.args,
+                    tbk=traceback.format_exc()
+                ))
 
 
 class Command(object):
-    __slots__ = ('good_cmd', '_data', 'text', 'joined_text',
-                 'command', 'args', 'try_convert', 'eng_layout')
+    __slots__ = ('has_prefix', '_data', 'text',
+                 'command', 'args', 'need_convert')
 
     def __init__(self, data: MessageEventData, convert: bool):
-        self.good_cmd = True  # переменная для обозначения, всё ли хорошо с командой
+        self.has_prefix = True  # переменная для обозначения, всё ли хорошо с командой
         self._data = data
         self.text = data.body
-        self.try_convert = convert
-        self.joined_text = ''.join(self.text).lower()  # команда без пробелов в нижнем регистре
-        self.command = None
-        self.__get_prefix()  # Узнаём свой префикс
+        self.need_convert = convert
+        self._get_prefix()  # Узнаём свой префикс
+        self.command, *self.args = self.text.split(' ')
+        # Если команда пустая
+        if not self.command.strip():
+            self.has_prefix = False
 
-    def set(self, command: str, convert: bool = False):
-        self.eng_layout = True if convert else self.eng_layout
-        self.command = command
-        if self.eng_layout:
-            self.text = re.sub(re.escape(convert_to_rus(command)), '',
-                               self.text, flags=re.IGNORECASE)
-        else:
-            self.text = re.sub(re.escape(command), '', self.text, flags=re.IGNORECASE)
-        if self.good_cmd:
-            self.__get_args()  # Получаем свои аргументы
-            self.log()
+    def try_convert(self):
+        return convert_to_rus(self.command)
+
+    def convert(self):
+        self.command = convert_to_rus(self.command)
+        self.args = [convert_to_rus(arg) for arg in self.args]
 
     def log(self):
-        cid = self._data.peer_id
-        who = ("конференции {}" if self._data.conf else "ЛС {}").format(cid)
+        pid = self._data.peer_id
+        who = ("конференции {}" if self._data.conf else "ЛС {}").format(pid)
         hues.info("Команда '{cmd}' из {who} с аргументами {args}.".format(
             cmd=self.command, who=who, args=self.args
         ))
 
-    def __get_prefix(self):
+    def _get_prefix(self):
+        # Проходимся по всем префиксам
         for prefix in PREFIXES:
-            self.eng_layout = False
+            # Если команда начинается с префикса
             if self.text.startswith(prefix):
+                # Убираем префикс из текста
                 self.text = self.text.replace(prefix, '', 1).lstrip()
                 break
-            elif self.try_convert:
+            elif self.need_convert:
                 # Префикс, написанный русскими буквами, но на английской раскладке
                 prefix_en = convert_to_en(prefix)
+                # Если команда начинается с префикса в английской раскладке
                 if self.text.startswith(prefix_en):
-                    self.eng_layout = True
+                    # Убираем префикс из текста
                     self.text = self.text.replace(prefix_en, '', 1).lstrip()
                     break
         else:
-            self.good_cmd = False
-
-    def __get_args(self):
-        self.args = self.text.split()
+            self.has_prefix = False

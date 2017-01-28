@@ -1,24 +1,24 @@
 from plugin_system import Plugin
 
-plugin = Plugin('Послать сообщение')
+plugin = Plugin('Послать сообщение',
+                usage='написать [id] [сообщение] - написать сообщение пользователю с ID id')
 
 
 @plugin.on_command('написать', 'напиши', 'лс', 'письмо')
 async def write_msg(msg, args):
-    if not len(args):
-        return await msg.answer('Введите ID пользователя и сообщение для него')
-    if not args[0].isdigit():
-        uid = await msg.vk.resolve_name(args[0])
+    if len(args) < 2:
+        return await msg.answer('Введите ID пользователя и сообщение для него.')
+    possible_id = args.pop(0)
+    if not possible_id.isdigit():
+        uid = await msg.vk.resolve_name(possible_id)
     else:
-        uid = int(args[0])
+        uid = int(possible_id)
     if not uid:
-        await msg.answer('Не могу найти такой ID пользователя')
+        await msg.answer('Проверьте правильность введёного ID пользователя.')
         return
-    body = 'Меня тут попросили тебе написать: \n'
-    body += ' '.join(arg for arg in args[1:])
+    body = 'Меня тут попросили тебе написать: \n' + ' '.join(args)
     val = {
-        # Возможность посылать в беседы и в обычный чат одновременно
-        'peer_id': uid + 2000000000 if (uid - 2000000000) > 0 else uid,
+        'peer_id': uid,
         'message': body
     }
     await msg.vk.method('messages.send', val)

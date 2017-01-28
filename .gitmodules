@@ -1,0 +1,3 @@
+[submodule "aiovk"]
+	path = aiovk
+	url = https://github.com/TiberiumPY/aiovk
