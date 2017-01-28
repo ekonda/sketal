@@ -13,23 +13,16 @@ from os.path import isfile
 
 
 class Plugin(object):
-    def __init__(self, name: str = "Example", description: str = ''):
+    def __init__(self, name: str = "Example", usage: str = ''):
         self.deferred_events = []  # события, на которые подписан плагин
         self.scheduled_funcs = []
         self.name = name
-        self.description = description
+        self.usage = usage
         self.first_command = ''
         hues.warn(self.name)
 
     def log(self, message: str):
         hues.info('Плагин {name} -> {message}'.format(name=self.name, message=message))
-
-    def on_friend_request(self):
-        def wrapper(function):
-            self.add_deferred_func(self.name.lower(), function)
-            return function
-
-        return wrapper
 
     def schedule(self, seconds):
         def decor(func):

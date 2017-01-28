@@ -3,6 +3,7 @@ import traceback
 import hues
 import re
 
+import settings
 from plugin_system import PluginSystem
 from utils import convert_to_rus, convert_to_en, MessageEventData
 from settings import PREFIXES
@@ -20,8 +21,7 @@ class CommandSystem(object):
 
     async def process_command(self, msg_obj: Message):
         """Обработать объект Message"""
-        # Создаём объект cmd
-        cmd = Command(msg_obj._data)
+        cmd = Command(msg_obj._data, self.convert)
 
         if not cmd.good_cmd:
             return False
@@ -30,18 +30,10 @@ class CommandSystem(object):
             translated_cmd_text = convert_to_rus(cmd.joined_text)
         else:
             translated_cmd_text = ''
+
         for command in self.commands:
-            # cmd_text - команда без пробелов
-            cmd_text = ''.join(command)
-            # Если текст - команда
-            if cmd.joined_text.startswith(cmd_text):
-                cmd.set(command)
-            # Если текст, переведённый на русскую раскладку - команда
-            elif translated_cmd_text.startswith(cmd_text):
-                cmd.set(command, convert=True)
-            else:  # Если сообщение не начинается с команды, берём след. элемент
-                continue
-            # Вызываем команду в плагинах
+            command = command.lower()
+            if command in cmd.
             try:
                 await self.system.call_command(command, msg_obj, cmd.args)
                 return True
@@ -61,21 +53,23 @@ class CommandSystem(object):
 
 
 class Command(object):
-    __slots__ = ('good_cmd', '_data', 'text', 'joined_text', 'command',
-                 'prefix', 'args')
+    __slots__ = ('good_cmd', '_data', 'text', 'joined_text',
+                 'command', 'args', 'try_convert', 'eng_layout')
 
-    def __init__(self, data: MessageEventData):
+    def __init__(self, data: MessageEventData, convert: bool):
         self.good_cmd = True  # переменная для обозначения, всё ли хорошо с командой
         self._data = data
         self.text = data.body
-        self.__get_prefix()  # Узнаём свой префикс
+        self.try_convert = convert
         self.joined_text = ''.join(self.text).lower()  # команда без пробелов в нижнем регистре
         self.command = None
+        self.__get_prefix()  # Узнаём свой префикс
 
     def set(self, command: str, convert: bool = False):
+        self.eng_layout = True if convert else self.eng_layout
         self.command = command
-        if convert:
-            self.text = re.sub(re.escape(convert_to_en(command)), '',
+        if self.eng_layout:
+            self.text = re.sub(re.escape(convert_to_rus(command)), '',
                                self.text, flags=re.IGNORECASE)
         else:
             self.text = re.sub(re.escape(command), '', self.text, flags=re.IGNORECASE)
@@ -92,10 +86,17 @@ class Command(object):
 
     def __get_prefix(self):
         for prefix in PREFIXES:
+            self.eng_layout = False
             if self.text.startswith(prefix):
-                self.prefix = prefix
                 self.text = self.text.replace(prefix, '', 1).lstrip()
                 break
+            elif self.try_convert:
+                # Префикс, написанный русскими буквами, но на английской раскладке
+                prefix_en = convert_to_en(prefix)
+                if self.text.startswith(prefix_en):
+                    self.eng_layout = True
+                    self.text = self.text.replace(prefix_en, '', 1).lstrip()
+                    break
         else:
             self.good_cmd = False
 

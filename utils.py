@@ -35,17 +35,16 @@ def fatal(*args):
     hues.error(*args)
     exit()
 
-
-# Strings are taken from http://tinklai.dkd.lt/papildomai/belib-rus
+ # ":", "\^", "~", "`", "\{", "\[", "\}", "\]", """, "'", "<", ",", ">", "\.", ";", "\?", "\/", "&", "@", "#", "\$"]
+# "Ж", ":", "Ё", "ё", "Х", "х", "Ъ", "ъ", "Э", "э", "Б", "б", "Ю", "ю", "ж", ",", ".", "?", """, "№", ";"
+# Code adopted from http://gsgen.ru/tools/perevod-raskladki-online/
 english = "Q-W-E-R-T-Y-U-I-O-P-A-S-D-F-G-H-J-K-L-Z-X-C-V-B-N-M"
+eng_expr = english + english.lower() + "-" + ":-^-~-`-{-[-}-]-\"-'-<-,->-.-;-?-/-&-@-#-$"
 russian = "Й-Ц-У-К-Е-Н-Г-Ш-Щ-З-Ф-Ы-В-А-П-Р-О-Л-Д-Я-Ч-С-М-И-Т-Ь"
-english = ''.join(english + english.lower())
-russian = ''.join(russian + russian.lower())
-# russian = r'''йцукенгшщзхъ\фывапролджэячсмитьбю.ёЙЦУКЕНГШЩЗХЪ/ФЫВАПРОЛДЖЭЯЧСМИТЬБЮ?Ё!"№;%:?*()_+'''
-# english = r'''qwertyuiop[]\asdfghjkl;'zxcvbnm,./`QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?~!@#$%^&*()_+'''
+rus_expr = russian + russian.lower() + "-" + "Ж-:-Ё-ё-X-x-Ъ-ъ-Э-э-Б-б-Ю-ю-ж-,-.-?-\"-№-;"
 
-translate_table = str.maketrans(english, russian)
-en_trans = str.maketrans(russian, english)
+translate_table = str.maketrans(eng_expr, rus_expr)
+en_trans = str.maketrans(rus_expr, eng_expr)
 
 
 def convert_to_rus(text: str) -> str:

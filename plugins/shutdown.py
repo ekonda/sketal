@@ -2,7 +2,7 @@ from plugin_system import Plugin
 from settings import ADMINS
 
 plugin = Plugin('Выключение',
-                description='Выключить бота (только для администраторов)')
+                usage='выключить - выключает бота (только для админов)')
 
 
 @plugin.on_command('выключить', 'выкл', 'вырубись')
