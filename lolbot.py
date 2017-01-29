@@ -45,16 +45,17 @@ class Bot(object):
                 self.NEED_CONVERT = settings.NEED_CONVERT
                 self.APP_ID = settings.APP_ID
                 self.SCOPE = settings.SCOPE
+                # Если в настройках есть токен
                 if settings.TOKEN:
                     self.IS_TOKEN = True
                     self.TOKEN = settings.TOKEN
-
+                # Или логин и пароль
                 elif settings.LOGIN and settings.PASSWORD:
                     self.IS_TOKEN = False
                     self.VK_LOGIN = settings.LOGIN
                     self.VK_PASSWORD = settings.PASSWORD
                 else:
-                    fatal("Проверьте, что у вас заполнены LOGIN и PASSWORD, или же TOKEN!"
+                    fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
                           "Без них бот работать НЕ СМОЖЕТ.")
 
             except (ValueError, AttributeError, NameError):
@@ -103,6 +104,7 @@ class Bot(object):
                                       {'use_ssl': 1})
         if not result:
             fatal("Не удалось получить значения Long Poll сервера!")
+
         self.longpoll_server = "https://" + result['server']
         self.longpoll_key = result['key']
         self.last_ts = result['ts']  # Последний timestamp
