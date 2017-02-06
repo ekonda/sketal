@@ -133,10 +133,10 @@ class Message(object):
         self.timestamp = data.time
         self.attaches = data.attaches
         # Словарь для отправки к ВК при ответе
-        if self.conf:
-            self.answer_values = {'chat_id': self.cid}
-        elif self.user:
+        if self.user:
             self.answer_values = {'user_id': self.id}
+        else:
+            self.answer_values = {'chat_id': self.cid}
 
     async def answer(self, msg, **additional_values):
         """Функция ответа для упрощения создания плагинов. Так же может принимать доп.параметры"""
