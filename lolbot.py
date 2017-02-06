@@ -147,7 +147,7 @@ class Bot(object):
             conf = False
 
         cleaned_body = text.replace('<br>', '\n')
-        data = MessageEventData(conf, peer_id, user_id, cleaned_body, ts)
+        data = MessageEventData(conf, peer_id, user_id, cleaned_body, attaches, ts)
         try:
             # Если разница между сообщениями меньше 1 сек - игнорим
             if ts - self.messages_date[user_id] <= 1:
@@ -180,8 +180,13 @@ class Bot(object):
         await self.init_long_polling()
         session = aiohttp.ClientSession(loop=event_loop)
         while True:
-            resp = await session.get(self.longpoll_server,
-                                     params=self.longpoll_values)
+            try:
+                resp = await session.get(self.longpoll_server,
+                                        params=self.longpoll_values)
+            except aiohttp.errors.ClientOSError:
+                hues.warn('Сервер Long Polling не отвечает, подключаюсь к другому...')
+                await self.init_long_polling()
+                continue
             """
             Тут не используется resp.json() по простой причине:
             aiohttp будет писать warning'и из-за плохого mimetype

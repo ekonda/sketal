@@ -117,22 +117,21 @@ class VkPlus(object):
 class Message(object):
     """Класс, объект которого передаётся в плагин для упрощённого ответа"""
     __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id',
-                 'body', 'timestamp', 'answer_values')
+                 'body', 'timestamp', 'answer_values', 'attaches')
 
     def __init__(self, vk_api_object, data: MessageEventData):
         self._data = data
         self.vk = vk_api_object
-        self.conf = False
         self.user = False
         if data.conf:
-            self.conf = True
+            self.user = False
             self.cid = int(data.peer_id)
         else:
             self.user = True
         self.id = data.user_id
         self.body = data.body
         self.timestamp = data.time
-
+        self.attaches = data.attaches
         # Словарь для отправки к ВК при ответе
         if self.conf:
             self.answer_values = {'chat_id': self.cid}

@@ -14,21 +14,43 @@ def schedule(seconds):
 
     return decor
 
+
 # http://stackoverflow.com/questions/18854620/whats-the-best-way-to-split-a-string-into-fixed-length-chunks-and-work-with-the
 def string_chunks(string, length):
     return (string[0 + i:length + i] for i in range(0, len(string), length))
 
 
+class Attachment(object):
+    __slots__ = ('type', 'owner_id', 'id')
+
+    def __init__(self, type: str, owner_id: int, aid: int):
+        self.type = type
+        self.owner_id = owner_id
+        self.id = aid
+
+    def __repr__(self):
+        return "<Attachment with type '{}', owner '{}', id '{}'>".format(
+            self.type, self.owner_id, self.id
+        )
+
+
 class MessageEventData(object):
     # __slots__ используется для оптимизации объектов этого класса
-    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time')
+    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', 'attaches')
 
-    def __init__(self, conf: bool, pid: int, uid: int, body: str, time: int):
+    def __init__(self, conf: bool, pid: int, uid: int, body: str, attaches: dict, time: int):
         self.conf = conf
         self.peer_id = pid
         self.user_id = uid
         self.body = body
         self.time = time
+        self.attaches = []
+        if 'attach1' in attaches:
+            for k, v in attaches.items():
+                if not '_type' in k:
+                    type = attaches[k + '_type']
+                    owner_id, id = v.split('_')
+                    self.attaches.append(Attachment(type, owner_id, id))
 
     def __repr__(self):
         return self.body
