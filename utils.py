@@ -48,7 +48,10 @@ class MessageEventData(object):
         if 'attach1' in attaches:
             for k, v in attaches.items():
                 if not '_type' in k:
-                    type = attaches[k + '_type']
+                    try:
+                        type = attaches[k + '_type']
+                    except KeyError:
+                        continue
                     owner_id, id = v.split('_')
                     self.attaches.append(Attachment(type, owner_id, id))
 
