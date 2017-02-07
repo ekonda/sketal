@@ -184,6 +184,8 @@ class Bot(object):
                 resp = await session.get(self.longpoll_server,
                                         params=self.longpoll_values)
             except aiohttp.errors.ClientOSError:
+                # У меня были такие ошибки на Manjaro 16.10.3 Fringilla
+                # ВК почему-то присылал сервер, к которому нельзя подключиться
                 hues.warn('Сервер Long Polling не отвечает, подключаюсь к другому...')
                 await self.init_long_polling()
                 continue
@@ -196,12 +198,13 @@ class Bot(object):
             try:
                 events = json.loads(events_text)
             except ValueError:
-                continue  # Отправляем запрос ещё раз
+                # В JSON ошибка, или это вовсе не JSON
+                continue
             # Проверяем на код ошибки
             failed = events.get('failed')
             if failed:
                 err_num = int(failed)
-                # Код 1 - Нам нужно обновить time stamp
+                # Код 1 - Нам нужно обновить timestamp
                 if err_num == 1:
                     self.longpoll_values['ts'] = events['ts']
                 # Коды 2 и 3 - нужно запросить данные нового
@@ -224,8 +227,8 @@ class Bot(object):
             # Сделано для того, чтобы бот не читал обычные сообщения
             return await self.vk.mark_as_read(msg_id)
         if self.LOG_MESSAGES:
-            who = ("конференции {}" if data.conf else "ЛС {}").format(data.peer_id)
-            hues.info("Сообщение из {} > {}".format(who, data.body))
+            who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
+            hues.info(f"Сообщение из {who} > {data.body}")
 
 
 if __name__ == '__main__':

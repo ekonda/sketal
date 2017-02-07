@@ -69,8 +69,8 @@ class VkPlus(object):
             return await api_method(key, **data) if data else await api_method(key)
         except aiovk.exceptions.VkAuthError:
             message = 'TOKEN' if self.token else 'LOGIN и PASSWORD'
-            fatal("Произошла ошибка при авторизации API, "
-                  "проверьте значение полей {} в settings.py!".format(message))
+            fatal(f"Произошла ошибка при авторизации API, "
+                  "проверьте значение полей {message} в settings.py!")
 
         except (aiovk.exceptions.VkAPIError, aiovk.exceptions.VkCaptchaNeeded) as ex:
             if not hasattr(ex, 'error_code'):
@@ -81,7 +81,7 @@ class VkPlus(object):
                 if 'message' not in data:
                     return
                 # Анти-флуд (комбинация из 5 случайных чисел + латинских букв)
-                data['message'] += '\n Анти-флуд (API): {}'.format(self.anti_flood())
+                data['message'] += f'\n Анти-флуд (API): {self.anti_flood()}'
                 try:
                     # Пытаемся отправить сообщение с обходом антифлуда
                     await self.method('messages.send', data)
@@ -90,8 +90,8 @@ class VkPlus(object):
                     # или вообще не случится
                     hues.error('Обход анти-флуда API не удался =(')
             else:
-                hues.error("Произошла ошибка при вызове метода API {} "
-                           "с значениями {}:\n{}".format(key, data, ex))
+                hues.error(f"Произошла ошибка при вызове метода API {key} "
+                           "с значениями {data}:\n{ex}")
 
     @staticmethod
     def anti_flood():

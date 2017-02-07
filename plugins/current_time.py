@@ -26,6 +26,4 @@ async def get_time(msg, args):
     time = (datetime.datetime.now(utc) + delta)
     timestr = time.strftime(fmt)
 
-    await msg.answer(timemsg + '\n'
-                     + str(timestr) + '\n'
-                     + 'Сегодня ' + str(days[time.weekday()]))
+    await msg.answer(f'{timemsg} \n{timestr} \nСегодня {days[time.weekday()]}')

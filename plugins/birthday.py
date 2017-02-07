@@ -30,7 +30,7 @@ there_list = '''Вот список
 
 plugin = Plugin('Дни рождения в группе')
 
-
+# TODO: Отрефакторить эту херню
 @plugin.on_command('др')
 async def check(msg, args):
     # ID группы, в которой искать

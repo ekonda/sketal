@@ -45,22 +45,25 @@ class MessageEventData(object):
         self.body = body
         self.time = time
         self.attaches = []
-        if 'attach1' in attaches:
-            for k, v in attaches.items():
-                if not '_type' in k:
-                    try:
-                        type = attaches[k + '_type']
-                    except KeyError:
-                        continue
-                    owner_id, id = v.split('_')
-                    self.attaches.append(Attachment(type, owner_id, id))
+        if 'attach1' not in attaches:
+            # Нет ни одного приложения
+            return
+        for k, v in attaches.items():
+            if '_type' not in k:
+                try:
+                    type = attaches[k + '_type']
+                except KeyError:
+                    # Могут быть такие ключи, как 'from', т.е. не только приложения
+                    continue
+                owner_id, id = v.split('_')
+                self.attaches.append(Attachment(type, owner_id, id))
 
     def __repr__(self):
         return self.body
 
 
 def fatal(*args):
-    """Passes args to hues.error and then exits"""
+    """Отправляет args в hues.error() и выходит"""
     hues.error(*args)
     exit()
 

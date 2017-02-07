@@ -6,4 +6,4 @@ from plugin_system import Plugin
 
 # @plugin.schedule(1)
 async def check_friends(vk_object):
-    print("lol")
+    print("nothing here yet")

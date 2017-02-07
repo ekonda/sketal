@@ -2,17 +2,22 @@ import requests
 from plugin_system import Plugin
 
 plugin = Plugin('Курсы валют',
-                usage='курс - узнать курс доллара, евро, и фунта')
+                usage='курс - узнать курс доллара, евро, и фунта к рублю\n'
+                      'сколько {валюты} в {кол-во} {валюте} - узнать курс между 2 валютами')
+
+
+def get_rate(first: str, to: str = "RUB"):
+    rate = requests.get(f"http://api.fixer.io/latest?base={first}")
+    try:
+        return rate.json()["rates"][to]
+    except (KeyError, IndexError):
+        raise ValueError('Курса данной валюты не найдено')
 
 
 @plugin.on_command('курс', 'валюта')
-async def kurs_get(msg, args):
-    kurs_usd = requests.get("http://api.fixer.io/latest?base=USD")
-    kursbid_usd = kurs_usd.json()["rates"]["RUB"]
-    kurs_euro = requests.get("http://api.fixer.io/latest?base=EUR")
-    kursbid_euro = kurs_euro.json()["rates"]["RUB"]
-    kurs_gbp = requests.get("http://api.fixer.io/latest?base=GBP")
-    kursbid_gbp = kurs_gbp.json()["rates"]["RUB"]
-    vk_message = "1 Доллар = {} руб. \n 1 Евро = {} руб. \n 1 Фунт = {} руб".format(kursbid_usd, kursbid_euro,
-                                                                                    kursbid_gbp)
+async def get_rates(msg, args):
+    usd, eur, gbp = (get_rate(cur) for cur in ('USD', 'EUR', 'GBP'))
+    vk_message = (f"1 Доллар = {usd} руб.\n"
+                  f"1 Евро = {eur} руб.\n"
+                  f"1 Фунт = {gbp} руб\n")
     await msg.answer(vk_message)
