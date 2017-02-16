@@ -4,3 +4,4 @@ config
 __pycache__
 settings.py
 .idea/
+*.mp3

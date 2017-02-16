@@ -12,10 +12,10 @@ answers = '''Мемы поданы!
 
 @plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы')
 async def call(msg, args):
-    isphoto = False
-    boobs = None
+    photo = False
+    data = None
 
-    while isphoto is False:
+    while not photo:
         values = {
             # owner_id = ид группы
             'owner_id': -129950840,
@@ -23,17 +23,15 @@ async def call(msg, args):
             'count': 5
         }
 
-        boobs = await msg.vk.method('wall.get', values)
-        if 'attachments' in boobs['items'][0]:
-            if 'photo' in boobs['items'][0]['attachments'][0]:
-                isphoto = True
+        data = await msg.vk.method('wall.get', values)['items'][0]
+        if 'attachments' in data:
+            if 'photo' in data['attachments'][0]:
+                photo = True
 
-    boobs_att = boobs['items'][0]['attachments'][0]['photo']
+    attrs = data['attachments'][0]['photo']
 
-    owner_id = str(boobs_att['owner_id'])
-    att_id = str(boobs_att['id'])
-    access_key = str(boobs_att['access_key'])
+    owner_id, att_id, key = attrs['owner_id'], attrs['id'], attrs['access_key']
 
-    attachment = 'photo' + owner_id + '_' + att_id + '_' + access_key
+    attachment = f'photo{owner_id}_{att_id}_{key}'
 
     await msg.answer(random.choice(answers), attachment=attachment)
