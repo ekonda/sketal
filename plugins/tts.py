@@ -21,7 +21,11 @@ async def say_text(msg, args):
     text = ' '.join(args)
     try:
         # Используется Google Text To Speech и библиотека langdetect
-        tts = gTTS(text=text, lang=langdetect.detect(text))
+        lang = langdetect.detect(text)
+        if lang == 'mk':
+            # Иногда langdetect детектит русский как македонский
+            lang = 'ru'
+        tts = gTTS(text=text, lang=lang)
     except Exception as ex:
         # На самом деле не все языки, которых нет в gTTS, не поддерживаются
         # Например, gTTS считает, что GTTS не поддерживает украинский, хотя он поддерживает
