@@ -43,12 +43,13 @@ async def say_text(msg, args):
     form_data = aiohttp.FormData()
     form_data.add_field('file', open('audio.mp3', 'rb'))
     async with aiohttp.post(url, data=form_data) as resp:
-        file_url = await resp.json().get('file')
-        if not file_url:
+        file_url = await resp.json()
+        file = file_url.get('file')
+        if not file:
             return await msg.answer(FAIL_MSG)
 
     # Сохраняем файл в документы (чтобы можно было прикрепить к сообщению)
-    saved_data = await msg.vk.method('docs.save', {'file':file_url} )
+    saved_data = await msg.vk.method('docs.save', {'file':file} )
 
     # Получаем первый элемент, так как мы сохранили 1 файл
     media = saved_data[0]
