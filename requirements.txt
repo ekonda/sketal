@@ -1,5 +1,6 @@
 langdetect
 gTTS
 hues
+aiosocks
 requests
 git+https://github.com/Fahreeve/aiovk
