@@ -10,7 +10,11 @@ import hues
 import aiovk
 from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
-from settings import CAPTCHA_KEY, CAPTCHA_SERVER
+try:
+    from settings import CAPTCHA_KEY, CAPTCHA_SERVER
+except:
+    CAPTCHA_SERVER = ""
+    CAPTCHA_KEY = ""
 # Custom
 from utils import fatal, MessageEventData, chunks
 
