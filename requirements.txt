@@ -1,5 +1,6 @@
 langdetect
 gTTS
+captcha_solver
 hues
 aiosocks
 requests

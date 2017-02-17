@@ -25,31 +25,28 @@ class CommandSystem(object):
             return False
         # Если команда есть в списке команд
         if cmd.command in self.commands:
-            command = cmd.command
+            cmd_text = cmd.command
         # Или нужно попробовать конвертировать и изменённая команда в командах
         elif self.convert and cmd.try_convert() in self.commands:
             cmd.convert()
-            command = cmd.command
+            cmd_text = cmd.command
         else:
             return False
         # Логгируем команду, если нужно
         if settings.LOG_COMMANDS:
             cmd.log()
         try:
-            await self.system.call_command(command, msg_obj, cmd.args)
+            await self.system.call_command(cmd_text, msg_obj, cmd.args)
             return True
         # Если в плагине произошла какая-то ошибка
         except Exception:
-            await msg_obj.answer("{}.".format(msg_obj.vk.anti_flood()) +
-                                 "Произошла ошибка при выполнении команды <{}>, ".format(command) +
+            await msg_obj.answer(f"{msg_obj.vk.anti_flood()}. "
+                                 f"Произошла ошибка при выполнении команды <{cmd_text}> "
                                  "пожалуйста, сообщите об этом разработчику!")
             hues.error(
-                "Произошла ошибка при вызове команды '{cmd}' с аргументами {args}"
-                "Текст сообщения: '{body}'."
-                "Ошибка:\n{tbk}".format(
-                    cmd=command, body=msg_obj._data, args=cmd.args,
-                    tbk=traceback.format_exc()
-                ))
+                f"Произошла ошибка при вызове команды '{cmd_text}' с аргументами {cmd.args}. "
+                f"Текст сообщения: '{msg_obj._data}'."
+                f"Ошибка:\n{traceback.format_exc()}")
 
 
 class Command(object):

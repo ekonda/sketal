@@ -15,9 +15,11 @@ def schedule(seconds):
     return decor
 
 
-# http://stackoverflow.com/questions/18854620/whats-the-best-way-to-split-a-string-into-fixed-length-chunks-and-work-with-the
-def string_chunks(string, length):
-    return (string[0 + i:length + i] for i in range(0, len(string), length))
+# http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
 
 class Attachment(object):

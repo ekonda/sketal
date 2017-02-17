@@ -182,7 +182,7 @@ class Bot(object):
         while True:
             try:
                 resp = await session.get(self.longpoll_server,
-                                        params=self.longpoll_values)
+                                         params=self.longpoll_values)
             except aiohttp.errors.ClientOSError:
                 # У меня были такие ошибки на Manjaro 16.10.3 Fringilla
                 # ВК почему-то присылал сервер, к которому нельзя подключиться

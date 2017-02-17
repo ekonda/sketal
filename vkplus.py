@@ -4,16 +4,25 @@ import random
 import string
 # PyPI
 import asyncio
+
+import aiohttp
 import hues
 import aiovk
 from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
-
+from settings import CAPTCHA_KEY, CAPTCHA_SERVER
 # Custom
-from utils import fatal, MessageEventData, string_chunks
+from utils import fatal, MessageEventData, chunks
+
+from captcha_solver import CaptchaSolver
+
+if CAPTCHA_KEY and CAPTCHA_SERVER:
+    solver = CaptchaSolver(CAPTCHA_SERVER, api_key=CAPTCHA_KEY)
+else:
+    solver = None
 
 
-class NotHavePerms(Exception):
+class NoPermissions(Exception):
     pass
 
 
@@ -22,6 +31,28 @@ class NotHavePerms(Exception):
 class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 1
     period = 0.4
+
+
+class Captcha():
+    session = aiohttp.ClientSession()
+
+    async def enter_captcha(self, url, sid):
+        if not solver:
+            return hues.error('Введите данные для сервиса решения капч в settings.py!')
+        with self.session as ses:
+            async with ses.get(url) as resp:
+                img_data = await resp.read()
+                data = solver.solve_captcha(img_data)
+                # hues.success(f"Капча {sid} решена успешно")
+                return data
+
+
+class TokenSession(aiovk.TokenSession, Captcha):
+    pass
+
+
+class ImplicitSession(aiovk.ImplicitSession, Captcha):
+    pass
 
 
 class VkPlus(object):
@@ -40,12 +71,12 @@ class VkPlus(object):
 
     def init_vk(self):
         if self.token:
-            self.api_session = aiovk.TokenSession(access_token=self.token, driver=RatedDriver())
+            self.api_session = TokenSession(access_token=self.token, driver=RatedDriver())
         elif self.login and self.password:
             self.login = self.login
             self.password = self.password
-            self.api_session = aiovk.ImplicitSession(self.login, self.password, self.appid,
-                                                     scope=self.scope, driver=RatedDriver())  # all scopes
+            self.api_session = ImplicitSession(self.login, self.password, self.appid,
+                                               scope=self.scope, driver=RatedDriver())  # all scopes
         else:
             fatal('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
         self.api = aiovk.API(self.api_session)
@@ -64,20 +95,17 @@ class VkPlus(object):
         else:
             api_method = self.api
         try:
-            return await api_method(key, **data) if data else await api_method(key)
+            return await api_method(key, **data)
         except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
-            return await api_method(key, **data) if data else await api_method(key)
+            # Пытаемся отправить запрос к API ещё раз
+            return await api_method(key, **data)
         except aiovk.exceptions.VkAuthError:
             message = 'TOKEN' if self.token else 'LOGIN и PASSWORD'
             fatal(f"Произошла ошибка при авторизации API, "
                   "проверьте значение полей {message} в settings.py!")
-
-        except (aiovk.exceptions.VkAPIError, aiovk.exceptions.VkCaptchaNeeded) as ex:
-            if not hasattr(ex, 'error_code'):
-                # ВК просит решить капчу
-                # TODO: Добавить поддержку сервисов анти-капч
-                return {}
+        except aiovk.exceptions.VkAPIError as ex:
             if ex.error_code == 9:
+                # Flood error - слишком много одниаковых сообщений
                 if 'message' not in data:
                     return
                 # Анти-флуд (комбинация из 5 случайных чисел + латинских букв)
@@ -90,8 +118,7 @@ class VkPlus(object):
                     # или вообще не случится
                     hues.error('Обход анти-флуда API не удался =(')
             else:
-                hues.error(f"Произошла ошибка при вызове метода API {key} "
-                           "с значениями {data}:\n{ex}")
+                hues.error(f"Произошла ошибка при вызове метода API {key} с значениями {data}:\n{ex}")
 
     @staticmethod
     def anti_flood():
@@ -100,14 +127,12 @@ class VkPlus(object):
 
     async def mark_as_read(self, message_ids):
         """Пометить сообщение(я) как прочитанное"""
-        values = {
-            'message_ids': message_ids
-        }
-        await self.method('messages.markAsRead', values)
+        await self.method('messages.markAsRead', {'message_ids': message_ids})
 
     async def resolve_name(self, screen_name):
         """Функция для перевода короткого имени в числовой ID"""
-        result = await self.method('utils.resolveScreenName', {'screen_name': screen_name})
+        result = await self.method('utils.resolveScreenName',
+                                   {'screen_name': screen_name})
         if result:
             return result['object_id']
         else:
@@ -119,7 +144,7 @@ class Message(object):
     __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id',
                  'body', 'timestamp', 'answer_values', 'attaches')
 
-    def __init__(self, vk_api_object, data: MessageEventData):
+    def __init__(self, vk_api_object: VkPlus, data: MessageEventData):
         self._data = data
         self.vk = vk_api_object
         self.user = False
@@ -138,14 +163,15 @@ class Message(object):
         else:
             self.answer_values = {'chat_id': self.cid}
 
-    async def answer(self, msg, **additional_values):
+    async def answer(self, msg: str, **additional_values):
         """Функция ответа для упрощения создания плагинов. Так же может принимать доп.параметры"""
-        if len(msg) > 600:
-            messages = string_chunks(msg, 500)
+        if len(msg) > 550:
+            msgs = list(chunks(msg.splitlines(), 15))
         else:
-            messages = [msg]
+            msgs = [msg]
         if additional_values is None:
             additional_values = dict()
-        for msg in messages:
-            values = dict(**self.answer_values, message=msg, **additional_values)
+        for msg in msgs:
+            data = msgs[0] if not len(msgs) > 1 else '\n'.join(msg)
+            values = dict(**self.answer_values, message=data, **additional_values)
             await self.vk.method('messages.send', values)
