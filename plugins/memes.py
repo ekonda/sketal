@@ -23,7 +23,8 @@ async def call(msg, args):
             'count': 5
         }
 
-        data = await msg.vk.method('wall.get', values)['items'][0]
+        data = await msg.vk.method('wall.get', values)
+        data = data['items'][0]
         if 'attachments' in data:
             if 'photo' in data['attachments'][0]:
                 photo = True
