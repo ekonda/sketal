@@ -1,5 +1,3 @@
-from pprint import pprint
-
 import aiohttp
 from datetime import date, timedelta
 import xml.etree.ElementTree as etree

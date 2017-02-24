@@ -31,13 +31,11 @@ class Attachment(object):
         self.id = aid
 
     def __repr__(self):
-        return "<Attachment with type '{}', owner '{}', id '{}'>".format(
-            self.type, self.owner_id, self.id
-        )
+        return (f"<Attachment with type '{self.type}', "
+                f"owner f'{self.owner_id}', id f'{self.id}'>")
 
 
 class MessageEventData(object):
-    # __slots__ используется для оптимизации объектов этого класса
     __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', 'attaches')
 
     def __init__(self, conf: bool, pid: int, uid: int, body: str, attaches: dict, time: int):
@@ -57,7 +55,10 @@ class MessageEventData(object):
                 except KeyError:
                     # Могут быть такие ключи, как 'from', т.е. не только приложения
                     continue
-                owner_id, id = v.split('_')
+                data = v.split('_')
+                if not len(data)>1:
+                    continue
+                owner_id, id = data
                 self.attaches.append(Attachment(type, owner_id, id))
 
     def __repr__(self):
@@ -71,23 +72,23 @@ def fatal(*args):
 
 
 # Characters are taken from http://gsgen.ru/tools/perevod-raskladki-online/
-english = "Q-W-E-R-T-Y-U-I-O-P-A-S-D-F-G-H-J-K-L-Z-X-C-V-B-N-M"
-eng_expr = english + english.lower() + "-" + ":-^-~-`-{-[-}-]-\"-'-<-,->-.-;-?-/-&-@-#-$"
-russian = "Й-Ц-У-К-Е-Н-Г-Ш-Щ-З-Ф-Ы-В-А-П-Р-О-Л-Д-Я-Ч-С-М-И-Т-Ь"
-rus_expr = russian + russian.lower() + "-" + "Ж-:-Ё-ё-X-x-Ъ-ъ-Э-э-Б-б-Ю-ю-ж-,-.-?-\"-№-;"
+ENGLISH = "Q-W-E-R-T-Y-U-I-O-P-A-S-D-F-G-H-J-K-L-Z-X-C-V-B-N-M"
+ENG_EXPR = ENGLISH + ENGLISH.lower() + "-" + ":-^-~-`-{-[-}-]-\"-'-<-,->-.-;-?-/-&-@-#-$"
+RUS_EXPR = "Й-Ц-У-К-Е-Н-Г-Ш-Щ-З-Ф-Ы-В-А-П-Р-О-Л-Д-Я-Ч-С-М-И-Т-Ь"
+rus_expr = RUS_EXPR + RUS_EXPR.lower() + "-" + "Ж-:-Ё-ё-X-x-Ъ-ъ-Э-э-Б-б-Ю-ю-ж-,-.-?-\"-№-;"
 
-translate_table = str.maketrans(eng_expr, rus_expr)
-en_trans = str.maketrans(rus_expr, eng_expr)
+ENG_TO_RUS = str.maketrans(ENG_EXPR, rus_expr)
+RUS_TO_ENG = str.maketrans(rus_expr, ENG_EXPR)
 
 
 def convert_to_rus(text: str) -> str:
     """Конвертировать текст, написанный на русском с английской раскладкой в русский"""
-    return text.translate(translate_table)
+    return text.translate(ENG_TO_RUS)
 
 
 def convert_to_en(text: str) -> str:
     """Конвертировать текст, написанный на русском с русской раскладкой в английскую раскладку"""
-    return text.translate(en_trans)
+    return text.translate(RUS_TO_ENG)
 
 
 keys = [

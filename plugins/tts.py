@@ -5,8 +5,17 @@ from plugin_system import Plugin
 
 plugin = Plugin('Голос', usage="скажи [выражение] - бот сформирует "
                                "голосовое сообщение на основе текста")
+
+
+ADDITIONAL_LANGUAGES = {
+    'uk':'Ukrainian',
+    
+}
+
+
 try:
     from gtts import gTTS
+    gTTS.LANGUAGES.update(ADDITIONAL_LANGUAGES)
     import langdetect
     from langdetect import DetectorFactory
 
@@ -15,21 +24,21 @@ except ImportError:
     plugin.log('gTTS или langdetect не установлены, плагин Голос не будет работать')
     gTTS = None
     langdetect = None
-FAIL_MSG = 'Я не смог это произнести :('
 
+FAIL_MSG = 'Я не смог это произнести :('
 
 @plugin.on_command('скажи')
 async def say_text(msg, args):
     if not gTTS or not langdetect:
         return await msg.answer('Я не могу говорить, '
-                                'так как у меня не хватает модулей :(')
+                                'так как у меня не установлены нужные модули :(')
 
     text = ' '.join(args)
     try:
         # Используется Google Text To Speech и библиотека langdetect
         lang = langdetect.detect(text)
         if lang in ('mk', 'bg'):
-            # Иногда langdetect детектит язык неправильно
+            # Иногда langdetect определяет язык неправильно
             lang = 'ru'
     except LangDetectException:
         lang = 'ru'
@@ -37,14 +46,15 @@ async def say_text(msg, args):
         tts = gTTS(text=text, lang=lang)
     except Exception as ex:
         # На самом деле не все языки, которых нет в gTTS, не поддерживаются
-        # Например, gTTS считает, что GTTS не поддерживает украинский, хотя он поддерживает
-        if 'Language' in ex:
+        # Например, gTTS считает, что украинский не поддерживается
+        if 'Language' in str(ex):
             return await msg.answer('Данный язык не поддерживается.'
                                     'Если вы считаете, что он должен поддерживаться,'
                                     'напишите администратору бота!')
-        raise  # Если эта ошибка не связана с gTTS, бросаем её ещё раз
+        raise  # Если эта ошибка не связана с gTTS, возбуждаем её ещё раз
 
     # Сохраняем файл с голосом
+    # TODO: Убрать сохранение (хранить файл в памяти)
     tts.save('audio.mp3')
     # Получаем URL для загрузки аудио сообщения
     upload_server = await msg.vk.method('docs.getUploadServer', {'type': 'audio_message'})

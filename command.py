@@ -18,7 +18,7 @@ class CommandSystem(object):
         self.convert = convert_layout
 
     async def process_command(self, msg_obj: Message):
-        """Обработать объект Message"""
+        """Обрабатывает команду (объект Message)"""
         cmd = Command(msg_obj._data, self.convert)
 
         if not cmd.has_prefix:
@@ -54,32 +54,33 @@ class Command(object):
                  'command', 'args', 'need_convert')
 
     def __init__(self, data: MessageEventData, convert: bool):
-        self.has_prefix = True  # переменная для обозначения, всё ли хорошо с командой
+        self.has_prefix = True  # переменная для обозначения, есть ли у команды префикс
         self._data = data
         self.text = data.body
         self.need_convert = convert
-        self._get_prefix()  # Узнаём свой префикс
+        self._get_prefix()
         self.command, *self.args = self.text.split(' ')
         # Если команда пустая
         if not self.command.strip():
             self.has_prefix = False
 
     def try_convert(self):
+        """Возвращает команду, переведённую в русскую раскладку"""
         return convert_to_rus(self.command)
 
     def convert(self):
+        """Конвертирует команду и все аргументы в русскую раскладку"""
         self.command = convert_to_rus(self.command)
         self.args = [convert_to_rus(arg) for arg in self.args]
 
     def log(self):
+        """Пишет в лог, что была распознана команда"""
         pid = self._data.peer_id
         who = ("конференции {}" if self._data.conf else "ЛС {}").format(pid)
-        hues.info("Команда '{cmd}' из {who} с аргументами {args}.".format(
-            cmd=self.command, who=who, args=self.args
-        ))
+        hues.info(f"Команда '{self.command}' из {who} с аргументами {self.args}")
 
     def _get_prefix(self):
-        # Проходимся по всем префиксам
+        """Пытается получить префикс из текста команды"""
         for prefix in PREFIXES:
             # Если команда начинается с префикса
             if self.text.startswith(prefix):

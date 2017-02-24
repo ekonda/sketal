@@ -2,7 +2,6 @@
 
 import random
 from plugin_system import Plugin
-from settings import ADMINS
 
 plugin = Plugin('Шар предсказаний',
                 usage='шар [строка] - вероятность того, что высказывание правдиво')

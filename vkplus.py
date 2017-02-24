@@ -10,19 +10,16 @@ import hues
 import aiovk
 from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
-try:
-    from settings import CAPTCHA_KEY, CAPTCHA_SERVER
-except:
-    CAPTCHA_SERVER = ""
-    CAPTCHA_KEY = ""
+
 # Custom
 from utils import fatal, MessageEventData, chunks
 
 from captcha_solver import CaptchaSolver
 
-if CAPTCHA_KEY and CAPTCHA_SERVER:
+try:
+    from settings import CAPTCHA_KEY, CAPTCHA_SERVER
     solver = CaptchaSolver(CAPTCHA_SERVER, api_key=CAPTCHA_KEY)
-else:
+except (ImportError, AttributeError):
     solver = None
 
 
@@ -31,7 +28,7 @@ class NoPermissions(Exception):
 
 
 # Драйвер для ограничения запросов к API - 3 раза в секунду
-# На самом деле 3 запроса в 1.2 секунд (для безопасности)
+# На самом деле 3 запроса в 1.2 секунд (для уверенности)
 class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 1
     period = 0.4
@@ -63,7 +60,7 @@ class VkPlus(object):
     api = None
 
     def __init__(self, token=None, login=None, password=None, app_id=5668099, scope=140492191):
-
+        # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
         self.token = token
@@ -74,6 +71,7 @@ class VkPlus(object):
         self.init_vk()
 
     def init_vk(self):
+        """Инициализация сессии ВК API"""
         if self.token:
             self.api_session = TokenSession(access_token=self.token, driver=RatedDriver())
         elif self.login and self.password:
@@ -92,6 +90,7 @@ class VkPlus(object):
             self.public_api = aiovk.API(self.public_api_session)
 
     async def method(self, key: str, data: dict = {}):
+        """Выполняет метод API VK с опциональными параметрами"""
         # Если у нас TOKEN, то для всех остальных методов,
         # кроме разрешённых, вызовем публичное API
         if key not in self.group_methods and self.token and 'message' not in key:
@@ -109,13 +108,12 @@ class VkPlus(object):
                   "проверьте значение полей {message} в settings.py!")
         except aiovk.exceptions.VkAPIError as ex:
             if ex.error_code == 9:
-                # Flood error - слишком много одниаковых сообщений
+                # Flood error - слишком много одинаковых сообщений
                 if 'message' not in data:
-                    return
-                # Анти-флуд (комбинация из 5 случайных чисел + латинских букв)
+                    return {}
                 data['message'] += f'\n Анти-флуд (API): {self.anti_flood()}'
                 try:
-                    # Пытаемся отправить сообщение с обходом антифлуда
+                    # Пытаемся отправить сообщение ещё раз
                     await self.method('messages.send', data)
                 except aiovk.exceptions.VkAPIError:
                     # В реальности такое будет очень редко
@@ -123,24 +121,22 @@ class VkPlus(object):
                     hues.error('Обход анти-флуда API не удался =(')
             else:
                 hues.error(f"Произошла ошибка при вызове метода API {key} с значениями {data}:\n{ex}")
+        return {}
 
     @staticmethod
     def anti_flood():
-        """Функция для обхода антифлуда API ВК"""
+        """Возвращает строку из 5 символов (букв и цифр)"""
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
     async def mark_as_read(self, message_ids):
-        """Пометить сообщение(я) как прочитанное"""
+        """Отмечает сообщение(я) как прочитанное(ые)"""
         await self.method('messages.markAsRead', {'message_ids': message_ids})
 
     async def resolve_name(self, screen_name):
         """Функция для перевода короткого имени в числовой ID"""
         result = await self.method('utils.resolveScreenName',
                                    {'screen_name': screen_name})
-        if result:
-            return result['object_id']
-        else:
-            return None
+        return result.get('object_id')
 
 
 class Message(object):
@@ -152,6 +148,7 @@ class Message(object):
         self._data = data
         self.vk = vk_api_object
         self.user = False
+        # Если сообщение из конференции
         if data.conf:
             self.user = False
             self.cid = int(data.peer_id)
@@ -168,13 +165,17 @@ class Message(object):
             self.answer_values = {'chat_id': self.cid}
 
     async def answer(self, msg: str, **additional_values):
-        """Функция ответа для упрощения создания плагинов. Так же может принимать доп.параметры"""
+        """Функция ответа на сообщение для плагинов"""
+        # Если длина сообщения больше 550 символов (получено эмпирическим путём)
         if len(msg) > 550:
+            # Делим сообщение на список частей (каждая по 15 строк)
             msgs = list(chunks(msg.splitlines(), 15))
         else:
+            # Иначе - создаём список из нашего сообщения
             msgs = [msg]
         if additional_values is None:
             additional_values = dict()
+        # Отправляем каждое сообщение из списка
         for msg in msgs:
             data = msgs[0] if not len(msgs) > 1 else '\n'.join(msg)
             values = dict(**self.answer_values, message=data, **additional_values)
