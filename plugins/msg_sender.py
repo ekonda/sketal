@@ -1,30 +1,18 @@
-import re
-
+import publicsuffixlist
+psl = publicsuffixlist.PublicSuffixList()
 from plugin_system import Plugin
 
 plugin = Plugin('Послать сообщение',
                 usage='напиши [id] [сообщение] - написать сообщение пользователю')
 
 
-URL_REGEX = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+''
-URL_REGEX = re.compile(URL_REGEX)
-async def check_links(vk, string):
-    processing = False
-    banned = False
-    urls = URL_REGEX.findall(string)
-    for link in urls:
-        result = await vk.method('utils.checkLink', data=dict(url=link))
-        status = result['status']
-        if status == 'banned':
-            banned = True
-            break
-        if status == 'processing':
-            processing = True
-            continue
-    return processing, banned
+
+DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
+async def check_links(string):
+    return any(x in string for x in DISABLED) or bool(psl.privatesuffix(string))
 
 
-
+test_str = 'Заходи на www.dojki.com, там тебя ждут прекрасные дамы!'
 
 @plugin.on_command('написать', 'напиши', 'лс', 'письмо', group=False)
 async def write_msg(msg, args):
@@ -41,11 +29,8 @@ async def write_msg(msg, args):
         return
     data = ' '.join(args)
 
-    processing = True
-    while processing:
-        processing, banned = await check_links(msg.vk, data)
-        if banned:
-            return await msg.answer('Одна из ссылок в сообщении небезопасна!')
+    if check_links(data):
+        return await msg.answer('В сообщении были обнаружены ссылки!')
 
     val = {
         'peer_id': uid,
