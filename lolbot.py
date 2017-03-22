@@ -1,8 +1,8 @@
 # Standart library
-import json
-from os.path import abspath, isfile
-import shutil
 import asyncio
+import json
+import shutil
+from os.path import abspath, isfile
 
 # 3rd party packages
 import aiohttp
@@ -10,8 +10,8 @@ import hues
 
 # Custom packages
 from plugin_system import PluginSystem
+from utils import fatal, parse_msg_flags, MessageEventData
 from vkplus import VkPlus, Message
-from utils import fatal, parse_msg_flags, schedule, MessageEventData
 
 
 class Bot(object):
@@ -98,16 +98,28 @@ class Bot(object):
         self.scheduled_funcs = self.plugin_system.scheduled_events
         hues.success("Загрузка плагинов завершена")
 
-    async def init_long_polling(self):
+    async def init_long_polling(self, update=0):
         """Функция для инициализации Long Polling"""
-        result = await self.vk.method('messages.getLongPollServer',
-                                      {'use_ssl': 1})
+        retries = 5
+        for x in range(retries):
+            result = await self.vk.method('messages.getLongPollServer',
+                                    {'use_ssl': 1})
+            if result:
+                break
+
         if not result:
             fatal("Не удалось получить значения Long Poll сервера!")
+        if update == 0:
+            # Если нам нужно инициализировать с нуля, меняем сервер
+            self.longpoll_server = "https://" + result['server']
+        if update in (0, 3):
+            # Если нам нужно инициализировать с нуля, или ошибка 3
+            self.longpoll_key = result['key']
+            self.last_ts = result['ts']  # Последний timestamp
+        elif update == 2:
+            # Если ошибка 2 - то нужен новый ключ
+            self.longpoll_key = result['key']
 
-        self.longpoll_server = "https://" + result['server']
-        self.longpoll_key = result['key']
-        self.last_ts = result['ts']  # Последний timestamp
         self.longpoll_values = {
             'act': 'a_check',
             'key': self.longpoll_key,
@@ -120,7 +132,8 @@ class Bot(object):
     async def check_event(self, new_event):
         if not new_event:
             return  # На всякий случай
-        if not new_event.pop(0) == 4:
+        event_id = new_event.pop(0)
+        if event_id != 4:
             return  # Если событие - не новое сообщение
 
         msg_id, flags, peer_id, ts, subject, text, attaches = new_event
@@ -209,10 +222,8 @@ class Bot(object):
                     self.longpoll_values['ts'] = events['ts']
                 # Коды 2 и 3 - нужно запросить данные нового
                 # Long Polling сервера
-                elif err_num == 2:
-                    await self.init_long_polling()
-                elif err_num == 3:
-                    await self.init_long_polling()
+                elif err_num in (2, 3):
+                    await self.init_long_polling(err_num)
                 continue
             # Обновляем время, чтобы не приходили старые события
             self.longpoll_values['ts'] = events['ts']

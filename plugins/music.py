@@ -1,5 +1,4 @@
 import random
-from plugin_system import Plugin
 
 # plugin = Plugin('Рекомендация музыки')
 

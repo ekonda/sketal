@@ -1,27 +1,36 @@
 # This code was originally taken from https://github.com/zeuxisoo/python-pluginplot
+import asyncio
 import imp
 import os
 import sys
 import threading
 import traceback
+from os.path import isfile
+
+import hues
 import types
 
-import asyncio
-import hues
-from os.path import isfile
+try:
+    from settings import TOKEN, LOGIN, PASSWORD
+except ImportError:
+    TOKEN, LOGIN, PASSWORD = None, None, None
 
 
 class Plugin(object):
-    def __init__(self, name: str = "Example", usage: str = ''):
+    def __init__(self, name: str = "Example", usage: list = None):
         self.deferred_events = []  # события, на которые подписан плагин
         self.scheduled_funcs = []
         self.name = name
+        if usage is None:
+            usage = []
+        if isinstance(usage, str):
+            usage = [usage]
         self.usage = usage
         self.first_command = ''
         hues.warn(self.name)
 
     def log(self, message: str):
-        hues.info('Плагин {name} -> {message}'.format(name=self.name, message=message))
+        hues.info(f'Плагин {self.name} -> {message}')
 
     def schedule(self, seconds):
         def decor(func):
@@ -38,32 +47,38 @@ class Plugin(object):
         return decor
 
     # Декоратор события (запускается при первом запуске)
-    def on_command(self, *commands, all_commands=False):
-        def wrapper(function):
+    def on_command(self, *commands, all_commands=False, group=True):
+        def wrapper(func):
+            if TOKEN and not group:
+                # Если бот работает от токена, и плагин не работает от имени группы
+                # мы не добавляем эту команду
+                # Убираем usage, чтобы команда не отображалась в помощи
+                self.usage = []
+                return func
             if commands:  # Если написали, какие команды используются
                 # Первая команда - отображается в списке команд (чтобы не было много команд не было)
                 self.first_command = commands[0]
                 # Если хоть в 1 команде есть пробел - она состоит из двух слов
                 if any(' ' in cmd.strip() for cmd in commands):
-                    hues.error('В плагине {} была использована команда из двух слов'
-                               .format(self.name))
+                    hues.error(f'В плагине {self.name} была '
+                               'использована команда из двух слов')
                 for command in commands:
-                    self.add_func(command, function)
+                    self.add_func(command, func)
             elif not all_commands:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
-                self.add_func(self.name.lower(), function)
+                self.add_func(self.name.lower(), func)
             # Если нужно, реагируем на все команды
             else:
-                self.add_func('', function)
-            return function
+                self.add_func('', func)
+            return func
 
         return wrapper
 
-    def add_func(self, command, function):
+    def add_func(self, command, func):
         if command is None:
             raise ValueError("Command can not be None")
 
         def event(system: PluginSystem):
-            system.add_command(command, function)
+            system.add_command(command, func)
 
         self.deferred_events.append(event)
 
@@ -84,6 +99,7 @@ sys.modules[shared_space.__name__] = shared_space
 class PluginSystem(object):
     def __init__(self, folder=None):
         self.commands = {}
+        self.any_commands = []
         self.folder = folder
         self.plugins = set()
         self.scheduled_events = []
@@ -91,21 +107,28 @@ class PluginSystem(object):
     def get_plugins(self) -> set:
         return self.plugins
 
-    def add_command(self, name, function):
+    def add_command(self, name, func):
+        if name == '':
+            self.any_commands.append(name)
+            return
         # если уже есть хоть 1 команда, добавляем к списку
         if name in self.commands:
-            self.commands[name].append(function)
+            self.commands[name].append(func)
         # если нет, создаём новый кортеж
         else:
-            self.commands[name] = [function]
+            self.commands[name] = [func]
 
     async def call_command(self, command_name: str, *args, **kwargs):
         # Получаем функции команд для этой команды
         # Несколько плагинов МОГУТ обрабатывать одну команду
+
         commands_ = self.commands.get(command_name)
 
         if not commands_:
-            return
+            # Если нет функций, которые могут обработать команду
+            # То выполняем функции с all_commands=True
+            for func in self.any_commands:
+                await func(*args, **kwargs)
 
         # Если есть плагины, которые могут обработать нашу команду
         for command_function in commands_:
@@ -124,7 +147,10 @@ class PluginSystem(object):
         for folder_path, folder_names, filenames in os.walk(self.folder):
             for filename in filenames:
                 if filename.endswith('.py') and filename != "__init__.py":
-                    # path/to/plugins/plugin/foo.py > plugin/foo.py > plugin.foo > shared_space.plugin.foo
+                    # path/to/plugins/plugin/foo.py
+                    # > plugin/foo.py
+                    # > plugin.foo
+                    # > shared_space.plugin.foo
                     full_plugin_path = os.path.join(folder_path, filename)
                     base_plugin_path = os.path.relpath(full_plugin_path, self.folder)
                     base_plugin_name = os.path.splitext(base_plugin_path)[0].replace(os.path.sep, '.')
@@ -134,7 +160,7 @@ class PluginSystem(object):
                             module_source_name,
                             *imp.find_module(os.path.splitext(filename)[0], [folder_path])
                         )
-                    # Если при загрузке плагина какая-либо ошибка
+                    # Если при загрузке плагина произошла какая-либо ошибка
                     except Exception:
                         result = traceback.format_exc()
                         # если файла нет - создаём

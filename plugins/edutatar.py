@@ -1,6 +1,7 @@
-import aiohttp
-from datetime import date, timedelta
 import xml.etree.ElementTree as etree
+from datetime import date, timedelta
+
+import aiohttp
 
 from plugin_system import Plugin
 
@@ -28,8 +29,9 @@ MONTHS = {
 }
 diary = None
 
-plugin = Plugin('Уроки edu.tatar.ru', usage="уроки (число) - просмотреть расписание и задания "
-                                            "на сегодня, или на (число)")
+plugin = Plugin('Уроки edu.tatar.ru',
+                usage="уроки (число) - просмотреть расписание и задания "
+                      "на сегодня, или на (число)")
 
 
 async def get_diary():
@@ -47,7 +49,7 @@ def conv(data: str):
     return 'ничего' if not data else data
 
 
-# Формат - месяц:{числа : ( урок, задание) }
+# Формат - {месяц: {день: (урок, задание)}}
 def parse_diary(diary_xml):
     dates = {}
     root = etree.fromstring(diary_xml)

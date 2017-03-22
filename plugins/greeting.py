@@ -1,4 +1,5 @@
 import random
+
 from plugin_system import Plugin
 
 # Инициализируем возможные ответы

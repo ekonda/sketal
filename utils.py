@@ -1,5 +1,6 @@
 # Various helpers
 import asyncio
+
 import hues
 
 
@@ -25,14 +26,17 @@ def chunks(l, n):
 class Attachment(object):
     __slots__ = ('type', 'owner_id', 'id')
 
-    def __init__(self, type: str, owner_id: int, aid: int):
-        self.type = type
+    def __init__(self, attach_type: str, owner_id: int, aid: int):
+        self.type = attach_type
         self.owner_id = owner_id
         self.id = aid
 
+    def as_str(self):
+        """Возвращает приложение в формате ownerid_id"""
+        return f'{self.owner_id}_{self.id}'
+
     def __repr__(self):
-        return (f"<Attachment with type '{self.type}', "
-                f"owner f'{self.owner_id}', id f'{self.id}'>")
+        return f'{self.type}{self.as_str()}'
 
 
 class MessageEventData(object):
@@ -51,15 +55,17 @@ class MessageEventData(object):
         for k, v in attaches.items():
             if '_type' not in k:
                 try:
-                    type = attaches[k + '_type']
+                    attach_type = attaches[k + '_type']
                 except KeyError:
-                    # Могут быть такие ключи, как 'from', т.е. не только приложения
+                    # Могут быть такие ключи, как 'from', т.е. не только аттачи
                     continue
                 data = v.split('_')
-                if not len(data)>1:
+                if not len(data) > 1:
                     continue
-                owner_id, id = data
-                self.attaches.append(Attachment(type, owner_id, id))
+                owner_id, atch_id = data
+                self.attaches.append(Attachment(attach_type,
+                                                owner_id,
+                                                atch_id))
 
     def __repr__(self):
         return self.body

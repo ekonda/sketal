@@ -1,4 +1,4 @@
-LOLBOT [![Code Health](https://landscape.io/github/TiberiumPY/LOLBot/master/landscape.svg?style=flat)](https://landscape.io/github/TiberiumPY/LOLBot/master)
+LOLBOT
 ======
 
 Асинхронный чат-бот для ВКонтакте.

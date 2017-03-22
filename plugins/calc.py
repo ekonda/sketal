@@ -1,6 +1,6 @@
 from plugin_system import Plugin
 
-plugin = Plugin("Калькулятор",
+#plugin = Plugin("Калькулятор",
                 usage="посчитать [выражение] - посчитать результат с помощью калькулятора")
 
 

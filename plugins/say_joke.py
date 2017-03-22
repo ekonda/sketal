@@ -1,5 +1,7 @@
 import random
+
 import requests
+
 from plugin_system import Plugin
 
 plugin = Plugin('Шутки',

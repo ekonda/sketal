@@ -1,4 +1,5 @@
 import random
+
 from plugin_system import Plugin
 
 usage = """рандом (от) (до) - случайное число в диапазоне (от, до)

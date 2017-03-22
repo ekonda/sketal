@@ -6,15 +6,14 @@ from plugin_system import Plugin
 plugin = Plugin('Голос', usage="скажи [выражение] - бот сформирует "
                                "голосовое сообщение на основе текста")
 
-
 ADDITIONAL_LANGUAGES = {
-    'uk':'Ukrainian',
-    
-}
+    'uk': 'Ukrainian',
 
+}
 
 try:
     from gtts import gTTS
+
     gTTS.LANGUAGES.update(ADDITIONAL_LANGUAGES)
     import langdetect
     from langdetect import DetectorFactory
@@ -27,13 +26,18 @@ except ImportError:
 
 FAIL_MSG = 'Я не смог это произнести :('
 
-@plugin.on_command('скажи')
+# Бот максим - группа, но он может посылать голосовые сообщения от имени группы
+# наверное нужно использовать какие-то приватные апи
+# TODO: Пофиксить работу от группы
+@plugin.on_command('скажи', group=False)
 async def say_text(msg, args):
     if not gTTS or not langdetect:
         return await msg.answer('Я не могу говорить, '
                                 'так как у меня не установлены нужные модули :(')
 
     text = ' '.join(args)
+    if len(text) > 450:
+        return await msg.answer('Слишком длинное сообщение!')
     try:
         # Используется Google Text To Speech и библиотека langdetect
         lang = langdetect.detect(text)

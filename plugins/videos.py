@@ -4,7 +4,7 @@ plugin = Plugin('Поиск видео',
                 usage='видео [строка для поиска] - найти видео по запросу')
 
 
-@plugin.on_command('видео', 'видяшки', 'видос', 'видосик')
+@plugin.on_command('видео', 'видяшки', 'видос', 'видосик', group=False)
 async def video_search(msg, args):
     # Если нет аргументов
     if not args:
@@ -22,5 +22,5 @@ async def video_search(msg, args):
     # Если не нашли ни одного видео
     if not vids:
         return await msg.answer('Ничего не найдено')
-    resp = ','.join('video{}_{}'.format(vid['owner_id'], vid['id']) for vid in vids)
+    resp = ','.join(f"video{vid['owner_id']}_{vid['id']}" for vid in vids)
     await msg.answer('Приятного просмотра!', attachment=resp)

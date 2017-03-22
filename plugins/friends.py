@@ -1,6 +1,3 @@
-from plugin_system import Plugin
-
-
 # plugin = Plugin("Автодобавление друзей")
 
 

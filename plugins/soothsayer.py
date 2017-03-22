@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
+
 from plugin_system import Plugin
 
 plugin = Plugin('Шар предсказаний',

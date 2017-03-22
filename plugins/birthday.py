@@ -1,5 +1,5 @@
-import random
 import datetime
+import random
 
 from plugin_system import Plugin
 
@@ -44,7 +44,7 @@ async def check(msg, args):
         grp_id = await msg.vk.resolve_name(possible_id)
         # Если не получилось, конвертируем аргумент в число
         if not grp_id:
-            grp_id = int(possible_id.replace('-', ''))
+            grp_id = abs(int(possible_id))
         if not grp_id:
             return
     except ValueError:

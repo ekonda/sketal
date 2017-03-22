@@ -1,8 +1,8 @@
 from plugin_system import Plugin
+usage=['запомни [строка] - запомнить строку',
+                      'напомни - напомнить строку']
 
-plugin = Plugin('Блокнот',
-                usage='запомни [строка] - запомнить строку\n'
-                      'напомни - напомнить строку')
+plugin = Plugin('Блокнот', usage=usage)
 
 memoes = {}
 
