@@ -249,12 +249,19 @@ class VkPlus(object):
 
     async def resolve_name(self, screen_name):
         """Функция для перевода короткого имени в числовой ID"""
-        result = await self.method('utils.resolveScreenName',
-                                   {'screen_name': screen_name})
-        if not result:
-            return False
+        try:
+            for val in ('club', 'public', 'event'):
+                screen_name = screen_name.replace(val, '')
+            possible_id = int(screen_name)
+            return possible_id
 
-        return result.get('object_id')
+        except ValueError:
+            result = await self.method('utils.resolveScreenName',
+                                       {'screen_name': screen_name})
+            if not result:
+                return False
+
+            return result.get('object_id')
 
 
 class Message(object):
