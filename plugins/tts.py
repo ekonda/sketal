@@ -2,6 +2,7 @@ import aiohttp
 from langdetect.lang_detect_exception import LangDetectException
 
 from plugin_system import Plugin
+from settings import TOKEN
 
 plugin = Plugin('Голос', usage="скажи [выражение] - бот сформирует "
                                "голосовое сообщение на основе текста")
@@ -26,10 +27,7 @@ except ImportError:
 
 FAIL_MSG = 'Я не смог это произнести :('
 
-# Бот максим - группа, но он может посылать голосовые сообщения от имени группы
-# наверное нужно использовать какие-то приватные апи
-# TODO: Пофиксить работу от группы
-@plugin.on_command('скажи', group=False)
+@plugin.on_command('скажи')
 async def say_text(msg, args):
     if not gTTS or not langdetect:
         return await msg.answer('Я не могу говорить, '
@@ -61,7 +59,11 @@ async def say_text(msg, args):
     # TODO: Убрать сохранение (хранить файл в памяти)
     tts.save('audio.mp3')
     # Получаем URL для загрузки аудио сообщения
-    upload_server = await msg.vk.method('docs.getUploadServer', {'type': 'audio_message'})
+    if TOKEN:
+        upload_method = 'docs.getWallUploadServer'
+    else:
+        upload_method = 'docs.getUploadServer'
+    upload_server = await msg.vk.method(upload_method, {'type': 'audio_message'})
     url = upload_server.get('upload_url')
     if not url:
         return await msg.answer(FAIL_MSG)

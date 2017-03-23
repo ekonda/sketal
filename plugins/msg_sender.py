@@ -8,13 +8,10 @@ plugin = Plugin('Послать сообщение',
 
 
 DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
-async def check_links(string):
+def check_links(string):
     return any(x in string for x in DISABLED) or bool(psl.privatesuffix(string))
 
-
-test_str = 'Заходи на www.dojki.com, там тебя ждут прекрасные дамы!'
-
-@plugin.on_command('написать', 'напиши', 'лс', 'письмо', group=False)
+@plugin.on_command('написать', 'напиши', 'лс', 'письмо')
 async def write_msg(msg, args):
     if len(args) < 2:
         return await msg.answer('Введите ID пользователя и сообщение для него.')

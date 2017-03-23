@@ -3,6 +3,5 @@ gTTS
 captcha_solver
 hues
 aiosocks
-requests
 git+https://github.com/Fahreeve/aiovk
-publicsuffixlist
+publicsuffixlist  # для проверки на ссылки

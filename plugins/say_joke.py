@@ -1,6 +1,7 @@
+import json
 import random
 
-import requests
+import aiohttp
 
 from plugin_system import Plugin
 
@@ -13,14 +14,13 @@ answers = '''А вот и шуточки подъехали!!!
 Петросян в душе прям бушует :)
 '''.splitlines()
 
+URL = "http://rzhunemogu.ru/RandJSON.aspx?CType=1"
 
 @plugin.on_command('шутка', 'пошути', 'рассмеши')
 async def joke_get(msg, args):
-    resp = requests.post('http://www.umori.li/api/random?num=10')
-    try:
-        print(resp.content)
-        joke = resp.json()['joke']['text']
-    except:
-        return await msg.answer("У меня шутилка сломалась :(")
-
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get(URL) as resp:
+            text = await resp.text()
+            data = json.loads(text.replace('\r\n', ''))
+            joke = data['content']
     await msg.answer(random.choice(answers) + '\n' + str(joke))
