@@ -18,18 +18,16 @@ async def write_msg(msg, args):
 
     sender_id = msg.id
     possible_id = args.pop(0)
-    if sender_id == int(possible_id):
-        return await msg.answer('Нельзя отправить сообщение самому себе!')
-	
 
-   
     if not possible_id.isdigit():
         uid = await msg.vk.resolve_name(possible_id)
     else:
         uid = int(possible_id)
     if not uid:
-        await msg.answer('Проверьте правильность введёного ID пользователя.')
-        return
+        return await msg.answer('Проверьте правильность введёного ID пользователя.')
+    if sender_id == int(possible_id):
+        return await msg.answer('Нельзя отправить сообщение самому себе!')
+
     data = ' '.join(args)
 
     if check_links(data):
