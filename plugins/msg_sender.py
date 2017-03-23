@@ -16,7 +16,13 @@ async def write_msg(msg, args):
     if len(args) < 2:
         return await msg.answer('Введите ID пользователя и сообщение для него.')
 
+    sender_id = msg.id
     possible_id = args.pop(0)
+    if sender_id == int(possible_id):
+        return await msg.answer('Нельзя отправить сообщение самому себе!')
+	
+
+   
     if not possible_id.isdigit():
         uid = await msg.vk.resolve_name(possible_id)
     else:
