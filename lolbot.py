@@ -45,6 +45,7 @@ class Bot(object):
                 self.NEED_CONVERT = settings.NEED_CONVERT
                 self.APP_ID = settings.APP_ID
                 self.SCOPE = settings.SCOPE
+                self.FLOOD_INTERVAL = settings.FLOOD_INTERVAL
                 # Если в настройках есть токен
                 if settings.TOKEN:
                     self.IS_TOKEN = True
@@ -162,8 +163,8 @@ class Bot(object):
         cleaned_body = text.replace('<br>', '\n')
         data = MessageEventData(conf, peer_id, user_id, cleaned_body, attaches, ts)
         try:
-            # Если разница между сообщениями меньше 1 сек - игнорим
-            if ts - self.messages_date[user_id] <= 1:
+            # Проверяем на интервал между командами для этого ID пользователя
+            if ts - self.messages_date[user_id] <= self.FLOOD_INTERVAL:
                 self.messages_date[user_id] = ts
                 return
             else:
