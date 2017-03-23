@@ -1,7 +1,8 @@
-langdetect
-gTTS
-captcha_solver
-hues
-aiosocks
-aiovk
+hues  # цветное логгирование
+aiohttp
+git+https://github.com/TiberiumPY/aiosocks
+aiovk  # асинхронные API вызовы ВК
+captcha_solver  # решение капч
+langdetect  # выбирание языка для речи в плагине голоса
+gTTS  # для плагина голоса
 publicsuffixlist  # для проверки на ссылки
