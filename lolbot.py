@@ -159,6 +159,7 @@ class Bot(object):
             # Если ключа from нет - это ЛС
             user_id = peer_id
             conf = False
+        user_id = int(user_id)
 
         cleaned_body = text.replace('<br>', '\n')
         data = MessageEventData(conf, peer_id, user_id, cleaned_body, attaches, ts, msg_id)
