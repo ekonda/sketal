@@ -31,25 +31,27 @@ class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 1
     period = 0.4
 
-async def enter_captcha(url, sid):
+
+class Captcha():
     session = aiohttp.ClientSession()
-    if not solver:
-        return hues.error('Введите данные для сервиса решения капч в settings.py!')
-    with session as ses:
-        async with ses.get(url) as resp:
-            img_data = await resp.read()
-            data = solver.solve_captcha(img_data)
-            # hues.success(f"Капча {sid} решена успешно")
-            return data
 
-
-class TokenSession(aiovk.TokenSession):
     async def enter_captcha(self, url, sid):
-        return await enter_captcha(url, sid)
+        if not solver:
+            return hues.error('Введите данные для сервиса решения капч в settings.py!')
+        with self.session as ses:
+            async with ses.get(url) as resp:
+                img_data = await resp.read()
+                data = solver.solve_captcha(img_data)
+                # hues.success(f"Капча {sid} решена успешно")
+                return data
 
-class ImplicitSession(aiovk.ImplicitSession):
-    async def enter_captcha(self, url, sid):
-        return await enter_captcha(url, sid)
+
+class TokenSession(aiovk.TokenSession, Captcha):
+    pass
+
+
+class ImplicitSession(aiovk.ImplicitSession, Captcha):
+    pass
 
 
 # Словарь, ключ - раздел API методов, значение - список разрешённых методов
@@ -265,7 +267,7 @@ class VkPlus(object):
 class Message(object):
     """Класс, объект которого передаётся в плагин для упрощённого ответа"""
     __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id',
-                 'body', 'timestamp', 'answer_values', 'attaches')
+                 'body', 'timestamp', 'answer_values', 'attaches', 'msg_id')
 
     def __init__(self, vk_api_object: VkPlus, data: MessageEventData):
         self._data = data
@@ -279,6 +281,7 @@ class Message(object):
             self.user = True
         self.id = data.user_id
         self.body = data.body
+        self.msg_id = data.msg_id
         self.timestamp = data.time
         self.attaches = data.attaches
         # Словарь для отправки к ВК при ответе

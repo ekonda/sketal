@@ -159,9 +159,9 @@ class Bot(object):
             # Если ключа from нет - это ЛС
             user_id = peer_id
             conf = False
-        user_id = int(user_id)
+
         cleaned_body = text.replace('<br>', '\n')
-        data = MessageEventData(conf, peer_id, user_id, cleaned_body, attaches, ts)
+        data = MessageEventData(conf, peer_id, user_id, cleaned_body, attaches, ts, msg_id)
         try:
             # Проверяем на интервал между командами для этого ID пользователя
             if ts - self.messages_date[user_id] <= self.FLOOD_INTERVAL:

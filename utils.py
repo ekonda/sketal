@@ -40,15 +40,17 @@ class Attachment(object):
 
 
 class MessageEventData(object):
-    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', 'attaches')
+    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', 'attaches', "msg_id")
 
-    def __init__(self, conf: bool, pid: int, uid: int, body: str, attaches: dict, time: int):
+    def __init__(self, conf: bool, pid: int, uid: int, body: str, attaches: dict, time: int, msg_id: int):
         self.conf = conf
         self.peer_id = pid
         self.user_id = uid
         self.body = body
         self.time = time
+        self.msg_id = msg_id
         self.attaches = []
+
         if 'attach1' not in attaches:
             # Нет ни одного приложения
             return
