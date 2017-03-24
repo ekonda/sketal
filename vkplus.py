@@ -31,27 +31,25 @@ class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 1
     period = 0.4
 
-
-class Captcha():
+async def enter_captcha(url, sid):
     session = aiohttp.ClientSession()
+    if not solver:
+        return hues.error('Введите данные для сервиса решения капч в settings.py!')
+    with session as ses:
+        async with ses.get(url) as resp:
+            img_data = await resp.read()
+            data = solver.solve_captcha(img_data)
+            # hues.success(f"Капча {sid} решена успешно")
+            return data
 
+
+class TokenSession(aiovk.TokenSession):
     async def enter_captcha(self, url, sid):
-        if not solver:
-            return hues.error('Введите данные для сервиса решения капч в settings.py!')
-        with self.session as ses:
-            async with ses.get(url) as resp:
-                img_data = await resp.read()
-                data = solver.solve_captcha(img_data)
-                # hues.success(f"Капча {sid} решена успешно")
-                return data
+        return await enter_captcha(url, sid)
 
-
-class TokenSession(aiovk.TokenSession, Captcha):
-    pass
-
-
-class ImplicitSession(aiovk.ImplicitSession, Captcha):
-    pass
+class ImplicitSession(aiovk.ImplicitSession):
+    async def enter_captcha(self, url, sid):
+        return await enter_captcha(url, sid)
 
 
 # Словарь, ключ - раздел API методов, значение - список разрешённых методов

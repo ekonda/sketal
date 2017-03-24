@@ -11,19 +11,25 @@ DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
 def check_links(string):
     return any(x in string for x in DISABLED) or bool(psl.privatesuffix(string))
 
-@plugin.on_command('написать', 'напиши', 'лс', 'письмо')
+@plugin.on_command('написать', 'напиши', 'лс', 'письмо', group=False)
 async def write_msg(msg, args):
     if len(args) < 2:
         return await msg.answer('Введите ID пользователя и сообщение для него.')
 
+    sender_id = msg.id
     possible_id = args.pop(0)
+
     if not possible_id.isdigit():
         uid = await msg.vk.resolve_name(possible_id)
     else:
         uid = int(possible_id)
+
     if not uid:
-        await msg.answer('Проверьте правильность введёного ID пользователя.')
-        return
+        return await msg.answer('Проверьте правильность введёного ID пользователя.')
+
+    if sender_id == uid:
+        return await msg.answer('Зачем мне отправлять сообщение самому себе?!')
+
     data = ' '.join(args)
 
     if check_links(data):
