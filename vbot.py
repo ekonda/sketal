@@ -234,10 +234,6 @@ class Bot(object):
     async def check_if_command(self, data: MessageEventData, msg_id: int) -> None:
         msg_obj = Message(self.vk, data)
         result = await self.cmd_system.process_command(msg_obj)
-        if result:
-            # Если это - команда, то помечаем сообщение прочитанным
-            # Сделано для того, чтобы бот не читал обычные сообщения
-            return await self.vk.mark_as_read(msg_id)
         if self.LOG_MESSAGES:
             who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
             hues.info(f"Сообщение из {who} > {data.body}")
