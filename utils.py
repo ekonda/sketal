@@ -1,4 +1,5 @@
 # Various helpers
+from typing import Callable, List
 import asyncio
 
 import hues
@@ -24,15 +25,20 @@ def chunks(l, n):
 
 
 class Attachment(object):
-    __slots__ = ('type', 'owner_id', 'id')
+    __slots__ = ('type', 'owner_id', 'id', 'access_key', 'link')
 
-    def __init__(self, attach_type: str, owner_id: int, aid: int):
+    def __init__(self, attach_type: str, owner_id: int, aid: int, access_key: str, link: str):
         self.type = attach_type
         self.owner_id = owner_id
         self.id = aid
+        self.access_key = access_key
+        self.link = link
 
     def as_str(self):
-        """Возвращает приложение в формате ownerid_id"""
+        """Возвращает приложение в формате ownerid_id_accesskey"""
+        if self.access_key:
+            return f'{self.owner_id}_{self.id}_{self.access_key}'
+
         return f'{self.owner_id}_{self.id}'
 
     def __repr__(self):
@@ -40,34 +46,16 @@ class Attachment(object):
 
 
 class MessageEventData(object):
-    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', 'attaches', "msg_id")
+    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', "msg_id", "attaches")
 
-    def __init__(self, conf: bool, pid: int, uid: int, body: str, attaches: dict, time: int, msg_id: int):
+    def __init__(self, conf: bool, pid: int, uid: int, body: str, time: int, msg_id: int, attaches: List):
         self.conf = conf
         self.peer_id = pid
         self.user_id = uid
         self.body = body
         self.time = time
         self.msg_id = msg_id
-        self.attaches = []
-
-        if 'attach1' not in attaches:
-            # Нет ни одного приложения
-            return
-        for k, v in attaches.items():
-            if '_type' not in k:
-                try:
-                    attach_type = attaches[k + '_type']
-                except KeyError:
-                    # Могут быть такие ключи, как 'from', т.е. не только аттачи
-                    continue
-                data = v.split('_')
-                if not len(data) > 1:
-                    continue
-                owner_id, atch_id = data
-                self.attaches.append(Attachment(attach_type,
-                                                owner_id,
-                                                atch_id))
+        self.attaches = attaches
 
     def __repr__(self):
         return self.body

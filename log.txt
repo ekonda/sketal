@@ -1,0 +1,570 @@
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 6, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 6, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 5, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 5, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 8, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 3, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 3, in <module>
+    from PIL import Image
+  File "/usr/lib/python3/dist-packages/PIL/Image.py", line 66, in <module>
+    from PIL import _imaging as core
+ImportError: cannot import name '_imaging'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    import cStringIO
+ModuleNotFoundError: No module named 'cStringIO'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    import cStringIO
+ModuleNotFoundError: No module named 'cStringIO'
+Traceback (most recent call last):
+  File "/home/michael/workspace/Python/LOLBot/plugin_system.py", line 161, in _init_plugin_files
+    *imp.find_module(os.path.splitext(filename)[0], [folder_path])
+  File "/usr/lib/python3.6/imp.py", line 234, in load_module
+    return load_source(name, filename, file)
+  File "/usr/lib/python3.6/imp.py", line 172, in load_source
+    module = _load(spec)
+  File "<frozen importlib._bootstrap>", line 675, in _load
+  File "<frozen importlib._bootstrap>", line 655, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 678, in exec_module
+  File "<frozen importlib._bootstrap>", line 205, in _call_with_frames_removed
+  File "/home/michael/workspace/Python/LOLBot/plugins/mirror_photo.py", line 4, in <module>
+    import cStringIO
+ModuleNotFoundError: No module named 'cStringIO'

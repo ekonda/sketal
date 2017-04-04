@@ -16,6 +16,10 @@ from vkplus import VkPlus, Message
 
 class Bot(object):
     """Главный класс бота"""
+    __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "NEED_CONVERT", "APP_ID", "SCOPE", "FLOOD_INTERVAL",
+                 "IS_TOKEN", "TOKEN", "VK_LOGIN", "VK_PASSWORD",
+                 "messages_date", "plugin_system", "cmd_system", "scheduled_funcs", "longpoll_server", "longpoll_key",
+                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts"]
 
     def __init__(self):
         self.last_message_id = 0
@@ -110,6 +114,13 @@ class Bot(object):
 
         if not result:
             fatal("Не удалось получить значения Long Poll сервера!")
+
+        try:
+            self.last_ts = self.longpoll_values['ts']
+            self.longpoll_key = self.longpoll_values['key']
+        except AttributeError:
+            pass
+
         if update == 0:
             # Если нам нужно инициализировать с нуля, меняем сервер
             self.longpoll_server = "https://" + result['server']
@@ -125,7 +136,7 @@ class Bot(object):
             'act': 'a_check',
             'key': self.longpoll_key,
             'ts': self.last_ts,
-            'wait': 20,  # Тайм-аут запроса
+            'wait': 25,  # Тайм-аут запроса
             'mode': 2,
             'version': 1
         }
@@ -162,7 +173,9 @@ class Bot(object):
         user_id = int(user_id)
 
         cleaned_body = text.replace('<br>', '\n')
-        data = MessageEventData(conf, peer_id, user_id, cleaned_body, attaches, ts, msg_id)
+
+        data = MessageEventData(conf, peer_id, user_id, cleaned_body, ts, msg_id, attaches)
+
         try:
             # Проверяем на интервал между командами для этого ID пользователя
             if ts - self.messages_date[user_id] <= self.FLOOD_INTERVAL:

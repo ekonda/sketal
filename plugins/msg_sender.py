@@ -1,12 +1,18 @@
-import publicsuffixlist
-psl = publicsuffixlist.PublicSuffixList()
-from plugin_system import Plugin
+import hues
 
+from plugin_system import Plugin
+import publicsuffixlist
 import pickle
 import os
 
+psl = publicsuffixlist.PublicSuffixList()
+
 plugin = Plugin('Послать сообщение',
-                usage='!напиши [id] [сообщение] - написать сообщение пользователю\n!скрыть [id] - не получать сообщения от пользователя\n!показать [id] - получать сообщения от пользователя\n!небеспокоить - не получать сообщения вообще\n!беспокоить - получать сообщения от пользователей, не в вашем чёрном списке')
+                usage='''!напиши [id] [сообщение] - написать сообщение пользователю
+                !скрыть [id] - не получать сообщения от пользователя
+                !показать [id] - получать сообщения от пользователя
+                !небеспокоить - не получать сообщения вообще
+                !беспокоить - получать сообщения от пользователей, не в вашем чёрном списке'''.split("\n"))
 
 black_list = {}
 muted = {}
@@ -27,12 +33,15 @@ except:
     pass
 
 DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
+
+
 def check_links(string):
     return any(x in string for x in DISABLED) or bool(psl.privatesuffix(string))
 
-@plugin.on_command('написать', 'напиши', 'лс', 'письмо', group=True)
+
+@plugin.on_command('написать', 'напиши', 'лс', 'письмо')
 async def write_msg(msg, args):
-    if len(args) < 2 and len(msg.attaches) < 1:
+    if (len(args) != 1 or len(msg.brief_attaches) <= 0) and len(args) < 2:
         return await msg.answer('Введите ID пользователя и сообщение для него.')
 
     sender_id = msg.id
@@ -60,35 +69,24 @@ async def write_msg(msg, args):
     if muted.get(sender_id, False):
         return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
-    full_message_data = await msg.vk.method('messages.getById', {'message_ids': msg.msg_id, 'preview_length': 1})
-
     sender_data = await msg.vk.method('users.get', {'user_ids': msg.id, 'name_case': "gen"})
     sender_data = sender_data[0]
-
-    attaches = []
-
-    if full_message_data:
-        for message in full_message_data['items']:
-            if "attachments" in message:
-                for a in message["attachments"]:
-                    a_type = a['type']
-                    attach = a_type + str(a[a_type]['owner_id']) + "_" + str(a[a_type]['id'])
-                    if 'access_key' in a[a_type]:
-                        attach += "_" + a[a_type]['access_key']
-                    attaches.append(attach)
 
     val = {
         'peer_id': uid,
         'message': f"Вам сообщение от {sender_data['first_name']} {sender_data['last_name']}!\n\"{data}\"",
-	'attachment': ",".join(attaches)
     }
+
+    if msg.brief_attaches:
+        val['attachment'] = ",".join(str(x) for x in await msg.full_attaches)
 
     result = await msg.vk.method('messages.send', val)
     if not result:
         return await msg.answer('Сообщение не удалось отправить!')
     await msg.answer('Сообщение успешно отправлено!')
 
-@plugin.on_command('скрыть', group=True)
+
+@plugin.on_command('скрыть')
 async def ignore(msg, args):
     if len(args) < 1:
         return await msg.answer('Введите ID пользователя для игнорирования.')
@@ -111,7 +109,8 @@ async def ignore(msg, args):
 
     await msg.answer(f'Вы не будете получать сообщения от {ignore_id}!')
 
-@plugin.on_command('показать', group=True)
+
+@plugin.on_command('показать')
 async def uninnore(msg, args):
     if len(args) < 1:
         return await msg.answer('Введите ID пользователя, которого вы хотите перестать игнорировать.')
@@ -136,22 +135,22 @@ async def uninnore(msg, args):
 
     await msg.answer(f'Вы будете получать сообщения от {unignore_id}!')
 
-@plugin.on_command('небеспокоить', group=True)
+
+@plugin.on_command('небеспокоить')
 async def silenceon(msg, args):
-    muted[msg.id] = True 
+    muted[msg.id] = True
 
     with open('plugins/msg_sender_data/m.pkl', 'wb') as f:
         pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
 
     await msg.answer('Вы не будете получать сообщения!')
 
-@plugin.on_command('беспокоить', group=True)
+
+@plugin.on_command('беспокоить')
 async def silenceoff(msg, args):
-    muted[msg.id] = False 
+    muted[msg.id] = False
 
     with open('plugins/msg_sender_data/m.pkl', 'wb') as f:
         pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
 
     await msg.answer('Вы будете получать все сообщения!')
-
-

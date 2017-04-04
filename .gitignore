@@ -5,3 +5,4 @@ __pycache__
 settings.py
 .idea/
 *.mp3
+log.log

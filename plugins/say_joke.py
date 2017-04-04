@@ -21,6 +21,5 @@ async def joke_get(msg, args):
     async with aiohttp.ClientSession() as sess:
         async with sess.get(URL) as resp:
             text = await resp.text()
-            data = json.loads(text.replace('\r\n', ''))
-            joke = data['content']
+            joke = "".join(text.replace('\r\n', '\n').split("\"")[3:-1])
     await msg.answer(random.choice(answers) + '\n' + str(joke))

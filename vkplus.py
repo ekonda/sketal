@@ -7,11 +7,14 @@ import string
 import aiohttp
 import aiovk
 import hues
+import requests
 from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
-from utils import fatal, MessageEventData, chunks
+from utils import fatal, MessageEventData, chunks, Attachment
+
+from settings import TOKEN
 
 try:
     from settings import CAPTCHA_KEY, CAPTCHA_SERVER
@@ -238,6 +241,24 @@ class VkPlus(object):
                 hues.error('Обход анти-флуда API не удался =(')
         return {}
 
+    async def upload_photo(self, encoded_image) -> Attachment:
+        files = {'file': ('picture.png', encoded_image)}
+
+        upload_url = (await self.method('photos.getMessagesUploadServer'))['upload_url']
+
+        response = requests.post(upload_url, files=files)
+        result = json.loads(response.text)
+
+        data = dict(photo=result['photo'], hash=result['hash'], server=result['server'])
+        result = (await self.method('photos.saveMessagesPhoto', data))[0]
+
+        link = ""
+        for k in result:
+            if "photo_" in k:
+                link = result[k]
+
+        return Attachment("photo", result["owner_id"], result["id"], "", link)
+
     @staticmethod
     def anti_flood():
         """Возвращает строку из 5 символов (букв и цифр)"""
@@ -267,7 +288,7 @@ class VkPlus(object):
 class Message(object):
     """Класс, объект которого передаётся в плагин для упрощённого ответа"""
     __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id',
-                 'body', 'timestamp', 'answer_values', 'attaches', 'msg_id')
+                 'body', 'timestamp', 'answer_values', 'brief_attaches', '_full_attaches', 'msg_id')
 
     def __init__(self, vk_api_object: VkPlus, data: MessageEventData):
         self._data = data
@@ -283,12 +304,39 @@ class Message(object):
         self.body = data.body
         self.msg_id = data.msg_id
         self.timestamp = data.time
-        self.attaches = data.attaches
+        self.brief_attaches = data.attaches
+        self._full_attaches = None
         # Словарь для отправки к ВК при ответе
         if self.user:
             self.answer_values = {'user_id': self.id}
         else:
             self.answer_values = {'chat_id': self.cid}
+
+    @property
+    async def full_attaches(self):
+        if self._full_attaches is None:
+            self._full_attaches = []
+
+            full_message_data = await self.vk.method('messages.getById', {'message_ids': self.msg_id, 'preview_length': 1})
+
+            if full_message_data:
+                message = full_message_data['items'][0]
+                if "attachments" in message:
+                    for a in message["attachments"]:
+                        a_type = a['type']
+
+                        link = ""
+                        for k in a[a_type]:
+                            if "photo_" in k:
+                                link = a[a_type][k]
+
+                        key = ""
+                        if 'access_key' in a[a_type]:
+                            key = a[a_type]['access_key']
+
+                        self._full_attaches.append(Attachment(a_type, a[a_type]['owner_id'], a[a_type]['id'], key, link))
+
+        return self._full_attaches
 
     async def answer(self, msg: str, **additional_values):
         """Функция ответа на сообщение для плагинов"""
