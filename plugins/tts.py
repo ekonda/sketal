@@ -4,7 +4,7 @@ from langdetect.lang_detect_exception import LangDetectException
 from plugin_system import Plugin
 from settings import TOKEN
 
-plugin = Plugin('Голос', usage="!скажи [выражение] - бот сформирует "
+plugin = Plugin('Голос', usage="скажи [выражение] - бот сформирует "
                                "голосовое сообщение на основе текста")
 
 ADDITIONAL_LANGUAGES = {

@@ -1,7 +1,7 @@
 from plugin_system import Plugin
 
 plugin = Plugin('Список плагинов',
-                usage='!плагины - показать список загруженных плагинов')
+                usage='плагины - показать список загруженных плагинов')
 
 
 @plugin.on_command('плагины')

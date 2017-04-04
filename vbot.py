@@ -120,6 +120,8 @@ class Bot(object):
             self.longpoll_key = self.longpoll_values['key']
         except AttributeError:
             pass
+        except ValueError:
+            pass
 
         if update == 0:
             # Если нам нужно инициализировать с нуля, меняем сервер

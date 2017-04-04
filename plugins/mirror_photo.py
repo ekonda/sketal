@@ -8,7 +8,7 @@ import publicsuffixlist
 
 psl = publicsuffixlist.PublicSuffixList()
 
-plugin = Plugin('Зеркало', usage="!отзеркаль <прикреплённые фото> - ")
+plugin = Plugin('Зеркало', usage="отзеркаль <прикреплённые фото> - ")
 
 FAIL_MSG = 'К сожалению, произошла какая-то ошибка :('
 
