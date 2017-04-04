@@ -71,12 +71,13 @@ async def say_text(msg, args):
     # Загружаем аудио через aiohttp
     form_data = aiohttp.FormData()
     form_data.add_field('file', open('audio.mp3', 'rb'))
-    async with aiohttp.post(url, data=form_data) as resp:
-        file_url = await resp.json()
-        file = file_url.get('file')
-        if not file:
-            return await msg.answer(FAIL_MSG)
-
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, data=form_data) as resp:
+            file_url = await resp.json()
+            file = file_url.get('file')
+            if not file:
+                return await msg.answer(FAIL_MSG)
+              
     # Сохраняем файл в документы (чтобы можно было прикрепить к сообщению)
     saved_data = await msg.vk.method('docs.save', {'file': file})
     if not saved_data:
