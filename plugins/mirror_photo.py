@@ -15,13 +15,13 @@ FAIL_MSG = 'К сожалению, произошла какая-то ошибк
 
 @plugin.on_command('отзеркаль')
 async def mirror(msg, args):
-    no_photo = True
-    for k in msg.brief_attaches:
-        if '_type' in k and msg.brief_attaches[k] == "photo":
-            no_photo = False
+    photo = False
+    for k, v in msg.brief_attaches.items():
+        if '_type' in k and v == "photo":
+            photo = True
             break
 
-    if no_photo:
+    if not photo:
         return await msg.answer('Вы не прислали фото!')
 
     attach = (await msg.full_attaches)[0]

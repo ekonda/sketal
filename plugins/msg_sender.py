@@ -41,7 +41,7 @@ def check_links(string):
 
 @plugin.on_command('написать', 'напиши', 'лс', 'письмо')
 async def write_msg(msg, args):
-    if (len(args) != 1 or len(msg.brief_attaches) <= 0) and len(args) < 2:
+    if (len(args) != 1 or not msg.brief_attaches) and len(args) < 2:
         return await msg.answer('Введите ID пользователя и сообщение для него.')
 
     sender_id = msg.id
@@ -111,12 +111,12 @@ async def ignore(msg, args):
 
 
 @plugin.on_command('показать')
-async def uninnore(msg, args):
-    if len(args) < 1:
-        return await msg.answer('Введите ID пользователя, которого вы хотите перестать игнорировать.')
+async def unignore(msg, unignore):
+    if len(unignore) < 1:
+        return await msg.answer('Введите ID пользователя, которого вы хотите убрать из игнора.')
 
     sender_id = msg.id
-    unignore_id = args.pop()
+    unignore_id = unignore.pop()
 
     if not unignore_id.isdigit():
         uid = await msg.vk.resolve_name(unignore_id)
@@ -133,7 +133,7 @@ async def uninnore(msg, args):
     with open('plugins/msg_sender_data/bl.pkl', 'wb') as f:
         pickle.dump(black_list, f, pickle.HIGHEST_PROTOCOL)
 
-    await msg.answer(f'Вы будете получать сообщения от {unignore_id}!')
+    await msg.answer(f'Теперь {unignore_id} сможет отправлять вам сообщения!')
 
 
 @plugin.on_command('небеспокоить')
