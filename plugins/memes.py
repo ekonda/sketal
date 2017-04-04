@@ -27,6 +27,8 @@ async def give_memes(msg, group_id):
         attaches = data['items'][0].get('attachments')
         if attaches:
             photo = attaches[0].get('photo')
+        
+        values['offset'] = random.randint(1, 1985)
 
     oid = photo['owner_id']
     att_id = photo['id']
