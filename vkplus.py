@@ -163,7 +163,7 @@ def is_available_from_public(key: str) -> bool:
 class VkPlus(object):
     api = None
 
-    def __init__(self, token=None, login=None, password=None, app_id=5668099, scope=140492191):
+    def __init__(self, token=None, login=None, password=None, app_id=5968271, scope=140492191):
         # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
