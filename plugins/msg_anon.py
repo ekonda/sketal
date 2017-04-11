@@ -31,8 +31,8 @@ def check_links(string):
 @plugin.on_command('анонимно')
 async def anonymously(msg, args):
     text_required = True
-    for k in msg.brief_attaches:
-        if '_type' in k and msg.brief_attaches[k] == "photo":
+    for k, v in msg.brief_attaches.items():
+        if '_type' in k and v == "photo":
             text_required = False
             break
 
@@ -67,7 +67,7 @@ async def anonymously(msg, args):
         message += data + "\n"
 
     if msg.brief_attaches:
-        message += "Вложения:\n".join([m.link for m in await msg.full_attaches])
+        message += "Вложения:\n".join(m.link for m in await msg.full_attaches)
 
     val = {
         'peer_id': uid,

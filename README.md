@@ -12,9 +12,9 @@ VBot
 2. Выполните команду `pip3 install -r requirements.txt`. Это автоматически установит все нужные модули.
 3. Запустите бота, чтобы он создал файл `settings.py` - `python3 vbot.py`.
 4. **В `settings.py` замените `TOKEN` на access_token группы или `LOGIN` и `PASSWORD` на логин и пароль аккаунта ВК соответственно.**
-5. Запустите `python3 lolbot.py`.
+5. Запустите `python3 vbot.py`.
 6. Если вам нужно запустить бота в фоне, используйте `screen` под Linux.
-7. Теоретически возможно захостить бота на Heroku. [Небольшой гайд](https://github.com/Myzon/heroku-python-script).
+7. Бота можно бесплатно захостить на Heroku. [Гайд](http://disonds.com/2017/03/20/python-bot-dlya-vk-na-heroku/), [Еще один гайд](https://github.com/Myzon/heroku-python-script).
 
 ## Смена префиксов
 По умолчанию бот отзывается на три префикса: `лолбот`, `лб`, `!`.
@@ -66,7 +66,7 @@ async def test(msg, args):
 ## Помощь и вклад
 Проект открыт, любой может кинуть pull request! Мы обязательно изучим и, возможно, примем изменения.
 
-#### Связь со мной
-Разработчиков этого плагина можно найти в вк:
+#### Связь с нами
+Разработчиков этого бота можно найти в вк:
 * https://vk.com/michaelkrukov
 * https://vk.com/tiberium_1111

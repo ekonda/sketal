@@ -14,10 +14,8 @@ from captcha_solver import CaptchaSolver
 
 from utils import fatal, MessageEventData, chunks, Attachment
 
-from settings import TOKEN
-
 try:
-    from settings import CAPTCHA_KEY, CAPTCHA_SERVER
+    from settings import CAPTCHA_KEY, CAPTCHA_SERVER, TOKEN
 
     solver = CaptchaSolver(CAPTCHA_SERVER, api_key=CAPTCHA_KEY)
 except (ImportError, AttributeError):
@@ -165,7 +163,7 @@ def is_available_from_public(key: str) -> bool:
 class VkPlus(object):
     api = None
 
-    def __init__(self, token=None, login=None, password=None, app_id=5668099, scope=140492191):
+    def __init__(self, token=None, login=None, password=None, app_id=5968271, scope=140492191):
         # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
@@ -314,27 +312,41 @@ class Message(object):
 
     @property
     async def full_attaches(self):
-        if self._full_attaches is None:
-            self._full_attaches = []
+        # Если мы уже получали аттачи для этого сообщения, возвратим их
+        if self._full_attaches:
+            return self._full_attaches
 
-            full_message_data = await self.vk.method('messages.getById', {'message_ids': self.msg_id, 'preview_length': 1})
+        self._full_attaches = []
 
-            if full_message_data:
-                message = full_message_data['items'][0]
-                if "attachments" in message:
-                    for a in message["attachments"]:
-                        a_type = a['type']
+        values = {'message_ids': self.msg_id,
+                  'preview_length': 1}
+        # Получаем полную информацию о сообщении в ВК (включая аттачи)
+        full_message_data = await self.vk.method('messages.getById', values)
 
-                        link = ""
-                        for k in a[a_type]:
-                            if "photo_" in k:
-                                link = a[a_type][k]
+        if not full_message_data:
+            # Если пришёл пустой ответ от VK API
+            return []
 
-                        key = ""
-                        if 'access_key' in a[a_type]:
-                            key = a[a_type]['access_key']
-
-                        self._full_attaches.append(Attachment(a_type, a[a_type]['owner_id'], a[a_type]['id'], key, link))
+        message = full_message_data['items'][0]
+        if "attachments" not in message:
+            # Если нет аттачей
+            return
+        # Проходимся по всем аттачам
+        for raw_attach in message["attachments"]:
+            # Тип аттача
+            a_type = raw_attach['type']
+            # Получаем сам аттач
+            attach = raw_attach[a_type]
+            link = ""
+            # Ищём ссылку на фото
+            for k, v in attach.items():
+                if "photo_" in k:
+                    link = v
+            # Получаем access_key для аттача
+            key = attach.get('access_key')
+            attach = Attachment(a_type, attach['owner_id'], attach['id'], key, link)
+            # Добавляем к нашему внутреннему списку аттачей
+            self._full_attaches.append(attach)
 
         return self._full_attaches
 
