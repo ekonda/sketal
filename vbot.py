@@ -1,5 +1,6 @@
 # Standart library
 import asyncio
+import threading
 import json
 import shutil
 from os.path import abspath, isfile
@@ -254,14 +255,13 @@ class Bot(object):
             who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
             hues.info(f"Сообщение из {who} > {data.body}")
 
-
 if __name__ == '__main__':
     bot = Bot()
     hues.success("Приступаю к приему сообщений")
-    loop = asyncio.get_event_loop()
+    main_loop = asyncio.get_event_loop()
     # запускаем бота
     try:
-        loop.run_until_complete(bot.run(loop))
+        main_loop.run_until_complete(bot.run(main_loop))
     except KeyboardInterrupt:
         hues.warn("Выключение бота...")
         exit()
