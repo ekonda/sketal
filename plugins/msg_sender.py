@@ -8,26 +8,26 @@ import os
 psl = publicsuffixlist.PublicSuffixList()
 
 plugin = Plugin('Послать сообщение',
-                usage='''напиши [id] [сообщение] - написать сообщение пользователю
-                скрыть [id] - не получать сообщения от пользователя
-                показать [id] - получать сообщения от пользователя
-                небеспокоить - не получать сообщения вообще
-                беспокоить - получать сообщения от пользователей, не в вашем чёрном списке'''.split("\n"))
+                usage=["напиши [id] [сообщение] - написать сообщение пользователю",
+                "скрыть [id] - не получать сообщения от пользователя",
+                "показать [id] - получать сообщения от пользователя",
+                "небеспокоить - не получать сообщения вообще",
+                "беспокоить - получать сообщения от пользователей, не в вашем чёрном списке"])
 
 black_list = {}
 muted = {}
 
-if not os.path.exists("plugins/msg_sender_data"):
-    os.makedirs("plugins/msg_sender_data")
+if not os.path.exists("plugins/temp/msg_sender_data"):
+    os.makedirs("plugins/temp/msg_sender_data")
 
 try:
-    with open('plugins/msg_sender_data/bl.pkl', 'rb') as f:
+    with open('plugins/temp/msg_sender_data/bl.pkl', 'rb') as f:
         black_list = pickle.load(f)
 except:
     pass
 
 try:
-    with open('plugins/msg_sender_data/m.pkl', 'rb') as f:
+    with open('plugins/temp/msg_sender_data/m.pkl', 'rb') as f:
         muted = pickle.load(f)
 except:
     pass
@@ -104,7 +104,7 @@ async def ignore(msg, args):
 
     black_list[sender_id] = black_list.get(sender_id, []) + [uid]
 
-    with open('plugins/msg_sender_data/bl.pkl', 'wb') as f:
+    with open('plugins/temp/msg_sender_data/bl.pkl', 'wb') as f:
         pickle.dump(black_list, f, pickle.HIGHEST_PROTOCOL)
 
     await msg.answer(f'Вы не будете получать сообщения от {ignore_id}!')
@@ -130,7 +130,7 @@ async def unignore(msg, unignore):
     if uid in ignoring:
         ignoring.remove(uid)
 
-    with open('plugins/msg_sender_data/bl.pkl', 'wb') as f:
+    with open('plugins/temp/msg_sender_data/bl.pkl', 'wb') as f:
         pickle.dump(black_list, f, pickle.HIGHEST_PROTOCOL)
 
     await msg.answer(f'Теперь {unignore_id} сможет отправлять вам сообщения!')
@@ -140,7 +140,7 @@ async def unignore(msg, unignore):
 async def silenceon(msg, args):
     muted[msg.id] = True
 
-    with open('plugins/msg_sender_data/m.pkl', 'wb') as f:
+    with open('plugins/temp/msg_sender_data/m.pkl', 'wb') as f:
         pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
 
     await msg.answer('Вы не будете получать сообщения!')
@@ -150,7 +150,7 @@ async def silenceon(msg, args):
 async def silenceoff(msg, args):
     muted[msg.id] = False
 
-    with open('plugins/msg_sender_data/m.pkl', 'wb') as f:
+    with open('plugins/temp/msg_sender_data/m.pkl', 'wb') as f:
         pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
 
     await msg.answer('Вы будете получать все сообщения!')

@@ -11,7 +11,7 @@ VBot
 1. Перейдите в папку с ботом
 2. Выполните команду `pip3 install -r requirements.txt`. Это автоматически установит все нужные модули.
 3. Запустите бота, чтобы он создал файл `settings.py` - `python3 vbot.py`.
-4. **В `settings.py` замените `TOKEN` на access_token группы или `LOGIN` и `PASSWORD` на логин и пароль аккаунта ВК соответственно.**
+4. **В `settings.py` замените `TOKEN` на access_token группы или `LOGIN` и `PASSWORD` на логин и пароль аккаунта ВК соответственно.** Если ввести и то и другое - бот будет работать как группа, но сможет использовать команды пользователя.
 5. Запустите `python3 vbot.py`.
 6. Если вам нужно запустить бота в фоне, используйте `screen` под Linux.
 7. Бота можно бесплатно захостить на Heroku. [Гайд](http://disonds.com/2017/03/20/python-bot-dlya-vk-na-heroku/), [Еще один гайд](https://github.com/Myzon/heroku-python-script).

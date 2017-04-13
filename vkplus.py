@@ -7,7 +7,7 @@ import string
 import aiohttp
 import aiovk
 import hues
-import requests
+
 from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
@@ -15,12 +15,11 @@ from captcha_solver import CaptchaSolver
 from utils import fatal, MessageEventData, chunks, Attachment
 
 try:
-    from settings import CAPTCHA_KEY, CAPTCHA_SERVER, TOKEN
+    from settings import CAPTCHA_KEY, CAPTCHA_SERVER, TOKEN, SCOPE, APP_ID
 
     solver = CaptchaSolver(CAPTCHA_SERVER, api_key=CAPTCHA_KEY)
 except (ImportError, AttributeError):
     solver = None
-
 
 class NoPermissions(Exception):
     pass
@@ -161,9 +160,10 @@ def is_available_from_public(key: str) -> bool:
 
 
 class VkPlus(object):
-    api = None
+    group_api = None
+    user_api = None
 
-    def __init__(self, token=None, login=None, password=None, app_id=5968271, scope=140492191):
+    def __init__(self, token=None, login=None, password=None, app_id=APP_ID, scope=SCOPE):
         # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
@@ -178,14 +178,17 @@ class VkPlus(object):
         """Инициализация сессии ВК API"""
         if self.token:
             self.api_session = TokenSession(access_token=self.token, driver=RatedDriver())
-        elif self.login and self.password:
+            self.group_api = aiovk.API(self.api_session)
+
+        if self.login and self.password:
             self.login = self.login
             self.password = self.password
             self.api_session = ImplicitSession(self.login, self.password, self.appid,
                                                scope=self.scope, driver=RatedDriver())  # all scopes
-        else:
+            self.user_api = aiovk.API(self.api_session)
+
+        if not self.user_api and not self.group_api:
             fatal('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
-        self.api = aiovk.API(self.api_session)
 
         # Паблик API используется для методов, которые не нуждаются в регистрации (users.get и т.д)
         # Используется только при access_token сообщества вместо аккаунта
@@ -201,16 +204,17 @@ class VkPlus(object):
         if self.token:
             # Если метод доступен от имени группы - используем API группы
             if is_available_from_group(key):
-                api_method = self.api
+                api_method = self.group_api
             # Если метод доступен от паблик апи - используем его
             elif is_available_from_public(key):
                 api_method = self.public_api
-
+            elif self.user_api:
+                api_method = self.user_api
             else:
                 hues.warn(f'Метод {key} нельзя вызвать от имени сообщества!')
                 return {}
         else:
-            api_method = self.api
+            api_method = self.user_api
         try:
             return await api_method(key, **data)
         except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
@@ -240,12 +244,21 @@ class VkPlus(object):
         return {}
 
     async def upload_photo(self, encoded_image) -> Attachment:
-        files = {'file': ('picture.png', encoded_image)}
+        data = aiohttp.FormData()
+        data.add_field('photo',
+                       encoded_image,
+                       filename='picture.png',
+                       content_type='multipart/form-data')
 
         upload_url = (await self.method('photos.getMessagesUploadServer'))['upload_url']
 
-        response = requests.post(upload_url, files=files)
-        result = json.loads(response.text)
+        async with aiohttp.ClientSession() as sess:
+            async with sess.post(upload_url, data=data) as resp:
+                result = json.loads(await resp.text())
+                hues.warn(result)
+
+        if not result:
+            return None
 
         data = dict(photo=result['photo'], hash=result['hash'], server=result['server'])
         result = (await self.method('photos.saveMessagesPhoto', data))[0]

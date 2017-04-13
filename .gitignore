@@ -6,3 +6,6 @@ settings.py
 .idea/
 *.mp3
 log.txt
+
+#plugin's temp data
+plugins/temp/*

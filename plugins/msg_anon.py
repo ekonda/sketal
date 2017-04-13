@@ -6,17 +6,17 @@ import os
 psl = publicsuffixlist.PublicSuffixList()
 
 plugin = Plugin("Отправка анонимного сообщения",
-                usage='''анонимно [id] [сообщение] - написать анонимное сообщение пользователю(посылать можно только текст и/или фото)
-                неполучатьанонимки - не получать анонимные сообщения
-                получатьанонимки - получать анонимные сообщения'''.split("\n"))
+                usage=["анонимно [id] [сообщение] - написать анонимное сообщение пользователю(посылать можно только текст и/или фото)",
+                       "неполучатьанонимки - не получать анонимные сообщения",
+                       "получатьанонимки - получать анонимные сообщения"])
 
 muted = {}
 
-if not os.path.exists("plugins/msg_anon_data"):
-    os.makedirs("plugins/msg_anon_data")
+if not os.path.exists("plugins/temp/msg_anon_data"):
+    os.makedirs("plugins/temp/msg_anon_data")
 
 try:
-    with open('plugins/msg_anon_data/m.pkl', 'rb') as f:
+    with open('plugins/temp/msg_anon_data/m.pkl', 'rb') as f:
         muted = pickle.load(f)
 except:
     pass
@@ -51,7 +51,7 @@ async def anonymously(msg, args):
         return await msg.answer('Проверьте правильность введёного ID пользователя.')
 
     if sender_id == uid:
-        return await msg.answer('Зачем мне отправлять сообщение самому себе?!')
+        return await msg.answer('Зачем мне отправлять сообщение вам?!')
 
     data = ' '.join(args)
 
@@ -84,7 +84,7 @@ async def anonymously(msg, args):
 async def silenceon(msg, args):
     muted[msg.id] = True
 
-    with open('plugins/msg_anon_data/m.pkl', 'wb') as f:
+    with open('plugins/temp/msg_anon_data/m.pkl', 'wb') as f:
         pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
 
     await msg.answer('Вы не будете получать сообщения!')
@@ -94,7 +94,7 @@ async def silenceon(msg, args):
 async def silenceoff(msg, args):
     muted[msg.id] = False
 
-    with open('plugins/msg_anon_data/m.pkl', 'wb') as f:
+    with open('plugins/temp/msg_anon_data/m.pkl', 'wb') as f:
         pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
 
     await msg.answer('Вы будете получать все сообщения!')

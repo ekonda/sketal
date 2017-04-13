@@ -51,16 +51,18 @@ class Bot(object):
                 self.APP_ID = settings.APP_ID
                 self.SCOPE = settings.SCOPE
                 self.FLOOD_INTERVAL = settings.FLOOD_INTERVAL
+                # По умолчанию - False
+                self.IS_TOKEN = False
                 # Если в настройках есть токен
                 if settings.TOKEN:
                     self.IS_TOKEN = True
                     self.TOKEN = settings.TOKEN
                 # Или логин и пароль
-                elif settings.LOGIN and settings.PASSWORD:
-                    self.IS_TOKEN = False
+                if settings.LOGIN and settings.PASSWORD:
                     self.VK_LOGIN = settings.LOGIN
                     self.VK_PASSWORD = settings.PASSWORD
-                else:
+
+                if not self.TOKEN and not(self.VK_LOGIN and self.VK_PASSWORD):
                     fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
                           "Без них бот работать НЕ СМОЖЕТ.")
 
@@ -74,12 +76,11 @@ class Bot(object):
         hues.warn("Авторизация в ВКонтакте...")
         # Словарь вида ID -> время
         self.messages_date = {}
-        if self.IS_TOKEN:
-            self.vk = VkPlus(token=self.TOKEN, scope=self.SCOPE, app_id=self.APP_ID)
-        elif not self.IS_TOKEN:
-            self.vk = VkPlus(login=self.VK_LOGIN,
-                             password=self.VK_PASSWORD,
-                             scope=self.SCOPE, app_id=self.APP_ID)
+        self.vk = VkPlus(token=self.TOKEN,
+                         login=self.VK_LOGIN,
+                         password=self.VK_PASSWORD,
+                         scope=self.SCOPE,
+                         app_id=self.APP_ID)
 
         hues.success("Успешная авторизация")
 
@@ -206,8 +207,7 @@ class Bot(object):
     async def run(self, event_loop):
         """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
         self.event_loop = event_loop  # Нужен для шедулинга функций
-        # for func in self.scheduled_funcs:
-        #    self.schedule_coroutine(func)
+
         await self.init_long_polling()
         session = aiohttp.ClientSession(loop=event_loop)
         while True:
@@ -246,7 +246,7 @@ class Bot(object):
             # Обновляем время, чтобы не приходили старые события
             self.longpoll_values['ts'] = events['ts']
             for event in events['updates']:
-                await self.check_event(event)
+                self.schedule_coroutine(self.check_event(event))
 
     async def check_if_command(self, data: MessageEventData, msg_id: int) -> None:
         msg_obj = Message(self.vk, data)

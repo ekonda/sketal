@@ -1,6 +1,7 @@
 import io
-import requests
-import time
+
+import aiohttp
+import asyncio
 
 from PIL import Image
 
@@ -26,8 +27,13 @@ async def mirror(msg, args):
         return await msg.answer('Вы не прислали фото!')
 
     attach = (await msg.full_attaches)[0]
-    response = requests.get(attach.link)
-    img = Image.open(io.BytesIO(response.content))
+
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get(attach.link) as response:
+            img = Image.open(io.BytesIO(await response.read()))
+
+    if not img:
+        return await msg.answer('К сожалению, ваше фото исчезло!')
 
     w, h = img.size
 
