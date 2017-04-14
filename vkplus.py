@@ -163,7 +163,7 @@ class VkPlus(object):
     group_api = None
     user_api = None
 
-    def __init__(self, token=None, login=None, password=None, app_id=APP_ID, scope=SCOPE):
+    def __init__(self, token=None, login=None, password=None, app_id=5982451, scope=140489887):
         # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
