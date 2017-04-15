@@ -350,6 +350,7 @@ class Message(object):
             a_type = raw_attach['type']
             # Получаем сам аттач
             attach = raw_attach[a_type]
+
             link = ""
             # Ищём ссылку на фото
             for k, v in attach.items():

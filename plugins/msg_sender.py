@@ -36,7 +36,7 @@ DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
 
 
 def check_links(string):
-    return any(x in string for x in DISABLED) or bool(psl.privatesuffix(string))
+    return any(x in string for x in DISABLED)
 
 
 @plugin.on_command('написать', 'напиши', 'лс', 'письмо')
@@ -77,7 +77,7 @@ async def write_msg(msg, args):
         'message': f"Вам сообщение от {sender_data['first_name']} {sender_data['last_name']}!\n\"{data}\"",
     }
 
-    if msg.brief_attaches:
+    if "attach1" in msg.brief_attaches:
         val['attachment'] = ",".join(str(x) for x in await msg.full_attaches)
 
     result = await msg.vk.method('messages.send', val)

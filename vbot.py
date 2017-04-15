@@ -18,7 +18,7 @@ from vkplus import VkPlus, Message
 class Bot(object):
     """Главный класс бота"""
     __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "NEED_CONVERT", "APP_ID", "SCOPE", "FLOOD_INTERVAL",
-                 "IS_TOKEN", "TOKEN", "VK_LOGIN", "VK_PASSWORD",
+                 "TOKEN", "VK_LOGIN", "VK_PASSWORD",
                  "messages_date", "plugin_system", "cmd_system", "scheduled_funcs", "longpoll_server", "longpoll_key",
                  "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts"]
 
@@ -51,13 +51,14 @@ class Bot(object):
                 self.APP_ID = settings.APP_ID
                 self.SCOPE = settings.SCOPE
                 self.FLOOD_INTERVAL = settings.FLOOD_INTERVAL
-                # По умолчанию - False
-                self.IS_TOKEN = False
+                # Настройки по умолчанию
+                self.TOKEN = None
+                self.VK_LOGIN = None
+                self.VK_PASSWORD = None
                 # Если в настройках есть токен
                 if settings.TOKEN:
-                    self.IS_TOKEN = True
                     self.TOKEN = settings.TOKEN
-                # Или логин и пароль
+                # Есои есть логин и пароль
                 if settings.LOGIN and settings.PASSWORD:
                     self.VK_LOGIN = settings.LOGIN
                     self.VK_PASSWORD = settings.PASSWORD
@@ -272,6 +273,6 @@ if __name__ == '__main__':
         traceback.print_exc()
         # Закрываем сессии API (чтобы не было предупреждения)
         bot.vk.api_session.close()
-        if bot.IS_TOKEN:
+        if bot.TOKEN:
             bot.vk.public_api_session.close()
         exit(1)

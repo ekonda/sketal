@@ -25,7 +25,7 @@ DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
 
 
 def check_links(string):
-    return any(x in string for x in DISABLED) or bool(psl.privatesuffix(string))
+    return any(x in string for x in DISABLED)
 
 
 @plugin.on_command('анонимно')
