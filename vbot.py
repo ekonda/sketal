@@ -9,10 +9,12 @@ from os.path import abspath, isfile
 import aiohttp
 import hues
 
+
 # Custom packages
 from plugin_system import PluginSystem
 from utils import fatal, parse_msg_flags, MessageEventData
 from vkplus import VkPlus, Message
+
 
 
 class Bot(object):

@@ -3,7 +3,6 @@ import asyncio
 import json
 import random
 import string
-
 import aiohttp
 import aiovk
 import hues

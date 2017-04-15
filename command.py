@@ -15,6 +15,7 @@ class CommandSystem(object):
         self.system = plugin_system
         # self.commands - список с командами
         self.commands = commands
+        self.ANY_COMMANDS = bool(plugin_system.any_commands)
         # Конвертировать ли команду в русскую раскладку?
         self.convert = convert_layout
 
@@ -24,17 +25,20 @@ class CommandSystem(object):
 
         if not cmd.has_prefix:
             return False
-        # Если команды нет в списке команд - нужно попробовать конвертировать и проверить изменённую команду в командах
+        # Если команды нет в списке команд - нужно попробовать конвертировать
+        # и проверить изменённую команду в командах
         if self.convert and cmd.try_convert() in self.commands:
             cmd.convert()
+
         # Если команда (обычная или сконвертированная) есть в списке команд
-        if cmd.command in self.commands:
+        if cmd.command in self.commands or self.ANY_COMMANDS:
             cmd_text = cmd.command
         else:
             # Не обрабатываем сообщение msg_obj (так как это не команда)
             return False
-        # Логгируем команду, если нужно
-        if settings.LOG_COMMANDS:
+        # Логгируем команду, если нужно (но не логгируем плагины,
+        # которые реагируют на любые команды)
+        if settings.LOG_COMMANDS and not self.ANY_COMMANDS:
             cmd.log()
         try:
             await self.system.call_command(cmd_text, msg_obj, cmd.args)
