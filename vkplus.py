@@ -255,7 +255,6 @@ class VkPlus(object):
         async with aiohttp.ClientSession() as sess:
             async with sess.post(upload_url, data=data) as resp:
                 result = json.loads(await resp.text())
-                hues.warn(result)
 
         if not result:
             return None
