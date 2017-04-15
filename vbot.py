@@ -192,19 +192,6 @@ class Bot(object):
             self.messages_date[user_id] = ts
         await self.check_if_command(data, msg_id)
 
-    def schedule_coroutine(self, target):
-        """Schedules target coroutine in the given event loop
-
-        If not given, *loop* defaults to the current thread's event loop
-
-        Returns the scheduled task.
-        """
-        if asyncio.iscoroutine(target):
-            return asyncio.ensure_future(target, loop=self.event_loop)
-        else:
-            raise TypeError("target must be a coroutine, "
-                            "not {!r}".format(type(target)))
-
     async def run(self, event_loop):
         """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
         self.event_loop = event_loop  # Нужен для шедулинга функций

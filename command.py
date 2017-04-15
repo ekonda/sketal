@@ -28,9 +28,10 @@ class CommandSystem(object):
         # Если команда нет в списке команд - нужно попробовать конвертировать и проверить изменённую команду в командах
         if self.convert and cmd.command not in self.commands and cmd.try_convert() in self.commands:
             cmd.convert()
-
-        cmd_text = cmd.command
-
+            cmd_text = cmd.command
+        else:
+            # Не обрабатываем сообщение msg_obj (так как это не команда)
+            return False
         # Логгируем команду, если нужно
         if settings.LOG_COMMANDS:
             cmd.log()
@@ -59,6 +60,7 @@ class Command(object):
         self.need_convert = convert
         self._get_prefix()
         self.command, *self.args = self.text.split(' ')
+        self.command = self.command.lower()
         # Если команда пустая
         if not self.command.strip():
             self.has_prefix = False
