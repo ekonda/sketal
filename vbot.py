@@ -1,5 +1,6 @@
 # Standart library
 import asyncio
+import threading
 import json
 import shutil
 from os.path import abspath, isfile
@@ -16,6 +17,10 @@ from vkplus import VkPlus, Message
 
 class Bot(object):
     """Главный класс бота"""
+    __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "NEED_CONVERT", "APP_ID", "SCOPE", "FLOOD_INTERVAL",
+                 "TOKEN", "VK_LOGIN", "VK_PASSWORD",
+                 "messages_date", "plugin_system", "cmd_system", "scheduled_funcs", "longpoll_server", "longpoll_key",
+                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts"]
 
     def __init__(self):
         self.last_message_id = 0
@@ -46,16 +51,19 @@ class Bot(object):
                 self.APP_ID = settings.APP_ID
                 self.SCOPE = settings.SCOPE
                 self.FLOOD_INTERVAL = settings.FLOOD_INTERVAL
+                # Настройки по умолчанию
+                self.TOKEN = None
+                self.VK_LOGIN = None
+                self.VK_PASSWORD = None
                 # Если в настройках есть токен
                 if settings.TOKEN:
-                    self.IS_TOKEN = True
                     self.TOKEN = settings.TOKEN
-                # Или логин и пароль
-                elif settings.LOGIN and settings.PASSWORD:
-                    self.IS_TOKEN = False
+                # Есои есть логин и пароль
+                if settings.LOGIN and settings.PASSWORD:
                     self.VK_LOGIN = settings.LOGIN
                     self.VK_PASSWORD = settings.PASSWORD
-                else:
+
+                if not self.TOKEN and not(self.VK_LOGIN and self.VK_PASSWORD):
                     fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
                           "Без них бот работать НЕ СМОЖЕТ.")
 
@@ -69,12 +77,11 @@ class Bot(object):
         hues.warn("Авторизация в ВКонтакте...")
         # Словарь вида ID -> время
         self.messages_date = {}
-        if self.IS_TOKEN:
-            self.vk = VkPlus(token=self.TOKEN, scope=self.SCOPE, app_id=self.APP_ID)
-        elif not self.IS_TOKEN:
-            self.vk = VkPlus(login=self.VK_LOGIN,
-                             password=self.VK_PASSWORD,
-                             scope=self.SCOPE, app_id=self.APP_ID)
+        self.vk = VkPlus(token=self.TOKEN,
+                         login=self.VK_LOGIN,
+                         password=self.VK_PASSWORD,
+                         scope=self.SCOPE,
+                         app_id=self.APP_ID)
 
         hues.success("Успешная авторизация")
 
@@ -110,6 +117,15 @@ class Bot(object):
 
         if not result:
             fatal("Не удалось получить значения Long Poll сервера!")
+
+        try:
+            self.last_ts = self.longpoll_values['ts']
+            self.longpoll_key = self.longpoll_values['key']
+        except AttributeError:
+            pass
+        except ValueError:
+            pass
+
         if update == 0:
             # Если нам нужно инициализировать с нуля, меняем сервер
             self.longpoll_server = "https://" + result['server']
@@ -125,7 +141,7 @@ class Bot(object):
             'act': 'a_check',
             'key': self.longpoll_key,
             'ts': self.last_ts,
-            'wait': 20,  # Тайм-аут запроса
+            'wait': 25,  # Тайм-аут запроса
             'mode': 2,
             'version': 1
         }
@@ -160,8 +176,11 @@ class Bot(object):
             user_id = peer_id
             conf = False
         user_id = int(user_id)
+
         cleaned_body = text.replace('<br>', '\n')
-        data = MessageEventData(conf, peer_id, user_id, cleaned_body, attaches, ts)
+
+        data = MessageEventData(conf, peer_id, user_id, cleaned_body, ts, msg_id, attaches)
+
         try:
             # Проверяем на интервал между командами для этого ID пользователя
             if ts - self.messages_date[user_id] <= self.FLOOD_INTERVAL:
@@ -189,8 +208,7 @@ class Bot(object):
     async def run(self, event_loop):
         """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
         self.event_loop = event_loop  # Нужен для шедулинга функций
-        # for func in self.scheduled_funcs:
-        #    self.schedule_coroutine(func)
+
         await self.init_long_polling()
         session = aiohttp.ClientSession(loop=event_loop)
         while True:
@@ -229,7 +247,7 @@ class Bot(object):
             # Обновляем время, чтобы не приходили старые события
             self.longpoll_values['ts'] = events['ts']
             for event in events['updates']:
-                await self.check_event(event)
+                self.schedule_coroutine(self.check_event(event))
 
     async def check_if_command(self, data: MessageEventData, msg_id: int) -> None:
         msg_obj = Message(self.vk, data)
@@ -238,14 +256,13 @@ class Bot(object):
             who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
             hues.info(f"Сообщение из {who} > {data.body}")
 
-
 if __name__ == '__main__':
     bot = Bot()
     hues.success("Приступаю к приему сообщений")
-    loop = asyncio.get_event_loop()
+    main_loop = asyncio.get_event_loop()
     # запускаем бота
     try:
-        loop.run_until_complete(bot.run(loop))
+        main_loop.run_until_complete(bot.run(main_loop))
     except KeyboardInterrupt:
         hues.warn("Выключение бота...")
         exit()
@@ -256,6 +273,6 @@ if __name__ == '__main__':
         traceback.print_exc()
         # Закрываем сессии API (чтобы не было предупреждения)
         bot.vk.api_session.close()
-        if bot.IS_TOKEN:
+        if bot.TOKEN:
             bot.vk.public_api_session.close()
         exit(1)

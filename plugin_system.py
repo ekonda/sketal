@@ -109,7 +109,7 @@ class PluginSystem(object):
 
     def add_command(self, name, func):
         if name == '':
-            self.any_commands.append(name)
+            self.any_commands.append(func)
             return
         # если уже есть хоть 1 команда, добавляем к списку
         if name in self.commands:
@@ -121,7 +121,6 @@ class PluginSystem(object):
     async def call_command(self, command_name: str, *args, **kwargs):
         # Получаем функции команд для этой команды
         # Несколько плагинов МОГУТ обрабатывать одну команду
-
         commands_ = self.commands.get(command_name)
 
         if not commands_:
@@ -129,6 +128,8 @@ class PluginSystem(object):
             # То выполняем функции с all_commands=True
             for func in self.any_commands:
                 await func(*args, **kwargs)
+
+            return
 
         # Если есть плагины, которые могут обработать нашу команду
         for command_function in commands_:

@@ -1,65 +1,51 @@
 import io
 
 import aiohttp
+import asyncio
+
 from PIL import Image
 
+from plugin_system import Plugin
+import publicsuffixlist
 
-# plugin = Plugin('Зеркало', usage="отзеркаль <прикреплённые фото> - ")
+psl = publicsuffixlist.PublicSuffixList()
 
-def mirror(files):
-    for raw_img in files:
-        img = Image.open(raw_img)
-
-        w, h = img.size
-
-        part = img.crop((0, 0, w / 2, h))
-        part1 = part.transpose(Image.FLIP_LEFT_RIGHT)
-        img.paste(part1, (round(w / 2), 0))
-
-        # Сохраняем полученный результат в память, и возвращаем файловый объект
-        file = io.BytesIO()
-        img.save(file, format='png')
-        return file
-
+plugin = Plugin('Зеркало', usage="отзеркаль <прикреплённые фото> - ")
 
 FAIL_MSG = 'К сожалению, произошла какая-то ошибка :('
 
 
-# @plugin.on_command('отзеркаль')
+@plugin.on_command('отзеркаль')
 async def mirror(msg, args):
-    # Получаем прикреплённые фотографии
-    photos_to_get = [attach.as_str() for attach in msg.attaches
-                     if attach.type != 'photo']
+    photo = False
+    for k, v in msg.brief_attaches.items():
+        if '_type' in k and v == "photo":
+            photo = True
+            break
 
-    # Запрашиваем их у ВК
-    user_photos = await msg.vk.method('photos.getById',
-                                      {'photos': ','.join(photos_to_get)}
-                                      )
+    if not photo:
+        return await msg.answer('Вы не прислали фото!')
 
-    if not user_photos:
-        return await msg.answer(FAIL_MSG)
+    attach = (await msg.full_attaches)[0]
 
-    resulting_files = mirror(user_photos)
-    upload_server = await msg.vk.method('photos.getMessagesUploadServer',
-                                        {'type': 'photo'})
+    async with aiohttp.ClientSession() as sess:
+        async with sess.get(attach.link) as response:
+            img = Image.open(io.BytesIO(await response.read()))
 
-    url = upload_server.get('upload_url')
-    if not url:
-        return await msg.answer(FAIL_MSG)
+    if not img:
+        return await msg.answer('К сожалению, ваше фото исчезло!')
 
-    form_data = aiohttp.FormData()
-    form_data.add_field('file', open('mir.png'))
+    w, h = img.size
 
-    async with aiohttp.post(url, data=form_data) as resp:
-        file_url = await resp.json()
-        file = file_url.get('file')
-        if not file:
-            return await msg.answer(FAIL_MSG)
+    part = img.crop((0, 0, w / 2, h))
+    part1 = part.transpose(Image.FLIP_LEFT_RIGHT)
+    img.paste(part1, (round(w / 2), 0))
 
-    saved_data = await msg.vk.method('photos.saveMessagesPhoto', {'photo': file})
-    if not saved_data:
-        return await msg.answer(FAIL_MSG)
+    buffer = io.BytesIO()
+    img.save(buffer, format='png')
+    buffer.seek(0)
 
-    media = saved_data[0]
-    media_id, owner_id = media['id'], media['owner_id']
-    await msg.answer('', attachment=f'photos{owner_id}_{media_id}')
+    result = await msg.vk.upload_photo(buffer)
+
+    return await msg.answer('Держи', attachment=str(result))
+

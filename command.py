@@ -24,15 +24,13 @@ class CommandSystem(object):
 
         if not cmd.has_prefix:
             return False
-        # Если команда есть в списке команд
-        if cmd.command in self.commands:
-            cmd_text = cmd.command
-        # Или нужно попробовать конвертировать и изменённая команда в командах
-        elif self.convert and cmd.try_convert() in self.commands:
+
+        # Если команда нет в списке команд - нужно попробовать конвертировать и проверить изменённую команду в командах
+        if self.convert and cmd.command not in self.commands and cmd.try_convert() in self.commands:
             cmd.convert()
-            cmd_text = cmd.command
-        else:
-            return False
+
+        cmd_text = cmd.command
+
         # Логгируем команду, если нужно
         if settings.LOG_COMMANDS:
             cmd.log()

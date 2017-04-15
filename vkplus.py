@@ -7,19 +7,19 @@ import string
 import aiohttp
 import aiovk
 import hues
+
 from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
-from utils import fatal, MessageEventData, chunks
+from utils import fatal, MessageEventData, chunks, Attachment
 
 try:
-    from settings import CAPTCHA_KEY, CAPTCHA_SERVER
+    from settings import CAPTCHA_KEY, CAPTCHA_SERVER, TOKEN, SCOPE, APP_ID
 
     solver = CaptchaSolver(CAPTCHA_SERVER, api_key=CAPTCHA_KEY)
 except (ImportError, AttributeError):
     solver = None
-
 
 class NoPermissions(Exception):
     pass
@@ -31,25 +31,27 @@ class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 1
     period = 0.4
 
-async def enter_captcha(url, sid):
+
+class Captcha():
     session = aiohttp.ClientSession()
-    if not solver:
-        return hues.error('Введите данные для сервиса решения капч в settings.py!')
-    with session as ses:
-        async with ses.get(url) as resp:
-            img_data = await resp.read()
-            data = solver.solve_captcha(img_data)
-            # hues.success(f"Капча {sid} решена успешно")
-            return data
 
-
-class TokenSession(aiovk.TokenSession):
     async def enter_captcha(self, url, sid):
-        return await enter_captcha(url, sid)
+        if not solver:
+            return hues.error('Введите данные для сервиса решения капч в settings.py!')
+        with self.session as ses:
+            async with ses.get(url) as resp:
+                img_data = await resp.read()
+                data = solver.solve_captcha(img_data)
+                # hues.success(f"Капча {sid} решена успешно")
+                return data
 
-class ImplicitSession(aiovk.ImplicitSession):
-    async def enter_captcha(self, url, sid):
-        return await enter_captcha(url, sid)
+
+class TokenSession(aiovk.TokenSession, Captcha):
+    pass
+
+
+class ImplicitSession(aiovk.ImplicitSession, Captcha):
+    pass
 
 
 # Словарь, ключ - раздел API методов, значение - список разрешённых методов
@@ -158,9 +160,10 @@ def is_available_from_public(key: str) -> bool:
 
 
 class VkPlus(object):
-    api = None
+    group_api = None
+    user_api = None
 
-    def __init__(self, token=None, login=None, password=None, app_id=5668099, scope=140492191):
+    def __init__(self, token=None, login=None, password=None, app_id=5982451, scope=140489887):
         # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
@@ -175,14 +178,17 @@ class VkPlus(object):
         """Инициализация сессии ВК API"""
         if self.token:
             self.api_session = TokenSession(access_token=self.token, driver=RatedDriver())
-        elif self.login and self.password:
+            self.group_api = aiovk.API(self.api_session)
+
+        if self.login and self.password:
             self.login = self.login
             self.password = self.password
             self.api_session = ImplicitSession(self.login, self.password, self.appid,
                                                scope=self.scope, driver=RatedDriver())  # all scopes
-        else:
+            self.user_api = aiovk.API(self.api_session)
+
+        if not self.user_api and not self.group_api:
             fatal('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
-        self.api = aiovk.API(self.api_session)
 
         # Паблик API используется для методов, которые не нуждаются в регистрации (users.get и т.д)
         # Используется только при access_token сообщества вместо аккаунта
@@ -198,16 +204,17 @@ class VkPlus(object):
         if self.token:
             # Если метод доступен от имени группы - используем API группы
             if is_available_from_group(key):
-                api_method = self.api
+                api_method = self.group_api
             # Если метод доступен от паблик апи - используем его
             elif is_available_from_public(key):
                 api_method = self.public_api
-
+            elif self.user_api:
+                api_method = self.user_api
             else:
                 hues.warn(f'Метод {key} нельзя вызвать от имени сообщества!')
                 return {}
         else:
-            api_method = self.api
+            api_method = self.user_api
         try:
             return await api_method(key, **data)
         except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
@@ -235,6 +242,32 @@ class VkPlus(object):
                 # Не знаю, может ли это случиться, или нет
                 hues.error('Обход анти-флуда API не удался =(')
         return {}
+
+    async def upload_photo(self, encoded_image) -> Attachment:
+        data = aiohttp.FormData()
+        data.add_field('photo',
+                       encoded_image,
+                       filename='picture.png',
+                       content_type='multipart/form-data')
+
+        upload_url = (await self.method('photos.getMessagesUploadServer'))['upload_url']
+
+        async with aiohttp.ClientSession() as sess:
+            async with sess.post(upload_url, data=data) as resp:
+                result = json.loads(await resp.text())
+
+        if not result:
+            return None
+
+        data = dict(photo=result['photo'], hash=result['hash'], server=result['server'])
+        result = (await self.method('photos.saveMessagesPhoto', data))[0]
+
+        link = ""
+        for k in result:
+            if "photo_" in k:
+                link = result[k]
+
+        return Attachment("photo", result["owner_id"], result["id"], "", link)
 
     @staticmethod
     def anti_flood():
@@ -265,7 +298,7 @@ class VkPlus(object):
 class Message(object):
     """Класс, объект которого передаётся в плагин для упрощённого ответа"""
     __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id',
-                 'body', 'timestamp', 'answer_values', 'attaches')
+                 'body', 'timestamp', 'answer_values', 'brief_attaches', '_full_attaches', 'msg_id')
 
     def __init__(self, vk_api_object: VkPlus, data: MessageEventData):
         self._data = data
@@ -279,13 +312,56 @@ class Message(object):
             self.user = True
         self.id = data.user_id
         self.body = data.body
+        self.msg_id = data.msg_id
         self.timestamp = data.time
-        self.attaches = data.attaches
+        self.brief_attaches = data.attaches
+        self._full_attaches = None
         # Словарь для отправки к ВК при ответе
         if self.user:
             self.answer_values = {'user_id': self.id}
         else:
             self.answer_values = {'chat_id': self.cid}
+
+    @property
+    async def full_attaches(self):
+        # Если мы уже получали аттачи для этого сообщения, возвратим их
+        if self._full_attaches:
+            return self._full_attaches
+
+        self._full_attaches = []
+
+        values = {'message_ids': self.msg_id,
+                  'preview_length': 1}
+        # Получаем полную информацию о сообщении в ВК (включая аттачи)
+        full_message_data = await self.vk.method('messages.getById', values)
+
+        if not full_message_data:
+            # Если пришёл пустой ответ от VK API
+            return []
+
+        message = full_message_data['items'][0]
+        if "attachments" not in message:
+            # Если нет аттачей
+            return
+        # Проходимся по всем аттачам
+        for raw_attach in message["attachments"]:
+            # Тип аттача
+            a_type = raw_attach['type']
+            # Получаем сам аттач
+            attach = raw_attach[a_type]
+
+            link = ""
+            # Ищём ссылку на фото
+            for k, v in attach.items():
+                if "photo_" in k:
+                    link = v
+            # Получаем access_key для аттача
+            key = attach.get('access_key')
+            attach = Attachment(a_type, attach['owner_id'], attach['id'], key, link)
+            # Добавляем к нашему внутреннему списку аттачей
+            self._full_attaches.append(attach)
+
+        return self._full_attaches
 
     async def answer(self, msg: str, **additional_values):
         """Функция ответа на сообщение для плагинов"""

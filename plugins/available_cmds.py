@@ -1,4 +1,5 @@
 from plugin_system import Plugin
+from settings import PREFIXES
 
 plugin = Plugin('Помощь',
                 usage='команды - узнать список доступных команд')
@@ -6,9 +7,23 @@ plugin = Plugin('Помощь',
 
 @plugin.on_command('команды', 'помоги', 'помощь')
 async def call(msg, args):
-    usages = [pl.usage for pl in msg.vk.get_plugins() if pl.usage]
-    # Конвертируем 2D список в 1D
-    usages = [usg for usage in usages for usg in usage]
-    usages = '\n\n✏ '.join(usages)
+    usages = "🔘Доступные команды:🔘\n"
 
-    await msg.answer(f"⭐ Доступные команды: \n\n✏ {usages}")
+    for plugin in msg.vk.get_plugins():
+        if not plugin.usage:
+            continue
+
+        temp = "🔷" + plugin.name + ":🔷" + "\n"
+
+        for usage in plugin.usage:
+            temp += "🔶" + PREFIXES[0] + usage + "\n"
+
+        temp += "\n"
+
+        if len(usages) + len(temp) >= 550:
+            await msg.answer(usages)
+            usages = ""
+
+        usages += temp
+
+    await msg.answer(usages)
