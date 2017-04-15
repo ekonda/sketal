@@ -24,10 +24,11 @@ class CommandSystem(object):
 
         if not cmd.has_prefix:
             return False
-
-        # Если команда нет в списке команд - нужно попробовать конвертировать и проверить изменённую команду в командах
-        if self.convert and cmd.command not in self.commands and cmd.try_convert() in self.commands:
+        # Если команды нет в списке команд - нужно попробовать конвертировать и проверить изменённую команду в командах
+        if self.convert and cmd.try_convert() in self.commands:
             cmd.convert()
+        # Если команда (обычная или сконвертированная) есть в списке команд
+        if cmd.command in self.commands:
             cmd_text = cmd.command
         else:
             # Не обрабатываем сообщение msg_obj (так как это не команда)
