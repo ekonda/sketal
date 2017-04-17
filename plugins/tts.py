@@ -27,6 +27,7 @@ except ImportError:
 
 FAIL_MSG = 'Я не смог это произнести :('
 
+
 @plugin.on_command('скажи')
 async def say_text(msg, args):
     if not gTTS or not langdetect:

@@ -277,6 +277,12 @@ FUNCTIONS.append(Function(sign="abs",
                           arguments=1,
                           priority=1))
 
+FUNCTIONS.append(Function(sign="!",
+                          function=lambda x: math.factorial(x),
+                          description="Факториал (!4, !4 = 24)",
+                          arguments=1,
+                          priority=1))
+
 FUNCTIONS.append(Function("(", None, "Скобочка для приоритета", 0, -1))
 FUNCTIONS.append(Function(")", None, "Скобочка для приоритета", 0, 50))
 

@@ -2,7 +2,7 @@ import random
 
 from plugin_system import Plugin
 usage=['двач - случайная фотка с двача',
-       'мемы - случайная фотка из https://vk.com/public129950840']
+       'мемы - случайная фотка из https://vk.com/ayy_memes']
 
 plugin = Plugin("Случайные посты из пабликов",
                 usage=usage)
@@ -46,5 +46,5 @@ async def twoch_memes(msg, args):
 
 @plugin.on_command('мемы', 'мемасики', 'мем', 'мемчики', 'мемасик', 'мемосы')
 async def just_memes(msg, args):
-    group_id = -129950840
+    group_id = -77127883
     await give_memes(msg, group_id)
