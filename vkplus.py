@@ -55,8 +55,6 @@ class ImplicitSession(aiovk.ImplicitSession, Captcha):
 
 # Словарь, ключ - раздел API методов, значение - список разрешённых методов
 ALLOWED_METHODS = {
-    'docs': ('getWallUploadServer', 'save'),
-
     'groups': ('getById',
                'getCallbackConfig',
                'getCallbackServer',
