@@ -59,10 +59,7 @@ async def say_text(msg, args):
     # TODO: Убрать сохранение (хранить файл в памяти)
     tts.save('audio.mp3')
     # Получаем URL для загрузки аудио сообщения
-    if TOKEN:
-        upload_method = 'docs.getWallUploadServer'
-    else:
-        upload_method = 'docs.getUploadServer'
+    upload_method = 'docs.getUploadServer'
     upload_server = await msg.vk.method(upload_method, {'type': 'audio_message'})
     url = upload_server.get('upload_url')
     if not url:
