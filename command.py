@@ -27,7 +27,7 @@ class CommandSystem(object):
             return False
         # Если команды нет в списке команд - нужно попробовать конвертировать
         # и проверить изменённую команду в командах
-        if self.convert and cmd.try_convert() in self.commands:
+        if self.convert and cmd.try_convert() != cmd.command and cmd.try_convert() in self.commands:
             cmd.convert()
 
         # Если команда (обычная или сконвертированная) есть в списке команд
