@@ -25,17 +25,27 @@ class CommandSystem(object):
 
         if not cmd.has_prefix:
             return False
-        # Если команды нет в списке команд - нужно попробовать конвертировать
-        # и проверить изменённую команду в командах
-        if self.convert and cmd.try_convert() != cmd.command and cmd.try_convert() in self.commands:
-            cmd.convert()
 
         # Если команда (обычная или сконвертированная) есть в списке команд
-        if cmd.command in self.commands or self.ANY_COMMANDS:
-            cmd_text = cmd.command
+        if cmd.command in self.commands:
+            pass
+
+        # Если команды нет в списке команд - можно попробовать перевести
+        # её в другую раскладку и проверить, есть ли конвертированная команда
+        # в списке команд
+        elif self.convert and cmd.try_convert() in self.commands:
+            cmd.convert()
+
+        # Если есть плагины, которые срабатывают на любые команды
+        elif self.ANY_COMMANDS:
+            pass
+
+        # Не обрабатываем сообщение msg_obj
         else:
-            # Не обрабатываем сообщение msg_obj (так как это не команда)
-            return False
+            return
+
+        cmd_text = cmd.command
+
         # Логгируем команду, если нужно (но не логгируем плагины,
         # которые реагируют на любые команды)
         if settings.LOG_COMMANDS and not self.ANY_COMMANDS:

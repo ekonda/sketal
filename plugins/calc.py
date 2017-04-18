@@ -8,23 +8,39 @@ plugin = Plugin("Калькулятор",
                        "посчитать помощь - показать доступные операторы"])
 
 
-class Function:
-    __slots__ = ["sign", "function", "priority", "arguments", "description"]
+# Глобальные переменные
+class Data:
+    __slots__ = ["Q", "W"]
 
-    def __init__(self, sign, function, description, arguments, priority):
+    def __init__(self):
+        self.Q = []  # Operands
+        self.W = []  # Operators
+
+
+# Скелен для операций в калькуляторе
+class Function:
+    __slots__ = ["sign", "function", "priority", "arguments", "description", "display"]
+
+    def __init__(self, sign, function, description, arguments, priority, display=True):
         self.sign = sign
         self.function = function
         self.arguments = arguments
         self.priority = priority
         self.description = description
 
-    async def __call__(self, *args):
+        self.display = display
+
+    def clone_no_priority(self):
+        return Function(self.sign, self.function, self.description, self.arguments, 0, False)
+
+    def __call__(self, *args):
         return self.function(*args)
 
     def __repr__(self):
         return self.sign
 
 
+# Исправляем погрешность при работе с PI(чуть-чуть)
 def fix_error(x):
     err = 2e-16
 
@@ -43,24 +59,24 @@ def fix_error(x):
     return x
 
 
-async def process(Q, W):
-    action = W.pop()
-
+# Выполняем верхнюю операцию в стаке и возвращаем результат в стак
+def process(data, action):
     if not action.function:
         return True
 
+    # Если для операции не хватает аргументов или значение не подходит - выдаём ошибку
     try:
-
+        # Берём нужное кол-во аргументов для операции
         if action.arguments == 1:
-            a = Q.pop()
+            a = data.Q.pop()
 
-            Q.append(await action(a))
+            data.Q.append(action(a))
 
         elif action.arguments == 2:
-            b = Q.pop()
-            a = Q.pop()
+            b = data.Q.pop()
+            a = data.Q.pop()
 
-            Q.append(await action(a, b))
+            data.Q.append(action(a, b))
 
         return True
 
@@ -68,26 +84,33 @@ async def process(Q, W):
         return None
 
 
-async def is_float(x):
-    try:
-        float(x)
-    except ValueError:
-        return False
+# Выполняем верхнюю операцию в стаке до тех пор, пока не обработаем всю скобку
+def do_bracket(data):
+    action = FUNCTIONS["+"]
 
-    if "+" in x or "-" in x:
-        return False
+    while data.W and action.sign != "(":
+        action = data.W.pop()
 
-    return True
-
-
-async def do_bracket(Q, W):
-    while W and W[-1] != "(":
-        if await process(Q, W) is None:
+        if process(data, action) is None:
             return False
 
     return True
 
 
+# Проверяем, является-ли строка только числом(4, 5.5, 1.25 и т.д.)
+def is_float(s):
+    try:
+        float(s)
+    except ValueError:
+        return False
+
+    if "+" in s or "-" in s:
+        return False
+
+    return True
+
+
+# Главая функция - проверяем аргументы, выводим помощь, если надо или считаем
 @plugin.on_command('посчитай', 'посчитать')
 async def calc(msg, args):
     if not args:
@@ -97,8 +120,14 @@ async def calc(msg, args):
         result = ""
 
         for k, v in FUNCTIONS.items():
+            if not v.display:
+                continue
+
             temp = "🔷 \"" + v.sign + "\" - " + v.description + "\n\n"
 
+            # msg.answer делит сообщения на части длиной 550, но нам
+            # не надо, чтобы описание одного плагина разошлось
+            # на несколько строк
             if len(result) + len(temp) >= 550:
                 await msg.answer(result)
                 result = ""
@@ -107,69 +136,100 @@ async def calc(msg, args):
 
         return await msg.answer(result)
 
+    # обворачиваем выражение в скобки, чтобы в результате получать только число
     exp = "(" + " ".join(args) + ")"
 
-    Q = []  # Operands
-    W = []  # Operators
+    # инициируем данные для решения
+    data = Data()
 
     current_exp = ""
     prev_type = ""
-    close_bracket = 0
 
+    # проходим по выражению посимвольно
     for i in range(len(exp)):
+
+        # пропускаем пробелы
         if exp[i] == " ":
             continue
 
+        # pi - это число(3.14...)
         if current_exp == "pi":
-            Q.append(math.pi)
+            data.Q.append(math.pi)
+
+            prev_type = ""
+            current_exp = ""
+
+        # проверяем, если у нас собралось число, а новый
+        # символ - не число, значит мы получили число
+        elif is_float(current_exp) and not is_float(exp[i]) and not exp[i] == ".":
+            data.Q.append(float(current_exp))
 
             prev_type = "numb"
             current_exp = ""
 
-        elif await is_float(current_exp) and not await is_float(exp[i]) and not exp[i] == ".":
-            Q.append(float(current_exp))
-
-            prev_type = "numb"
-            current_exp = ""
-
-        if prev_type == "numb":
-            while close_bracket:
-                if not await do_bracket(Q, W):
-                    return await msg.answer("Ошибка в разборе выражения!")
-
-                close_bracket -= 1
-
+        # добавляет новый символ в несобранный элемент
         current_exp += exp[i]
 
+        # если мы собрали какое-то выражение
+        # начинаем его обрабатывать
         if current_exp in FUNCTIONS:
-            if prev_type is not "numb" and prev_type not in ")":
-                W.append(FUNCTIONS["("])
-                close_bracket += 1
 
+            # если у нас идут несколько выражение подряд и это не
+            # скобки - пропускаем вычисление выражения на данный момент
+            # откладываем их напотом (симулируем скобки)
+            if (prev_type and current_exp and
+                        prev_type is not "numb" and
+                        prev_type is not ")" and
+                        current_exp not in "()"):
+
+                # если то с чем мы разбираемся - это минус или плюс (унарные, т.е. не 0 - 1, а - 1),
+                # то добавляем ноль, чтобы стак мог их обработать и добавляем операцию в стак
+                # с нулевым приоритетом, чтобы сразу превратить их из 0 - 1 в - 1
                 if current_exp in "-+":
-                    Q.append(0)
+                    data.Q.append(0)
 
+                    data.W.append(FUNCTIONS[current_exp].clone_no_priority())
+
+                # иначе - просто добавляем выражение в стак
+                else:
+                    data.W.append(FUNCTIONS[current_exp])
+
+                # выражение обработано, идём дальше
+                prev_type = current_exp
+                current_exp = ""
+                continue
+
+            # если мы дошли до закрывающе скобки - решаем её всю
             if current_exp == ")":
-                if not await do_bracket(Q, W):
+                if not do_bracket(data):
                     return await msg.answer("Ошибка в разборе выражения!")
 
+            # если мы встретили выражение - проверяем
+            # нужно ли решить всё перед ним.
+            # за это отвечает приоритет.
+            # чем он выше - тем позднее он будет вычислен
             else:
-                while W and 0 <= W[-1].priority <= FUNCTIONS[current_exp].priority:
-                    if await process(Q, W) is None:
+                while data.W and 0 <= data.W[-1].priority <= FUNCTIONS[current_exp].priority:
+                    action = data.W.pop()
+                    if process(data, action) is None:
                         return await msg.answer("Ошибка в разборе выражения!")
 
-                W.append(FUNCTIONS[current_exp])
+                # добавляем новое выражение после того, как обработали стак
+                data.W.append(FUNCTIONS[current_exp])
 
+            # закончили с текушим выражением
             prev_type = current_exp
             current_exp = ""
 
-
-    if len(Q) != 1:
+    # если в резульате у нас не одно число - или в программе ошибка, ливо в выражении
+    if len(data.Q) != 1:
         return await msg.answer("Ошибка в разборе выражения!")
 
     else:
-        return await msg.answer(f"Ответ: {Q.pop()}")
+        return await msg.answer(f"Ответ: {data.Q.pop()}")
 
+
+# Все операции у калькулятора
 FUNCTIONS = []
 
 # Functions(2 operands):

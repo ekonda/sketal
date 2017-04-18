@@ -35,7 +35,7 @@ async def say_text(msg, args):
                                 'так как у меня не установлены нужные модули :(')
 
     text = ' '.join(args)
-    if len(text) > 450:
+    if len(text) > 669:
         return await msg.answer('Слишком длинное сообщение!')
     try:
         # Используется Google Text To Speech и библиотека langdetect

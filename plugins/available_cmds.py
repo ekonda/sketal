@@ -1,6 +1,8 @@
 from plugin_system import Plugin
 from settings import PREFIXES
 
+import asyncio
+
 plugin = Plugin('Помощь',
                 usage='команды - узнать список доступных команд')
 
@@ -22,6 +24,7 @@ async def call(msg, args):
 
         if len(usages) + len(temp) >= 550:
             await msg.answer(usages)
+            await asyncio.sleep(0.34)
             usages = ""
 
         usages += temp
