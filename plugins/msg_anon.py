@@ -1,3 +1,5 @@
+import hues
+
 from plugin_system import Plugin
 import publicsuffixlist
 import pickle
@@ -59,7 +61,7 @@ async def anonymously(msg, args):
     if check_links(data):
         return await msg.answer('В сообщении были обнаружены ссылки!')
 
-    if muted.get(sender_id, False):
+    if muted.get(uid, False):
         return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
     message = "Вам анонимное сообщение!\n"

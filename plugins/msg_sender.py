@@ -63,10 +63,10 @@ async def write_msg(msg, args):
     if check_links(data):
         return await msg.answer('В сообщении были обнаружены ссылки!')
 
-    if uid in black_list.get(uid, []):
+    if sender_id in black_list.get(uid, []):
         return await msg.answer('Вы находитесь у этого пользователя в чёрном списке!')
 
-    if muted.get(sender_id, False):
+    if muted.get(uid, False):
         return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
     sender_data = await msg.vk.method('users.get', {'user_ids': msg.id, 'name_case': "gen"})
