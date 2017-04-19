@@ -1,11 +1,9 @@
-import hues
-
 from plugin_system import Plugin
-import publicsuffixlist
-import pickle
-import os
 
-psl = publicsuffixlist.PublicSuffixList()
+import aiofiles
+
+import json
+import os
 
 plugin = Plugin("Отправка анонимного сообщения",
                 usage=["анонимно [id] [сообщение] - написать анонимное сообщение пользователю"
@@ -20,8 +18,9 @@ if not os.path.exists("plugins/temp/msg_anon_data"):
 
 try:
     with open('plugins/temp/msg_anon_data/m.pkl', 'rb') as f:
-        muted = pickle.load(f)
-except:
+        muted = json.loads(f.read())
+
+except FileNotFoundError:
     pass
 
 DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
@@ -31,7 +30,7 @@ def check_links(string):
     return any(x in string for x in DISABLED)
 
 
-@plugin.on_command('анонимно')
+@plugin.on_command('анонимка', 'анонимно')
 async def anonymously(msg, args):
     text_required = True
     for k, v in msg.brief_attaches.items():
@@ -87,8 +86,8 @@ async def anonymously(msg, args):
 async def silenceon(msg, args):
     muted[msg.id] = True
 
-    with open('plugins/temp/msg_anon_data/m.pkl', 'wb') as f:
-        pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
+    async with aiofiles.open('plugins/temp/msg_anon_data/m.pkl', mode='w') as f:
+        await f.write(json.dumps(muted))
 
     await msg.answer('Вы не будете получать сообщения!')
 
@@ -97,7 +96,7 @@ async def silenceon(msg, args):
 async def silenceoff(msg, args):
     muted[msg.id] = False
 
-    with open('plugins/temp/msg_anon_data/m.pkl', 'wb') as f:
-        pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
+    async with aiofiles.open('plugins/temp/msg_anon_data/m.pkl', mode='w') as f:
+        await f.write(json.dumps(muted))
 
     await msg.answer('Вы будете получать все сообщения!')
