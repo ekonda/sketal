@@ -16,6 +16,7 @@ answers = '''А вот и шуточки подъехали!!!
 
 URL = "http://rzhunemogu.ru/RandJSON.aspx?CType=1"
 
+
 @plugin.on_command('шутка', 'пошути', 'рассмеши')
 async def joke_get(msg, args):
     async with aiohttp.ClientSession() as sess:

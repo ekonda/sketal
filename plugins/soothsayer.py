@@ -27,6 +27,6 @@ answers = '''Абсолютно точно!
 '''.splitlines()
 
 
-@plugin.on_command('правда', 'предсказание', 'реши', 'шар', 'инфа')
+@plugin.on_command('правда', 'предсказание', 'реши', 'шар')
 async def tell_truth(msg, args):
     await msg.answer("🔮" + random.choice(answers))

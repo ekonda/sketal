@@ -3,12 +3,15 @@ import asyncio
 import imp
 import os
 import sys
+import json
 import threading
 import traceback
 from os.path import isfile
 
 import hues
 import types
+
+import pickle
 
 try:
     from settings import TOKEN, LOGIN, PASSWORD
@@ -17,9 +20,13 @@ except ImportError:
 
 
 class Plugin(object):
+    __slots__ = ["deferred_events", "scheduled_funcs", "name", "usage", "first_command",
+                 "data", "init_funcs", "data"]
+
     def __init__(self, name: str = "Example", usage: list = None):
         self.deferred_events = []  # события, на которые подписан плагин
         self.scheduled_funcs = []
+        self.init_funcs = []
         self.name = name
         if usage is None:
             usage = []
@@ -27,7 +34,22 @@ class Plugin(object):
             usage = [usage]
         self.usage = usage
         self.first_command = ''
+
+        self.init_data()
+
         hues.warn(self.name)
+
+    def init_data(self):
+        self.data = {}
+
+        if not os.path.exists("plugins/temp"):
+            os.makedirs("plugins/temp")
+
+        data_file = f'plugins/temp/{self.name.lower().replace(" ", "_")}.data'
+
+        if os.path.isfile(data_file):
+            with open(data_file, 'rb') as f:
+                self.data = pickle.load(f)
 
     def log(self, message: str):
         hues.info(f'Плагин {self.name} -> {message}')
@@ -45,6 +67,15 @@ class Plugin(object):
             return wrapper
 
         return decor
+
+    # Выполняется при инициализации
+    def on_init(self):
+        def wrapper(func):
+            self.init_funcs.append(func)
+
+            return func
+
+        return wrapper
 
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands, all_commands=False, group=True):
@@ -97,12 +128,14 @@ sys.modules[shared_space.__name__] = shared_space
 
 
 class PluginSystem(object):
-    def __init__(self, folder=None):
+    def __init__(self, vk, folder=None):
         self.commands = {}
         self.any_commands = []
         self.folder = folder
         self.plugins = set()
         self.scheduled_events = []
+
+        self.vk = vk
 
     def get_plugins(self) -> set:
         return self.plugins
@@ -135,6 +168,15 @@ class PluginSystem(object):
         for command_function in commands_:
             await command_function(*args, **kwargs)
 
+    def init_plugin(self, plugin_object: Plugin):
+        for func in plugin_object.init_funcs:
+            if asyncio.iscoroutinefunction(func):
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(func(self.vk))
+
+            else:
+                func(self.vk)
+
     def register_plugin(self, plugin_object: Plugin):
         plugin_object.register(self)
 
@@ -161,6 +203,7 @@ class PluginSystem(object):
                             module_source_name,
                             *imp.find_module(os.path.splitext(filename)[0], [folder_path])
                         )
+
                     # Если при загрузке плагина произошла какая-либо ошибка
                     except Exception:
                         result = traceback.format_exc()
@@ -174,6 +217,7 @@ class PluginSystem(object):
                     try:
                         self.plugins.add(loaded_module.plugin)
                         self.register_plugin(loaded_module.plugin)
+                        self.init_plugin(loaded_module.plugin)
                     # Если возникла ошибка - значит плагин не имеет атрибута plugin
                     except AttributeError:
                         continue
