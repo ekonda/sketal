@@ -41,7 +41,6 @@ async def give_memes(msg, group_id):
                 continue
             # Если одна картинка
             if len(attaches) == 1:
-                print(f'https://vk.com/wall{group_id}_{item["id"]}')
                 answer = content if content else ''
                 photo = attaches[0].get('photo')
 
