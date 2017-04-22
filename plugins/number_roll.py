@@ -1,7 +1,12 @@
 import random
+import urllib
+
+import aiohttp
+import hues
+from aiovk.drivers import CustomClientResponse
 
 from plugin_system import Plugin
-
+import asyncio
 usage = """рандом (от) (до) - случайное число в диапазоне (от, до)
 Если нет "до", то диапазон (1, от). Если нет "от", то диапазон (1, 6)"""
 
@@ -14,7 +19,7 @@ async def call(msg, args):
     try:
         args = [int(arg) for arg in args]
     except ValueError:
-        return await msg.answer("Один из аргументов - не число")
+        return await msg.answer("Привет;азах\"лох\"Один из аргументов - не число")
     # Если у нас два аргумента - это диапазон
     if len(args) == 2:
         start, end = args

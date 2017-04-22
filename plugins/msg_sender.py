@@ -17,29 +17,24 @@ plugin = Plugin('Послать сообщение',
                        "небеспокоить - не получать сообщения вообще",
                        "беспокоить - получать сообщения от пользователей, не в вашем чёрном списке"])
 
-black_list = {}
-muted = {}
-
-if not os.path.exists("plugins/temp/msg_sender_data"):
-    os.makedirs("plugins/temp/msg_sender_data")
-
-try:
-    with open('plugins/temp/msg_sender_data/bl.pkl', 'rb') as f:
-        black_list = json.loads(f.read())
-except:
-    pass
-
-try:
-    with open('plugins/temp/msg_sender_data/m.pkl', 'rb') as f:
-        muted = json.loads(f.read())
-except:
-    pass
 
 DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
 
 
 def check_links(string):
     return any(x in string for x in DISABLED)
+
+
+@plugin.on_init()
+def init(vk):
+    if "black_list" not in plugin.data:
+        plugin.data["black_list"] = {}
+    else:
+        for k in plugin.data["black_list"]:
+            plugin.data["black_list"][int(k)] = plugin.data["black_list"].pop(k)
+
+    if "donotdisturb" not in plugin.data:
+        plugin.data["donotdisturb"] = {}
 
 
 @plugin.on_command('написать', 'напиши', 'лс', 'письмо')
@@ -66,10 +61,10 @@ async def write_msg(msg, args):
     if check_links(data):
         return await msg.answer('В сообщении были обнаружены ссылки!')
 
-    if sender_id in black_list.get(uid, []):
+    if sender_id in plugin.data["black_list"].get(uid, []):
         return await msg.answer('Вы находитесь у этого пользователя в чёрном списке!')
 
-    if muted.get(uid, False):
+    if plugin.data["donotdisturb"].get(uid, False):
         return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
     sender_data = await msg.vk.method('users.get', {'user_ids': msg.id, 'name_case': "gen"})
@@ -105,10 +100,7 @@ async def ignore(msg, args):
     if not uid:
         return await msg.answer('Проверьте правильность введёного ID пользователя.')
 
-    black_list[sender_id] = black_list.get(sender_id, []) + [uid]
-
-    async with aiofiles.open('plugins/temp/msg_sender_data/bl.pkl', 'wb') as f:
-        await f.write(json.dumps(black_list))
+    plugin.data["black_list"][sender_id] = plugin.data["black_list"].get(sender_id, []) + [uid]
 
     await msg.answer(f'Вы не будете получать сообщения от {ignore_id}!')
 
@@ -129,31 +121,22 @@ async def unignore(msg, unignore):
     if not uid:
         return await msg.answer('Проверьте правильность введёного ID пользователя.')
 
-    ignoring = black_list.get(sender_id, [])
+    ignoring = plugin.data["black_list"].get(sender_id, [])
     if uid in ignoring:
         ignoring.remove(uid)
-
-    async with aiofiles.open('plugins/temp/msg_sender_data/bl.pkl', 'wb') as f:
-        await f.write(json.dumps(black_list))
 
     await msg.answer(f'Теперь {unignore_id} сможет отправлять вам сообщения!')
 
 
 @plugin.on_command('небеспокоить')
 async def silenceon(msg, args):
-    muted[msg.id] = True
-
-    async with aiofiles.open('plugins/temp/msg_sender_data/m.pkl', 'wb') as f:
-        await f.write(json.dumps(muted))
+    plugin.data["donotdisturb"][msg.id] = True
 
     await msg.answer('Вы не будете получать сообщения!')
 
 
 @plugin.on_command('беспокоить')
 async def silenceoff(msg, args):
-    muted[msg.id] = False
-
-    async with aiofiles.open('plugins/temp/msg_sender_data/m.pkl', 'wb') as f:
-        await f.write(json.dumps(muted))
+    plugin.data["donotdisturb"][msg.id] = False
 
     await msg.answer('Вы будете получать все сообщения!')

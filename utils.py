@@ -1,7 +1,10 @@
 # Various helpers
+import html
+import urllib
 from typing import Callable, List
 import asyncio
 
+import collections
 import hues
 
 
@@ -110,3 +113,37 @@ def parse_msg_flags(bitmask: int) -> dict:
         start *= 2
         values.append(bool(result))
     return dict(zip(keys, values))
+
+
+def unquote(data):
+    temp = data
+
+    if issubclass(temp.__class__, str):
+        return html.unescape(html.unescape(temp))
+
+    if issubclass(temp.__class__, dict):
+        for k, v in temp.items():
+            temp[k] = unquote(v)
+
+    if issubclass(temp.__class__, list):
+        for i in range(len(temp)):
+            temp[i] = unquote(temp[i])
+
+    return temp
+
+
+def quote(data):
+    temp = data
+
+    if issubclass(temp.__class__, str):
+        return urllib.parse.quote(urllib.parse.quote(temp))
+
+    if issubclass(temp.__class__, dict):
+        for k, v in temp.items():
+            data[k] = quote(v)
+
+    if issubclass(temp.__class__, list):
+        for i in range(len(temp)):
+            temp[i] = quote(temp[i])
+
+    return temp

@@ -3,14 +3,17 @@ import asyncio
 import threading
 import json
 import shutil
+
+import os
 from os.path import abspath, isfile
 
 # 3rd party packages
 import aiohttp
 import hues
 
-
 # Custom packages
+import pickle
+
 from plugin_system import PluginSystem
 from utils import fatal, parse_msg_flags, MessageEventData
 from vkplus import VkPlus, Message
@@ -91,7 +94,7 @@ class Bot(object):
         hues.warn("Загрузка плагинов...")
 
         # Подгружаем плагины
-        self.plugin_system = PluginSystem(folder=abspath('plugins'))
+        self.plugin_system = PluginSystem(self.vk, folder=abspath('plugins'))
         self.plugin_system.register_commands()
         # Чтобы плагины могли получить список всех плагинов (костыль)
         self.vk.get_plugins = self.plugin_system.get_plugins
@@ -112,8 +115,7 @@ class Bot(object):
         """Функция для инициализации Long Polling"""
         retries = 5
         for x in range(retries):
-            result = await self.vk.method('messages.getLongPollServer',
-                                    {'use_ssl': 1})
+            result = await self.vk.method('messages.getLongPollServer', {'use_ssl': 1})
             if result:
                 break
 
@@ -144,14 +146,16 @@ class Bot(object):
             'key': self.longpoll_key,
             'ts': self.last_ts,
             'wait': 25,  # Тайм-аут запроса
-            'mode': 2,
+            'mode': 10,
             'version': 1
         }
 
     async def check_event(self, new_event):
         if not new_event:
             return  # На всякий случай
+
         event_id = new_event.pop(0)
+
         if event_id != 4:
             return  # Если событие - не новое сообщение
 
@@ -193,6 +197,13 @@ class Bot(object):
         except KeyError:
             self.messages_date[user_id] = ts
         await self.check_if_command(data, msg_id)
+
+    async def check_if_command(self, data: MessageEventData, msg_id: int) -> None:
+        msg_obj = Message(self.vk, data)
+        result = await self.cmd_system.process_command(msg_obj)
+        if self.LOG_MESSAGES:
+            who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
+            hues.info(f"Сообщение из {who} > {data.body}")
 
     def schedule_coroutine(self, target):
         """Schedules target coroutine in the given event loop
@@ -249,13 +260,6 @@ class Bot(object):
             for event in events['updates']:
                 self.schedule_coroutine(self.check_event(event))
 
-    async def check_if_command(self, data: MessageEventData, msg_id: int) -> None:
-        msg_obj = Message(self.vk, data)
-        result = await self.cmd_system.process_command(msg_obj)
-        if self.LOG_MESSAGES:
-            who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
-            hues.info(f"Сообщение из {who} > {data.body}")
-
 if __name__ == '__main__':
     bot = Bot()
     hues.success("Приступаю к приему сообщений")
@@ -264,6 +268,16 @@ if __name__ == '__main__':
     try:
         main_loop.run_until_complete(bot.run(main_loop))
     except KeyboardInterrupt:
+        hues.warn("Сохраняю данные плагинов...")
+
+        if not os.path.exists("plugins/temp"):
+            os.makedirs("plugins/temp")
+
+        for plugin in bot.plugin_system.get_plugins():
+            if plugin.data and any(plugin.data.values()):
+                with open(f'plugins/temp/{plugin.name.lower().replace(" ", "_")}.data', 'wb') as f:
+                    pickle.dump(plugin.data, f)
+
         hues.warn("Выключение бота...")
         exit()
     except Exception as ex:
