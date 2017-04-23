@@ -19,7 +19,7 @@ async def call(msg, args):
     try:
         args = [int(arg) for arg in args]
     except ValueError:
-        return await msg.answer("Привет;азах\"лох\"Один из аргументов - не число")
+        return await msg.answer("Один из аргументов - не число")
     # Если у нас два аргумента - это диапазон
     if len(args) == 2:
         start, end = args

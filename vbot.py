@@ -15,9 +15,8 @@ import hues
 import pickle
 
 from plugin_system import PluginSystem
-from utils import fatal, parse_msg_flags, MessageEventData
+from utils import fatal, parse_msg_flags, MessageEventData, schedule_coroutine
 from vkplus import VkPlus, Message
-
 
 
 class Bot(object):
@@ -205,17 +204,6 @@ class Bot(object):
             who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
             hues.info(f"Сообщение из {who} > {data.body}")
 
-    def schedule_coroutine(self, target):
-        """Schedules target coroutine in the given event loop
-        If not given, *loop* defaults to the current thread's event loop
-        Returns the scheduled task.
-        """
-        if asyncio.iscoroutine(target):
-            return asyncio.ensure_future(target, loop=self.event_loop)
-        else:
-            raise TypeError("target must be a coroutine, "
-                          "not {!r}".format(type(target)))
-
     async def run(self, event_loop):
         """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
         self.event_loop = event_loop  # Нужен для шедулинга функций
@@ -258,7 +246,21 @@ class Bot(object):
             # Обновляем время, чтобы не приходили старые события
             self.longpoll_values['ts'] = events['ts']
             for event in events['updates']:
-                self.schedule_coroutine(self.check_event(event))
+                schedule_coroutine(self.check_event(event))
+
+    def save_data(self):
+        hues.warn("Сохраняю данные плагинов...")
+
+        if not os.path.exists("plugins/temp"):
+            os.makedirs("plugins/temp")
+
+        for plugin in self.plugin_system.get_plugins():
+            if plugin.data and any(plugin.data.values()):
+                with open(f'plugins/temp/{plugin.name.lower().replace(" ", "_")}.data', 'wb') as f:
+                    pickle.dump(plugin.data, f)
+
+        hues.warn("Выключение бота...")
+
 
 if __name__ == '__main__':
     bot = Bot()
@@ -268,18 +270,12 @@ if __name__ == '__main__':
     try:
         main_loop.run_until_complete(bot.run(main_loop))
     except KeyboardInterrupt:
-        hues.warn("Сохраняю данные плагинов...")
+        bot.save_data()
 
-        if not os.path.exists("plugins/temp"):
-            os.makedirs("plugins/temp")
+    except SystemExit as e:
+        if e.code != 1:
+            bot.save_data()
 
-        for plugin in bot.plugin_system.get_plugins():
-            if plugin.data and any(plugin.data.values()):
-                with open(f'plugins/temp/{plugin.name.lower().replace(" ", "_")}.data', 'wb') as f:
-                    pickle.dump(plugin.data, f)
-
-        hues.warn("Выключение бота...")
-        exit()
     except Exception as ex:
         import traceback
 

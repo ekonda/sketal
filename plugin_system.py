@@ -3,10 +3,11 @@ import asyncio
 import imp
 import os
 import sys
-import json
 import threading
 import traceback
 from os.path import isfile
+
+from concurrent.futures import ProcessPoolExecutor
 
 import hues
 import types
@@ -19,28 +20,42 @@ except ImportError:
     TOKEN, LOGIN, PASSWORD = None, None, None
 
 
+class Stopper:
+    __slots__ =["stop"]
+
+    def __init__(self):
+        self.stop = False
+
 class Plugin(object):
     __slots__ = ["deferred_events", "scheduled_funcs", "name", "usage", "first_command",
-                 "data", "init_funcs", "data"]
+                 "data", "init_funcs", "data", "temp_data", "process_pool"]
 
     def __init__(self, name: str = "Example", usage: list = None):
-        self.deferred_events = []  # события, на которые подписан плагин
+        self.name = name
+        self.first_command = ''
+        self.process_pool = None
+
+        self.deferred_events = []
         self.scheduled_funcs = []
         self.init_funcs = []
-        self.name = name
-        if usage is None:
-            usage = []
-        if isinstance(usage, str):
-            usage = [usage]
-        self.usage = usage
-        self.first_command = ''
 
+        self.init_usage(usage)
         self.init_data()
 
         hues.warn(self.name)
 
+    def init_usage(self, usage):
+        if usage is None:
+            usage = []
+
+        if isinstance(usage, str):
+            usage = [usage]
+
+        self.usage = usage
+
     def init_data(self):
         self.data = {}
+        self.temp_data = {}
 
         if not os.path.exists("plugins/temp"):
             os.makedirs("plugins/temp")
@@ -57,12 +72,13 @@ class Plugin(object):
     def schedule(self, seconds):
         def decor(func):
             async def wrapper(*args, **kwargs):
-                while True:
+                stopper = Stopper()
+                while not stopper.stop:
                     # Спим указанное кол-во секунд
                     # При этом другие корутины могут работать
                     await asyncio.sleep(seconds)
                     # Выполняем саму функцию
-                    await func(*args, **kwargs)
+                    await func(stopper, *args, **kwargs)
 
             return wrapper
 
@@ -135,6 +151,7 @@ class PluginSystem(object):
         self.plugins = set()
         self.scheduled_events = []
 
+        self.process_pool = ProcessPoolExecutor()
         self.vk = vk
 
     def get_plugins(self) -> set:
@@ -167,6 +184,9 @@ class PluginSystem(object):
         # Если есть плагины, которые могут обработать нашу команду
         for command_function in commands_:
             await command_function(*args, **kwargs)
+
+    def init_variables(self, plugin_object: Plugin):
+        plugin_object.process_pool = self.process_pool
 
     def init_plugin(self, plugin_object: Plugin):
         for func in plugin_object.init_funcs:
@@ -217,6 +237,7 @@ class PluginSystem(object):
                     try:
                         self.plugins.add(loaded_module.plugin)
                         self.register_plugin(loaded_module.plugin)
+                        self.init_variables(loaded_module.plugin)
                         self.init_plugin(loaded_module.plugin)
                     # Если возникла ошибка - значит плагин не имеет атрибута plugin
                     except AttributeError:

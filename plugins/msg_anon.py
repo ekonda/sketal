@@ -2,9 +2,6 @@ import hues
 
 from plugin_system import Plugin
 
-import json
-import os
-
 plugin = Plugin("Отправка анонимного сообщения",
                 usage=["анонимно [id] [сообщение] - написать анонимное сообщение пользователю"
                        "(посылать можно только текст и/или фото)",

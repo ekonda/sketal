@@ -1,12 +1,5 @@
-import json
-
-import aiofiles
-import hues
-
 from plugin_system import Plugin
 import publicsuffixlist
-import pickle
-import os
 
 psl = publicsuffixlist.PublicSuffixList()
 
@@ -29,9 +22,6 @@ def check_links(string):
 def init(vk):
     if "black_list" not in plugin.data:
         plugin.data["black_list"] = {}
-    else:
-        for k in plugin.data["black_list"]:
-            plugin.data["black_list"][int(k)] = plugin.data["black_list"].pop(k)
 
     if "donotdisturb" not in plugin.data:
         plugin.data["donotdisturb"] = {}

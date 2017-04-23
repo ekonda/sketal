@@ -37,13 +37,13 @@ class RatedDriver(LimitRateDriverMixin, HttpDriver):
 
 
 class TokenSession(aiovk.TokenSession):
-    session = aiohttp.ClientSession()
-
     async def enter_captcha(self, url, sid):
         if not solver:
             return hues.error('Введите данные для сервиса решения капч в settings.py!')
 
-        with self.session as ses:
+        session = aiohttp.ClientSession()
+
+        with session as ses:
             async with ses.get(url) as resp:
                 img_data = await resp.read()
                 data = solver.solve_captcha(img_data)
@@ -52,13 +52,13 @@ class TokenSession(aiovk.TokenSession):
 
 
 class ImplicitSession(aiovk.ImplicitSession):
-    session = aiohttp.ClientSession()
-
     async def enter_captcha(self, url, sid):
         if not solver:
             return hues.error('Введите данные для сервиса решения капч в settings.py!')
 
-        with self.session as ses:
+        session = aiohttp.ClientSession()
+
+        with session as ses:
             async with ses.get(url) as resp:
                 img_data = await resp.read()
                 data = solver.solve_captcha(img_data)

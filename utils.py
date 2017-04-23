@@ -8,16 +8,16 @@ import collections
 import hues
 
 
-def schedule(seconds):
-    def decor(func):
-        async def wrapper(*args, **kwargs):
-            while True:
-                await asyncio.sleep(seconds)
-                await func(*args, **kwargs)
-
-        return wrapper
-
-    return decor
+def schedule_coroutine(target):
+    """Schedules target coroutine in the given event loop
+    If not given, *loop* defaults to the current thread's event loop
+    Returns the scheduled task.
+    """
+    if asyncio.iscoroutine(target):
+        return asyncio.ensure_future(target, loop=asyncio.get_event_loop())
+    else:
+        raise TypeError("target must be a coroutine, "
+                        "not {!r}".format(type(target)))
 
 
 # http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
