@@ -1,7 +1,6 @@
 hues  # цветное логгирование
 
-git+https://github.com/TiberiumPY/aiosocks
-
+aiosocks # асинхронность
 aiovk  # асинхронные API вызовы ВК
 
 captcha_solver  # решение капч

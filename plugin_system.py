@@ -26,6 +26,7 @@ class Stopper:
     def __init__(self):
         self.stop = False
 
+
 class Plugin(object):
     __slots__ = ["deferred_events", "scheduled_funcs", "name", "usage", "first_command",
                  "data", "init_funcs", "data", "temp_data", "process_pool"]
