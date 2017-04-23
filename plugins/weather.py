@@ -7,15 +7,17 @@ from plugin_system import Plugin
 plugin = Plugin("Погода",
                 usage="погода - погода")
 
-# for: https://vk.com/tumkasoff
-
 # сервис для определения погоды: http://openweathermap.org/api
+# введите свой ключ, если будете использовать!
 code = "fe198ba65970ed3877578f728f33e0f9"
 default_city = "Москва"
 
 
 text_to_days = {"завтра": 1, "послезавтра": 2, "через день": 2, "через 1 день": 2,
                 "через 2 дня": 3, "через 3 дня": 4, "через 4 дня": 5}
+
+if code == "fe198ba65970ed3877578f728f33e0f9":
+    hues.warn("Вы используете общественный ключ для openweathermap.org! Рекомендуем вам получить личный!")
 
 
 @plugin.on_command('погода')
