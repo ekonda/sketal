@@ -27,6 +27,7 @@ except ImportError:
 
 FAIL_MSG = 'Я не смог это произнести :('
 
+
 @plugin.on_command('скажи')
 async def say_text(msg, args):
     if not gTTS or not langdetect:
@@ -34,7 +35,7 @@ async def say_text(msg, args):
                                 'так как у меня не установлены нужные модули :(')
 
     text = ' '.join(args)
-    if len(text) > 450:
+    if len(text) > 669:
         return await msg.answer('Слишком длинное сообщение!')
     try:
         # Используется Google Text To Speech и библиотека langdetect
@@ -59,10 +60,7 @@ async def say_text(msg, args):
     # TODO: Убрать сохранение (хранить файл в памяти)
     tts.save('audio.mp3')
     # Получаем URL для загрузки аудио сообщения
-    if TOKEN:
-        upload_method = 'docs.getWallUploadServer'
-    else:
-        upload_method = 'docs.getUploadServer'
+    upload_method = 'docs.getUploadServer'
     upload_server = await msg.vk.method(upload_method, {'type': 'audio_message'})
     url = upload_server.get('upload_url')
     if not url:

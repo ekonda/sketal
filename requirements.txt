@@ -1,8 +1,11 @@
 hues  # цветное логгирование
-git+https://github.com/TiberiumPY/aiosocks
+
+aiosocks # асинхронность
 aiovk  # асинхронные API вызовы ВК
+
 captcha_solver  # решение капч
+
 langdetect  # выбирание языка для речи в плагине голоса
 gTTS  # для плагина голоса
-publicsuffixlist  # для проверки на ссылки
-Pillow # работа с изображениями
+
+Pillow  # работа с изображениями

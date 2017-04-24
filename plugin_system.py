@@ -7,8 +7,12 @@ import threading
 import traceback
 from os.path import isfile
 
+from concurrent.futures import ProcessPoolExecutor
+
 import hues
 import types
+
+import pickle
 
 try:
     from settings import TOKEN, LOGIN, PASSWORD
@@ -16,18 +20,52 @@ except ImportError:
     TOKEN, LOGIN, PASSWORD = None, None, None
 
 
+class Stopper:
+    __slots__ =["stop"]
+
+    def __init__(self):
+        self.stop = False
+
+
 class Plugin(object):
+    __slots__ = ["deferred_events", "scheduled_funcs", "name", "usage", "first_command",
+                 "data", "init_funcs", "data", "temp_data", "process_pool"]
+
     def __init__(self, name: str = "Example", usage: list = None):
-        self.deferred_events = []  # события, на которые подписан плагин
-        self.scheduled_funcs = []
         self.name = name
+        self.first_command = ''
+        self.process_pool = None
+
+        self.deferred_events = []
+        self.scheduled_funcs = []
+        self.init_funcs = []
+
+        self.init_usage(usage)
+        self.init_data()
+
+        hues.warn(self.name)
+
+    def init_usage(self, usage):
         if usage is None:
             usage = []
+
         if isinstance(usage, str):
             usage = [usage]
+
         self.usage = usage
-        self.first_command = ''
-        hues.warn(self.name)
+
+    def init_data(self):
+        self.data = {}
+        self.temp_data = {}
+
+        if not os.path.exists("plugins/temp"):
+            os.makedirs("plugins/temp")
+
+        data_file = f'plugins/temp/{self.name.lower().replace(" ", "_")}.data'
+
+        if os.path.isfile(data_file):
+            with open(data_file, 'rb') as f:
+                self.data = pickle.load(f)
 
     def log(self, message: str):
         hues.info(f'Плагин {self.name} -> {message}')
@@ -35,16 +73,26 @@ class Plugin(object):
     def schedule(self, seconds):
         def decor(func):
             async def wrapper(*args, **kwargs):
-                while True:
+                stopper = Stopper()
+                while not stopper.stop:
                     # Спим указанное кол-во секунд
                     # При этом другие корутины могут работать
                     await asyncio.sleep(seconds)
                     # Выполняем саму функцию
-                    await func(*args, **kwargs)
+                    await func(stopper, *args, **kwargs)
 
             return wrapper
 
         return decor
+
+    # Выполняется при инициализации
+    def on_init(self):
+        def wrapper(func):
+            self.init_funcs.append(func)
+
+            return func
+
+        return wrapper
 
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands, all_commands=False, group=True):
@@ -97,12 +145,15 @@ sys.modules[shared_space.__name__] = shared_space
 
 
 class PluginSystem(object):
-    def __init__(self, folder=None):
+    def __init__(self, vk, folder=None):
         self.commands = {}
         self.any_commands = []
         self.folder = folder
         self.plugins = set()
         self.scheduled_events = []
+
+        self.process_pool = ProcessPoolExecutor()
+        self.vk = vk
 
     def get_plugins(self) -> set:
         return self.plugins
@@ -135,6 +186,18 @@ class PluginSystem(object):
         for command_function in commands_:
             await command_function(*args, **kwargs)
 
+    def init_variables(self, plugin_object: Plugin):
+        plugin_object.process_pool = self.process_pool
+
+    def init_plugin(self, plugin_object: Plugin):
+        for func in plugin_object.init_funcs:
+            if asyncio.iscoroutinefunction(func):
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(func(self.vk))
+
+            else:
+                func(self.vk)
+
     def register_plugin(self, plugin_object: Plugin):
         plugin_object.register(self)
 
@@ -161,6 +224,7 @@ class PluginSystem(object):
                             module_source_name,
                             *imp.find_module(os.path.splitext(filename)[0], [folder_path])
                         )
+
                     # Если при загрузке плагина произошла какая-либо ошибка
                     except Exception:
                         result = traceback.format_exc()
@@ -174,6 +238,8 @@ class PluginSystem(object):
                     try:
                         self.plugins.add(loaded_module.plugin)
                         self.register_plugin(loaded_module.plugin)
+                        self.init_variables(loaded_module.plugin)
+                        self.init_plugin(loaded_module.plugin)
                     # Если возникла ошибка - значит плагин не имеет атрибута plugin
                     except AttributeError:
                         continue

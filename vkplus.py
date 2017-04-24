@@ -12,33 +12,38 @@ from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
-from utils import fatal, MessageEventData, chunks, Attachment
+from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote
+
+solver = None
 
 try:
     from settings import CAPTCHA_KEY, CAPTCHA_SERVER, TOKEN, SCOPE, APP_ID
 
-    solver = CaptchaSolver(CAPTCHA_SERVER, api_key=CAPTCHA_KEY)
+    if CAPTCHA_KEY and CAPTCHA_KEY:
+        solver = CaptchaSolver(CAPTCHA_SERVER, api_key=CAPTCHA_KEY)
 except (ImportError, AttributeError):
-    solver = None
+    pass
+
 
 class NoPermissions(Exception):
     pass
 
 
 # Драйвер для ограничения запросов к API - 3 раза в секунду
-# На самом деле 3 запроса в 1.2 секунд (для уверенности)
+# На самом деле 3 запроса в 1.05 секунд (для уверенности)
 class RatedDriver(LimitRateDriverMixin, HttpDriver):
     requests_per_period = 1
-    period = 0.4
+    period = 0.35
 
 
-class Captcha():
-    session = aiohttp.ClientSession()
-
+class TokenSession(aiovk.TokenSession):
     async def enter_captcha(self, url, sid):
         if not solver:
             return hues.error('Введите данные для сервиса решения капч в settings.py!')
-        with self.session as ses:
+
+        session = aiohttp.ClientSession()
+
+        with session as ses:
             async with ses.get(url) as resp:
                 img_data = await resp.read()
                 data = solver.solve_captcha(img_data)
@@ -46,18 +51,32 @@ class Captcha():
                 return data
 
 
-class TokenSession(aiovk.TokenSession, Captcha):
-    pass
+class ImplicitSession(aiovk.ImplicitSession):
+    async def enter_captcha(self, url, sid):
+        if not solver:
+            return hues.error('Введите данные для сервиса решения капч в settings.py!')
 
+        session = aiohttp.ClientSession()
 
-class ImplicitSession(aiovk.ImplicitSession, Captcha):
-    pass
+        with session as ses:
+            async with ses.get(url) as resp:
+                img_data = await resp.read()
+                data = solver.solve_captcha(img_data)
+                # hues.success(f"Капча {sid} решена успешно")
+                return data
 
+    async def enter_confirmation_сode(self):
+        hues.error("Похоже, у вас утсановлена двухфакторная авторизация!")
+        hues.error("Пожалуйста, введите код подтверждения:")
+
+        code = input()
+
+        hues.success("Спасибо! Продолжаю приём сообщений")
+
+        return code
 
 # Словарь, ключ - раздел API методов, значение - список разрешённых методов
 ALLOWED_METHODS = {
-    'docs': ('getWallUploadServer', 'save'),
-
     'groups': ('getById',
                'getCallbackConfig',
                'getCallbackServer',
@@ -185,6 +204,7 @@ class VkPlus(object):
             self.password = self.password
             self.api_session = ImplicitSession(self.login, self.password, self.appid,
                                                scope=self.scope, driver=RatedDriver())  # all scopes
+
             self.user_api = aiovk.API(self.api_session)
 
         if not self.user_api and not self.group_api:
@@ -200,6 +220,10 @@ class VkPlus(object):
         """Выполняет метод API VK с дополнительными параметрами"""
         if data is None:
             data = {}
+        else:
+            for k, v in data.items():
+                data[k] = quote(v)
+
         # Если мы работаем от имени группы
         if self.token:
             # Если метод доступен от имени группы - используем API группы
@@ -216,10 +240,11 @@ class VkPlus(object):
         else:
             api_method = self.user_api
         try:
-            return await api_method(key, **data)
+            return unquote(await api_method(key, **data))
+
         except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
             # Пытаемся отправить запрос к API ещё раз
-            return await api_method(key, **data)
+            return unquote(await api_method(key, **data))
         except aiovk.exceptions.VkAuthError:
             message = 'TOKEN' if self.token else 'LOGIN и PASSWORD'
             fatal("Произошла ошибка при авторизации API, "

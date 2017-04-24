@@ -1,20 +1,23 @@
 # Various helpers
+import html
+import urllib
 from typing import Callable, List
 import asyncio
 
+import collections
 import hues
 
 
-def schedule(seconds):
-    def decor(func):
-        async def wrapper(*args, **kwargs):
-            while True:
-                await asyncio.sleep(seconds)
-                await func(*args, **kwargs)
-
-        return wrapper
-
-    return decor
+def schedule_coroutine(target):
+    """Schedules target coroutine in the given event loop
+    If not given, *loop* defaults to the current thread's event loop
+    Returns the scheduled task.
+    """
+    if asyncio.iscoroutine(target):
+        return asyncio.ensure_future(target, loop=asyncio.get_event_loop())
+    else:
+        raise TypeError("target must be a coroutine, "
+                        "not {!r}".format(type(target)))
 
 
 # http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
@@ -110,3 +113,37 @@ def parse_msg_flags(bitmask: int) -> dict:
         start *= 2
         values.append(bool(result))
     return dict(zip(keys, values))
+
+
+def unquote(data):
+    temp = data
+
+    if issubclass(temp.__class__, str):
+        return html.unescape(html.unescape(temp))
+
+    if issubclass(temp.__class__, dict):
+        for k, v in temp.items():
+            temp[k] = unquote(v)
+
+    if issubclass(temp.__class__, list):
+        for i in range(len(temp)):
+            temp[i] = unquote(temp[i])
+
+    return temp
+
+
+def quote(data):
+    temp = data
+
+    if issubclass(temp.__class__, str):
+        return urllib.parse.quote(urllib.parse.quote(temp))
+
+    if issubclass(temp.__class__, dict):
+        for k, v in temp.items():
+            data[k] = quote(v)
+
+    if issubclass(temp.__class__, list):
+        for i in range(len(temp)):
+            temp[i] = quote(temp[i])
+
+    return temp

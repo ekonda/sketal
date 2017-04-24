@@ -1,25 +1,13 @@
-from plugin_system import Plugin
-import publicsuffixlist
-import pickle
-import os
+import hues
 
-psl = publicsuffixlist.PublicSuffixList()
+from plugin_system import Plugin
 
 plugin = Plugin("Отправка анонимного сообщения",
-                usage=["анонимно [id] [сообщение] - написать анонимное сообщение пользователю(посылать можно только текст и/или фото)",
+                usage=["анонимно [id] [сообщение] - написать анонимное сообщение пользователю"
+                       "(посылать можно только текст и/или фото)",
                        "неполучатьанонимки - не получать анонимные сообщения",
                        "получатьанонимки - получать анонимные сообщения"])
 
-muted = {}
-
-if not os.path.exists("plugins/temp/msg_anon_data"):
-    os.makedirs("plugins/temp/msg_anon_data")
-
-try:
-    with open('plugins/temp/msg_anon_data/m.pkl', 'rb') as f:
-        muted = pickle.load(f)
-except:
-    pass
 
 DISABLED = ('https', 'http', 'com', 'www', 'ftp', '://')
 
@@ -28,7 +16,16 @@ def check_links(string):
     return any(x in string for x in DISABLED)
 
 
-@plugin.on_command('анонимно')
+@plugin.on_init()
+def init(vk):
+    if "donotdisturb" not in plugin.data:
+        plugin.data["donotdisturb"] = {}
+    else:
+        for k in plugin.data["donotdisturb"]:
+            plugin.data["donotdisturb"][int(k)] = plugin.data["donotdisturb"].pop(k)
+
+
+@plugin.on_command('анонимка', 'анонимно')
 async def anonymously(msg, args):
     text_required = True
     for k, v in msg.brief_attaches.items():
@@ -58,7 +55,7 @@ async def anonymously(msg, args):
     if check_links(data):
         return await msg.answer('В сообщении были обнаружены ссылки!')
 
-    if muted.get(sender_id, False):
+    if plugin.data["donotdisturb"].get(uid, False):
         return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
     message = "Вам анонимное сообщение!\n"
@@ -66,8 +63,10 @@ async def anonymously(msg, args):
     if data:
         message += data + "\n"
 
-    if msg.brief_attaches:
-        message += "Вложения:\n".join(m.link for m in await msg.full_attaches)
+    if not text_required:
+        full = await msg.full_attaches
+        if full:
+            message += "Вложения:\n".join(m.link for m in full)
 
     val = {
         'peer_id': uid,
@@ -82,19 +81,13 @@ async def anonymously(msg, args):
 
 @plugin.on_command('неполучатьанонимки')
 async def silenceon(msg, args):
-    muted[msg.id] = True
-
-    with open('plugins/temp/msg_anon_data/m.pkl', 'wb') as f:
-        pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
+    plugin.data["donotdisturb"][msg.id] = True
 
     await msg.answer('Вы не будете получать сообщения!')
 
 
 @plugin.on_command('получатьанонимки')
 async def silenceoff(msg, args):
-    muted[msg.id] = False
-
-    with open('plugins/temp/msg_anon_data/m.pkl', 'wb') as f:
-        pickle.dump(muted, f, pickle.HIGHEST_PROTOCOL)
+    plugin.data["donotdisturb"][msg.id] = False
 
     await msg.answer('Вы будете получать все сообщения!')
