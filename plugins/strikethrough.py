@@ -7,7 +7,7 @@ helptext = '''перечеркни <строка>'''
 
 
 def get_sttext(text):
-    sttext = '&#0822;'+'&#0822;'.join(text) + '&#0822;'
+    sttext = '&#38;#0822;'+'&#38;#0822;'.join(text) + '&#38;#0822;'
     return sttext
 
 
