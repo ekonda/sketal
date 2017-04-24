@@ -1,11 +1,11 @@
 # This code was originally taken from https://github.com/zeuxisoo/python-pluginplot
 import asyncio
-import imp
 import os
 import sys
 import threading
 import traceback
 from os.path import isfile
+from importlib import machinery, util
 
 from concurrent.futures import ProcessPoolExecutor
 
@@ -212,19 +212,16 @@ class PluginSystem(object):
             for filename in filenames:
                 if filename.endswith('.py') and filename != "__init__.py":
                     # path/to/plugins/plugin/foo.py
-                    # > plugin/foo.py
-                    # > plugin.foo
-                    # > shared_space.plugin.foo
+                    # > foo.py
+                    # > foo
                     full_plugin_path = os.path.join(folder_path, filename)
                     base_plugin_path = os.path.relpath(full_plugin_path, self.folder)
                     base_plugin_name = os.path.splitext(base_plugin_path)[0].replace(os.path.sep, '.')
-                    module_source_name = "{0}.file_{1}".format(shared_space.__name__, base_plugin_name)
                     try:
-                        loaded_module = imp.load_module(
-                            module_source_name,
-                            *imp.find_module(os.path.splitext(filename)[0], [folder_path])
-                        )
-
+                        loader = machinery.SourceFileLoader(base_plugin_name, full_plugin_path)
+                        spec = util.spec_from_loader(loader.name, loader)
+                        loaded_module = util.module_from_spec(spec)
+                        loader.exec_module(loaded_module)
                     # Если при загрузке плагина произошла какая-либо ошибка
                     except Exception:
                         result = traceback.format_exc()
