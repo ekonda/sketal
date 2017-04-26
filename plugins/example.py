@@ -32,7 +32,7 @@ async def command(msg, args):
 
     if msg.brief_attaches: # короткий список вложений
         attachments = await msg.full_attaches # полные вложения
-        attaches = "\n".join([str(attach) for attach in attachments])
+        attaches = "\n".join(str(attach) for attach in attachments)
     else:
         attaches = ""
 
