@@ -30,6 +30,9 @@ FAIL_MSG = 'Я не смог это произнести :('
 
 @plugin.on_command('скажи')
 async def say_text(msg, args):
+    if not args:
+        return await msg.answer('Вы не ввели сообщение!\nскажи <текст>')
+  
     if not gTTS or not langdetect:
         return await msg.answer('Я не могу говорить, '
                                 'так как у меня не установлены нужные модули :(')
