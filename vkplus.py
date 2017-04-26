@@ -340,7 +340,7 @@ class Message(object):
         self.msg_id = data.msg_id
         self.timestamp = data.time
         self.brief_attaches = data.attaches
-        self._full_attaches = None
+        self._full_attaches = []
         # Словарь для отправки к ВК при ответе
         if self.user:
             self.answer_values = {'user_id': self.id}
@@ -352,8 +352,6 @@ class Message(object):
         # Если мы уже получали аттачи для этого сообщения, возвратим их
         if self._full_attaches:
             return self._full_attaches
-
-        self._full_attaches = []
 
         values = {'message_ids': self.msg_id,
                   'preview_length': 1}
