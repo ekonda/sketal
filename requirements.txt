@@ -2,7 +2,7 @@ hues  # Логгирование с указанием времени и цве�
 
 aiohttp # Асинхронные HTTP запросы
 aiosocks # Требуется для aiovk
-https://github.com/TiberiumN/aiovk
+git+https://github.com/TiberiumN/aiovk
 
 captcha_solver  # Решение Captcha
 
