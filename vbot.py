@@ -39,7 +39,7 @@ class Bot(object):
             try:
                 shutil.copy('settings.py.sample', 'settings.py')
             except Exception:
-                hues.fatal('Я не могу копировать файлы в текущей папке, '
+                fatal('Я не могу копировать файлы в текущей папке, '
                       'проверьте ваши права на неё!')
             hues.info('Был создан файл settings.py, '
                   'не забудьте добавить данные для авторизации!')
@@ -68,14 +68,14 @@ class Bot(object):
                     self.VK_PASSWORD = settings.PASSWORD
 
                 if not self.TOKEN and not(self.VK_LOGIN and self.VK_PASSWORD):
-                    hues.fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
+                    fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
                           "Без них бот работать НЕ СМОЖЕТ.")
 
             except (ValueError, AttributeError, NameError):
-                hues.fatal('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
+                fatal('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
         # Если не нашли ни settings.py, ни settings.py.sample
         else:
-            hues.fatal("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
+            fatal("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
 
     def vk_init(self):
         hues.warn("Авторизация в ВКонтакте...")
@@ -119,7 +119,7 @@ class Bot(object):
                 break
 
         if not result:
-            hues.fatal("Не удалось получить значения Long Poll сервера!")
+            fatal("Не удалось получить значения Long Poll сервера!")
 
         try:
             self.last_ts = self.longpoll_values['ts']
