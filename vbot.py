@@ -39,9 +39,9 @@ class Bot(object):
             try:
                 shutil.copy('settings.py.sample', 'settings.py')
             except Exception:
-                fatal('Я не могу копировать файлы в текущей папке, '
+                hues.fatal('Я не могу копировать файлы в текущей папке, '
                       'проверьте ваши права на неё!')
-            fatal('Был создан файл settings.py, '
+            hues.info('Был создан файл settings.py, '
                   'не забудьте добавить данные для авторизации!')
         # Если у нас уже есть settings.py
         elif isfile('settings.py'):
@@ -68,14 +68,14 @@ class Bot(object):
                     self.VK_PASSWORD = settings.PASSWORD
 
                 if not self.TOKEN and not(self.VK_LOGIN and self.VK_PASSWORD):
-                    fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
+                    hues.fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
                           "Без них бот работать НЕ СМОЖЕТ.")
 
             except (ValueError, AttributeError, NameError):
-                fatal('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
+                hues.fatal('Проверьте содержимое файла settings.py, возможно вы удалили что-то нужное!')
         # Если не нашли ни settings.py, ни settings.py.sample
         else:
-            fatal("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
+            hues.fatal("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
 
     def vk_init(self):
         hues.warn("Авторизация в ВКонтакте...")
@@ -86,11 +86,11 @@ class Bot(object):
                          password=self.VK_PASSWORD,
                          scope=self.SCOPE,
                          app_id=self.APP_ID)
-
-        hues.success("Успешная авторизация")
+        if self.vk:
+            hues.success("Успешная авторизация")
 
     def plugin_init(self):
-        hues.warn("Загрузка плагинов...")
+        hues.info("Загрузка плагинов...")
 
         # Подгружаем плагины
         self.plugin_system = PluginSystem(self.vk, folder=abspath('plugins'))
@@ -119,7 +119,7 @@ class Bot(object):
                 break
 
         if not result:
-            fatal("Не удалось получить значения Long Poll сервера!")
+            hues.fatal("Не удалось получить значения Long Poll сервера!")
 
         try:
             self.last_ts = self.longpoll_values['ts']
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     bot = Bot()
     hues.success("Приступаю к приему сообщений")
     main_loop = asyncio.get_event_loop()
-    # запускаем бота
+    # Запускаем бота
     try:
         main_loop.run_until_complete(bot.run(main_loop))
     except KeyboardInterrupt:
