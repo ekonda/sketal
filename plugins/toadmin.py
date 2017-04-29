@@ -2,11 +2,6 @@ from plugin_system import Plugin
 from settings import ADMINS
 plugin = Plugin('Сообщение админу', usage='админу [текст] - отослать администрации сообщение');
 
-@plugin.on_init()
-def init(vk):
-    if "some_data" not in plugin.data:
-        plugin.data["some_data"] = {}
-
 @plugin.on_command('админу')
 async def toadmin(msg, args):
     data = ' '.join(args)
