@@ -18,7 +18,7 @@ async def init(vk):
 
 
 # Если необходимо выполнить какую-то длительную задачу(которую нелья переписать как корутину),
-# и при этом не блокируя исполнения команд другими пользователями - ипользуйте plugin.process_pool:
+# не блокируя исполнения команд другими пользователями - ипользуйте plugin.process_pool:
 # result = await loop.run_in_executor(plugin.process_pool, long_function, argument1, argument2)
 
 
