@@ -399,6 +399,6 @@ class Message(object):
             additional_values = dict()
         # Отправляем каждое сообщение из списка
         for msg in msgs:
-            data = msgs[0] if not len(msgs) > 1 else '\n'.join(msg)
+            data = msgs[0] if not len(msgs) > 1 else '\n'.join(msgs)
             values = dict(**self.answer_values, message=data, **additional_values)
             await self.vk.method('messages.send', values)
