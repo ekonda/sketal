@@ -212,9 +212,9 @@ class PluginSystem(object):
             for filename in filenames:
                 if filename.endswith('.py') and filename != "__init__.py":
 
-                    # if ENABLED_PLUGINS:
-                    #     if filename.replace('.py', '') not in ENABLED_PLUGINS:
-                    #         continue
+                    if ENABLED_PLUGINS:
+                        if filename.replace('.py', '') not in ENABLED_PLUGINS:
+                            continue
                     # path/to/plugins/plugin/foo.py
                     # > foo.py
                     # > foo
