@@ -41,7 +41,7 @@ class Bot(object):
             except Exception:
                 fatal('Я не могу копировать файлы в текущей папке, '
                       'проверьте ваши права на неё!')
-            fatal('Был создан файл settings.py, '
+            hues.info('Был создан файл settings.py, '
                   'не забудьте добавить данные для авторизации!')
         # Если у нас уже есть settings.py
         elif isfile('settings.py'):
@@ -86,11 +86,11 @@ class Bot(object):
                          password=self.VK_PASSWORD,
                          scope=self.SCOPE,
                          app_id=self.APP_ID)
-
-        hues.success("Успешная авторизация")
+        if self.vk:
+            hues.success("Успешная авторизация")
 
     def plugin_init(self):
-        hues.warn("Загрузка плагинов...")
+        hues.info("Загрузка плагинов...")
 
         # Подгружаем плагины
         self.plugin_system = PluginSystem(self.vk, folder=abspath('plugins'))
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     bot = Bot()
     hues.success("Приступаю к приему сообщений")
     main_loop = asyncio.get_event_loop()
-    # запускаем бота
+    # Запускаем бота
     try:
         main_loop.run_until_complete(bot.run(main_loop))
     except KeyboardInterrupt:
