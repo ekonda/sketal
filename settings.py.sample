@@ -34,3 +34,15 @@ FLOOD_INTERVAL = 0.9
 # На текущий момент может принимать значение -  rucaptcha или antigate
 CAPTCHA_SERVER = "rucaptcha" # Сервис для решения капч.
 CAPTCHA_KEY = "" # API ключ для сервиса решения капч
+
+# Загружаются только указанные плагины или все, при отсутствии значения
+# ENABLED_PLUGINS = [
+#     'available_cmds',
+#     'exchange_rate',
+#     'memes',
+#     'loaded_plugins',
+#     'say_joke',
+#     'tts',
+#     ]
+
+ENABLED_PLUGINS = []

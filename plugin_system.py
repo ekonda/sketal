@@ -15,7 +15,7 @@ import types
 import pickle
 
 try:
-    from settings import TOKEN, LOGIN, PASSWORD
+    from settings import TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS
 except ImportError:
     TOKEN, LOGIN, PASSWORD = None, None, None
 
@@ -211,6 +211,10 @@ class PluginSystem(object):
         for folder_path, folder_names, filenames in os.walk(self.folder):
             for filename in filenames:
                 if filename.endswith('.py') and filename != "__init__.py":
+
+                    # if ENABLED_PLUGINS:
+                    #     if filename.replace('.py', '') not in ENABLED_PLUGINS:
+                    #         continue
                     # path/to/plugins/plugin/foo.py
                     # > foo.py
                     # > foo
