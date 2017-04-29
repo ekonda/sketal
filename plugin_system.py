@@ -17,7 +17,7 @@ import pickle
 try:
     from settings import TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS
 except ImportError:
-    TOKEN, LOGIN, PASSWORD = None, None, None
+    TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS = None, None, None, None
 
 
 class Stopper:
