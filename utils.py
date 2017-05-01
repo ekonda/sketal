@@ -48,6 +48,17 @@ class Attachment(object):
         return f'{self.type}{self.as_str()}'
 
 
+class RequestFuture(asyncio.Future):
+    __slots__ = ["key", "data", "user"]
+
+    def __init__(self, key, data, user=False):
+        super().__init__()
+
+        self.key = key
+        self.data = data
+        self.user = user
+
+
 class MessageEventData(object):
     __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', "msg_id", "attaches")
 
@@ -136,7 +147,7 @@ def quote(data):
     temp = data
 
     if issubclass(temp.__class__, str):
-        return urllib.parse.quote(urllib.parse.quote(temp))
+        return urllib.parse.quote(urllib.parse.quote(temp.replace("\n", "<br>")))
 
     if issubclass(temp.__class__, dict):
         for k, v in temp.items():
