@@ -12,7 +12,7 @@ from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
-from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote, RequestFuture
+from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote, RequestFuture, schedule_coroutine
 
 solver = None
 
