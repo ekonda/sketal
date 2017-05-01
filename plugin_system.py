@@ -21,7 +21,7 @@ except ImportError:
 
 
 class Stopper:
-    __slots__ =["stop"]
+    __slots__ = ["stop"]
 
     def __init__(self):
         self.stop = False

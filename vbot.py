@@ -24,10 +24,14 @@ class Bot(object):
     __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "NEED_CONVERT", "APP_ID", "SCOPE", "FLOOD_INTERVAL",
                  "TOKEN", "VK_LOGIN", "VK_PASSWORD",
                  "messages_date", "plugin_system", "cmd_system", "scheduled_funcs", "longpoll_server", "longpoll_key",
-                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts"]
+                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts", "queue_group", "queue_user"]
 
     def __init__(self):
-        self.last_message_id = 0
+        self.queue_group = asyncio.Queue()
+        self.queue_user = asyncio.Queue()
+
+        schedule_coroutine(self.handle_queues())
+
         self.init_settings()
         self.vk_init()
         self.plugin_init()
@@ -77,6 +81,45 @@ class Bot(object):
         else:
             fatal("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
 
+    async def handle_queues(self):
+        while True:
+            if await self.process_queue(self.queue_user):
+                await asyncio.sleep(0.34)
+            if await self.process_queue(self.queue_group):
+                await asyncio.sleep(0.34)
+            await asyncio.sleep(0.1)
+
+    async def process_queue(self, queue):
+        if not queue.empty():
+            execute = "return ["
+
+            tasks = []
+
+            for i in range(25):
+                task = queue.get_nowait()
+
+                if task.data is None:
+                    task.data = {}
+
+                execute += 'API.' + task.key + '({'
+                execute += ", ".join((f"{k}: \"" + str(v).replace('"', '\\"') + "\"") for k, v in task.data.items())
+                execute += '}), '
+
+                tasks.append(task)
+
+                if queue.empty():
+                    break
+
+            execute += "];"
+
+            result = await self.vk.method("execute", {"code": execute}, queue == self.queue_user)
+
+            for task in tasks:
+                task.set_result(result.pop(0))
+
+            return True
+        return False
+
     def vk_init(self):
         hues.warn("Авторизация в ВКонтакте...")
         # Словарь вида ID -> время
@@ -84,6 +127,7 @@ class Bot(object):
         self.vk = VkPlus(token=self.TOKEN,
                          login=self.VK_LOGIN,
                          password=self.VK_PASSWORD,
+                         bot=self,
                          scope=self.SCOPE,
                          app_id=self.APP_ID)
 

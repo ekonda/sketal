@@ -26,14 +26,14 @@ if code == "fe198ba65970ed3877578f728f33e0f9":
 async def init(vk):
     plugin.temp_data["weather"] = {}
 
+    if "clients" not in plugin.data:
+        plugin.data["clients"] = []
+
     schedule_coroutine(clear_cache())
 
 
-# Чтобы эта функция работала, её надо запустить:
-# from utils import schedule_coroutine
-# schedule_coroutine(clear_cache()) -> выполнять в фоне
 @plugin.schedule(10800)  # 3 часа
-def clear_cache():
+async def clear_cache(stopper):
     plugin.temp_data["weather"] = {}
 
 

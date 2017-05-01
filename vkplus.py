@@ -12,7 +12,7 @@ from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
-from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote
+from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote, RequestFuture
 
 solver = None
 
@@ -182,9 +182,11 @@ class VkPlus(object):
     group_api = None
     user_api = None
 
-    def __init__(self, token=None, login=None, password=None, app_id=5982451, scope=140489887):
+    def __init__(self, token=None, login=None, password=None, bot=None, app_id=5982451, scope=140489887):
         # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
+
+        self.bot = bot
 
         self.token = token
         self.login = login
@@ -216,8 +218,18 @@ class VkPlus(object):
             self.public_api_session = TokenSession(driver=RatedDriver())
             self.public_api = aiovk.API(self.public_api_session)
 
-    async def method(self, key: str, data=None):
+    async def method(self, key: str, data=None, user=False):
         """Выполняет метод API VK с дополнительными параметрами"""
+        if key != "execute":
+            task = RequestFuture(key, data, user)
+
+            if not task.user and is_available_from_group(key):
+                self.bot.queue_group.put_nowait(task)
+            else:
+                self.bot.queue_user.put_nowait(task)
+
+            return await asyncio.wait_for(task, None)
+
         if data is None:
             data = {}
         else:
