@@ -12,7 +12,7 @@ from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
-from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote
+from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote, RequestFuture, schedule_coroutine
 
 solver = None
 
@@ -182,9 +182,11 @@ class VkPlus(object):
     group_api = None
     user_api = None
 
-    def __init__(self, token=None, login=None, password=None, app_id=5982451, scope=140489887):
+    def __init__(self, token=None, login=None, password=None, bot=None, app_id=5982451, scope=140489887):
         # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
+
+        self.bot = bot
 
         self.token = token
         self.login = login
@@ -216,8 +218,18 @@ class VkPlus(object):
             self.public_api_session = TokenSession(driver=RatedDriver())
             self.public_api = aiovk.API(self.public_api_session)
 
-    async def method(self, key: str, data=None):
+    async def method(self, key: str, data=None, user=False):
         """Выполняет метод API VK с дополнительными параметрами"""
+        if key != "execute":
+            task = RequestFuture(key, data, user)
+
+            if not task.user and is_available_from_group(key):
+                self.bot.queue_group.put_nowait(task)
+            else:
+                self.bot.queue_user.put_nowait(task)
+
+            return await asyncio.wait_for(task, None)
+
         if data is None:
             data = {}
         else:
@@ -225,7 +237,7 @@ class VkPlus(object):
                 data[k] = quote(v)
 
         # Если мы работаем от имени группы
-        if self.token:
+        if self.token and not user:
             # Если метод доступен от имени группы - используем API группы
             if is_available_from_group(key):
                 api_method = self.group_api
@@ -340,7 +352,7 @@ class Message(object):
         self.msg_id = data.msg_id
         self.timestamp = data.time
         self.brief_attaches = data.attaches
-        self._full_attaches = None
+        self._full_attaches = []
         # Словарь для отправки к ВК при ответе
         if self.user:
             self.answer_values = {'user_id': self.id}
@@ -352,8 +364,6 @@ class Message(object):
         # Если мы уже получали аттачи для этого сообщения, возвратим их
         if self._full_attaches:
             return self._full_attaches
-
-        self._full_attaches = []
 
         values = {'message_ids': self.msg_id,
                   'preview_length': 1}
@@ -401,6 +411,6 @@ class Message(object):
             additional_values = dict()
         # Отправляем каждое сообщение из списка
         for msg in msgs:
-            data = msgs[0] if not len(msgs) > 1 else '\n'.join(msg)
+            data = msgs[0] if not len(msgs) > 1 else '\n'.join(msgs)
             values = dict(**self.answer_values, message=data, **additional_values)
             await self.vk.method('messages.send', values)
