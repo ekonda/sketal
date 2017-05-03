@@ -115,7 +115,11 @@ class Bot(object):
             result = await self.vk.method("execute", {"code": execute}, queue == self.queue_user)
 
             for task in tasks:
-                task.set_result(result.pop(0))
+                if result:
+                    task.set_result(result.pop(0))
+
+                else:
+                    task.set_result(None)
 
             return True
         return False
