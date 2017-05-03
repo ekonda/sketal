@@ -237,7 +237,7 @@ class VkPlus(object):
                 data[k] = quote(v)
 
         # Если мы работаем от имени группы
-        if self.token:
+        if self.token and not user:
             # Если метод доступен от имени группы - используем API группы
             if is_available_from_group(key):
                 api_method = self.group_api
