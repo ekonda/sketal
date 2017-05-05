@@ -26,9 +26,6 @@ if code == "fe198ba65970ed3877578f728f33e0f9":
 async def init(vk):
     plugin.temp_data["weather"] = {}
 
-    if "clients" not in plugin.data:
-        plugin.data["clients"] = []
-
     schedule_coroutine(clear_cache())
 
 
@@ -67,6 +64,9 @@ async def weather(msg, args):
     async with aiohttp.ClientSession() as sess:
         async with sess.get(url) as resp:
             response = await resp.json()
+
+            if "cod" in response and response["cod"] == '404':
+                return await msg.answer("Город не найден!")
 
             if days != 0:
                 answer = f"{city}. Погода.\n\n"

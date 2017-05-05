@@ -19,10 +19,7 @@ class CommandSystem(object):
         # Конвертировать ли команду в русскую раскладку?
         self.convert = convert_layout
 
-    async def process_command(self, msg_obj: Message):
-        """Обрабатывает команду (объект Message)"""
-        cmd = Command(msg_obj._data, self.convert)
-
+    def check_command(self, cmd):
         if not cmd.has_prefix:
             return False
 
@@ -40,9 +37,25 @@ class CommandSystem(object):
         elif self.ANY_COMMANDS:
             pass
 
-        # Не обрабатываем сообщение msg_obj
+        # Не обрабатываем сообщение
         else:
-            return
+            return False
+
+        return True
+
+    async def process_command(self, msg_obj: Message):
+        """Обрабатывает команду (объект Message)"""
+        cmd = Command(msg_obj._data, self.convert)
+
+        if not self.check_command(cmd):
+            if cmd.args:
+                cmd.command += ' ' + cmd.args.pop().lower()
+
+                if not self.check_command(cmd):
+                    return
+
+            else:
+                return
 
         cmd_text = cmd.command
 

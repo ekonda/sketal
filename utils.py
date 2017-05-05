@@ -1,11 +1,16 @@
 # Various helpers
 import html
 import urllib
-from typing import Callable, List
+from enum import Enum
+from typing import List
 import asyncio
 
-import collections
 import hues
+
+
+class SendFrom(Enum):
+    USER = 0
+    GROUP = 1
 
 
 def schedule_coroutine(target):
@@ -49,14 +54,14 @@ class Attachment(object):
 
 
 class RequestFuture(asyncio.Future):
-    __slots__ = ["key", "data", "user"]
+    __slots__ = ["key", "data", "send_from"]
 
-    def __init__(self, key, data, user=False):
-        super().__init__()
-
+    def __init__(self, key, data, send_from=False):
         self.key = key
         self.data = data
-        self.user = user
+        self.send_from = send_from
+
+        super().__init__()
 
 
 class MessageEventData(object):

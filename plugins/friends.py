@@ -10,7 +10,8 @@ if ACCEPT_FRIENDS:
 
     @plugin.on_init()
     async def get_vk(vk):
-        schedule_coroutine(add_friends(vk))
+        if vk.user_api:
+            schedule_coroutine(add_friends(vk))
 
     # Функция, если её запустить(см. get_vk для примера с выполнением в фоне),
     # будет выполняться каждые 10 секунд, до тех пор, пока stopper.stop == False
@@ -21,7 +22,7 @@ if ACCEPT_FRIENDS:
     async def add_friends(stopper, vk):
         result = await vk.method("friends.getRequests")
 
-        if not result["count"]:
+        if not result or not result["count"]:
             return
 
         users = result["items"]

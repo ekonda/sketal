@@ -1,6 +1,5 @@
 # Standart library
 import asyncio
-import threading
 import json
 import shutil
 
@@ -12,23 +11,21 @@ import aiohttp
 import hues
 
 # Custom packages
-import pickle
-
+from database import *
 from plugin_system import PluginSystem
-from utils import fatal, parse_msg_flags, MessageEventData, schedule_coroutine
+from utils import fatal, parse_msg_flags, MessageEventData, schedule_coroutine, SendFrom
 from vkplus import VkPlus, Message
 
 
 class Bot(object):
     """Главный класс бота"""
-    __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "NEED_CONVERT", "APP_ID", "SCOPE", "FLOOD_INTERVAL",
-                 "TOKEN", "VK_LOGIN", "VK_PASSWORD",
+    __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "NEED_CONVERT", "APP_ID", "SCOPE",
+                 "FLOOD_INTERVAL", "TOKEN", "VK_LOGIN", "VK_PASSWORD", "SERVICE_KEY",
                  "messages_date", "plugin_system", "cmd_system", "scheduled_funcs", "longpoll_server", "longpoll_key",
-                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts", "queue_group", "queue_user"]
+                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts", "queues"]
 
     def __init__(self):
-        self.queue_group = asyncio.Queue()
-        self.queue_user = asyncio.Queue()
+        self.queues = [asyncio.Queue(), asyncio.Queue()]
 
         schedule_coroutine(self.handle_queues())
 
@@ -46,7 +43,7 @@ class Bot(object):
                 fatal('Я не могу копировать файлы в текущей папке, '
                       'проверьте ваши права на неё!')
             hues.info('Был создан файл settings.py, '
-                  'не забудьте добавить данные для авторизации!')
+                      'не забудьте добавить данные для авторизации!')
         # Если у нас уже есть settings.py
         elif isfile('settings.py'):
             import settings
@@ -83,13 +80,13 @@ class Bot(object):
 
     async def handle_queues(self):
         while True:
-            if await self.process_queue(self.queue_user):
-                await asyncio.sleep(0.34)
-            if await self.process_queue(self.queue_group):
-                await asyncio.sleep(0.34)
+            for i in range(len(self.queues)):
+                if await self.process_queue(self.queues[i], i):
+                    await asyncio.sleep(0.33)
+
             await asyncio.sleep(0.1)
 
-    async def process_queue(self, queue):
+    async def process_queue(self, queue, queue_id):
         if not queue.empty():
             execute = "return ["
 
@@ -112,7 +109,7 @@ class Bot(object):
 
             execute += "];"
 
-            result = await self.vk.method("execute", {"code": execute}, queue == self.queue_user)
+            result = await self.vk.execute(execute, SendFrom(queue_id))
 
             for task in tasks:
                 if result:
@@ -234,15 +231,18 @@ class Bot(object):
 
         data = MessageEventData(conf, peer_id, user_id, cleaned_body, ts, msg_id, attaches)
 
-        try:
-            # Проверяем на интервал между командами для этого ID пользователя
-            if ts - self.messages_date[user_id] <= self.FLOOD_INTERVAL:
-                self.messages_date[user_id] = ts
+        user = await get_or_none(User, uid=user_id)
+        if user:
+            if ts - user.message_date <= self.FLOOD_INTERVAL:
+                user.message_date = ts
+                await db.update(user)
                 return
-            else:
-                self.messages_date[user_id] = ts
-        except KeyError:
-            self.messages_date[user_id] = ts
+
+            user.message_date = ts
+            await db.update(user)
+        else:
+            await db.create(User, uid=user_id)
+
         await self.check_if_command(data, msg_id)
 
     async def check_if_command(self, data: MessageEventData, msg_id: int) -> None:
@@ -279,6 +279,7 @@ class Bot(object):
             except ValueError:
                 # В JSON ошибка, или это вовсе не JSON
                 continue
+
             # Проверяем на код ошибки
             failed = events.get('failed')
             if failed:
@@ -291,23 +292,11 @@ class Bot(object):
                 elif err_num in (2, 3):
                     await self.init_long_polling(err_num)
                 continue
+
             # Обновляем время, чтобы не приходили старые события
             self.longpoll_values['ts'] = events['ts']
             for event in events['updates']:
                 schedule_coroutine(self.check_event(event))
-
-    def save_data(self):
-        hues.warn("Сохраняю данные плагинов...")
-
-        if not os.path.exists("plugins/temp"):
-            os.makedirs("plugins/temp")
-
-        for plugin in self.plugin_system.get_plugins():
-            if plugin.data and any(plugin.data.values()):
-                with open(f'plugins/temp/{plugin.name.lower().replace(" ", "_")}.data', 'wb') as f:
-                    pickle.dump(plugin.data, f)
-
-        hues.warn("Выключение бота...")
 
 
 if __name__ == '__main__':
@@ -317,12 +306,8 @@ if __name__ == '__main__':
     # Запускаем бота
     try:
         main_loop.run_until_complete(bot.run(main_loop))
-    except KeyboardInterrupt:
-        bot.save_data()
-
-    except SystemExit as e:
-        if e.code != 1:
-            bot.save_data()
+    except (KeyboardInterrupt, SystemExit):
+        hues.warn("Выключение бота...")
 
     except Exception as ex:
         import traceback

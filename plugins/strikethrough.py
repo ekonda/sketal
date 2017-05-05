@@ -1,7 +1,7 @@
 from plugin_system import Plugin
 
 plugin = Plugin('Перечеркиватель',
-                usage='перечеркнуть - перечеркивает строку')
+                usage=['перечеркнуть - перечеркивает строку'])
 
 helptext = '''перечеркни <строка>'''
 
@@ -11,7 +11,7 @@ def get_sttext(text):
     return sttext
 
 
-@plugin.on_command('перечеркни')
+@plugin.on_command('перечеркни', "перечеркнуть")
 async def strikethroughtext(msg, args):
     # Если нет аргументов
     if not args:
@@ -19,4 +19,4 @@ async def strikethroughtext(msg, args):
 
     text = ' '.join(args)
 
-    await msg.answer('✏Готово:\n' + get_sttext(text))
+    await msg.answer('Готово:\n' + get_sttext(text))

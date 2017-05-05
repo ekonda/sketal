@@ -3,7 +3,7 @@ import datetime
 from plugin_system import Plugin
 
 plugin = Plugin('Время',
-                usage="время - узнать текущее время")
+                usage=["время - узнать текущее время"])
 
 days = {
     0: 'понедельник',
