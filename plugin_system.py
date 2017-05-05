@@ -12,12 +12,10 @@ from concurrent.futures import ProcessPoolExecutor
 import hues
 import types
 
-import pickle
-
 try:
-    from settings import TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS
+    from settings import TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS, DATABASE_SETTINGS
 except ImportError:
-    TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS = None, None, None, None
+    TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS, DATABASE_SETTINGS = None, None, None, None, None
 
 
 class Stopper:
@@ -29,9 +27,12 @@ class Stopper:
 
 class Plugin(object):
     __slots__ = ["deferred_events", "scheduled_funcs", "name", "usage", "first_command",
-                 "data", "init_funcs", "data", "temp_data", "process_pool"]
+                 "init_funcs", "data", "temp_data", "process_pool"]
 
-    def __init__(self, name: str = "Example", usage: list = None):
+    def __init__(self, name: str = "Example", usage: list = None, need_db: bool = False):
+        if need_db and not DATABASE_SETTINGS:
+            return None
+
         self.name = name
         self.first_command = ''
         self.process_pool = None
@@ -41,7 +42,8 @@ class Plugin(object):
         self.init_funcs = []
 
         self.init_usage(usage)
-        self.init_data()
+
+        self.temp_data = {}
 
         hues.warn(self.name)
 
@@ -53,19 +55,6 @@ class Plugin(object):
             usage = [usage]
 
         self.usage = usage
-
-    def init_data(self):
-        self.data = {}
-        self.temp_data = {}
-
-        if not os.path.exists("plugins/temp"):
-            os.makedirs("plugins/temp")
-
-        data_file = f'plugins/temp/{self.name.lower().replace(" ", "_")}.data'
-
-        if os.path.isfile(data_file):
-            with open(data_file, 'rb') as f:
-                self.data = pickle.load(f)
 
     def log(self, message: str):
         hues.info(f'Плагин {self.name} -> {message}')
@@ -108,8 +97,8 @@ class Plugin(object):
                 self.first_command = commands[0]
                 # Если хоть в 1 команде есть пробел - она состоит из двух слов
                 if any(' ' in cmd.strip() for cmd in commands):
-                    hues.error(f'В плагине {self.name} была '
-                               'использована команда из двух слов')
+                    hues.error(f'В плагине {self.name} была использована команда '
+                               'из двух слов(более 2х слов не поддерживается)')
                 for command in commands:
                     self.add_func(command, func)
             elif not all_commands:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)

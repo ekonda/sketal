@@ -43,21 +43,7 @@ class Function:
 def fix_error(x):
     """Исправляет погрешность при работе с PI(чуть-чуть)"""
 
-    err = 2e-16
-
-    if - err < x < err:
-        return 0
-
-    if math.pi - err < x < math.pi + err:
-        return math.pi
-
-    if 0.5 - err < x < 0.5 + err:
-        return 0.5
-
-    if 1 - err < x < 1 + err:
-        return 1
-
-    return x
+    return round(x, 10)
 
 
 def process(data, action):
@@ -270,12 +256,17 @@ FUNCTIONS.append(Function(sign="div",
                           arguments=2,
                           priority=2))
 
+FUNCTIONS.append(Function(sign="log",
+                          function=lambda x, y: math.log(y, x),
+                          description="Логорифм из y по основанию x (x log y, 2 log 4 = 2)",
+                          arguments=2,
+                          priority=2))
+
 FUNCTIONS.append(Function(sign="^",
                           function=lambda x, y: x ** y,
                           description="Возведение выражения x в степень y(x ^ y, 3 ^ 2 = 9)",
                           arguments=2,
                           priority=1))
-
 #
 # Functions 1 operand
 FUNCTIONS.append(Function(sign="sin",
@@ -340,7 +331,7 @@ FUNCTIONS.append(Function(sign="abs",
 
 FUNCTIONS.append(Function(sign="!",
                           function=lambda x: math.factorial(x),
-                          description="Факториал (!4, !4 = 24)",
+                          description="Факториал (!x, !4 = 24)",
                           arguments=1,
                           priority=1))
 

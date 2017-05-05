@@ -12,7 +12,9 @@ from aiovk.drivers import HttpDriver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
-from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote, RequestFuture, schedule_coroutine
+from database import *
+from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote, RequestFuture, schedule_coroutine, \
+    SendFrom
 
 solver = None
 
@@ -181,14 +183,16 @@ def is_available_from_public(key: str) -> bool:
 class VkPlus(object):
     group_api = None
     user_api = None
+    public_api = None
 
-    def __init__(self, token=None, login=None, password=None, bot=None, app_id=5982451, scope=140489887):
+    def __init__(self, token=None, public_token=None, login=None, password=None, bot=None, app_id=5982451, scope=140489887):
         # Методы, которые можно вызывать через токен сообщества
         self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
 
         self.bot = bot
 
         self.token = token
+        self.public_token = public_token
         self.login = login
         self.password = password
         self.appid = app_id
@@ -212,73 +216,54 @@ class VkPlus(object):
         if not self.user_api and not self.group_api:
             fatal('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
 
-        # Паблик API используется для методов, которые не нуждаются в регистрации (users.get и т.д)
-        # Используется только при access_token сообщества вместо аккаунта
-        if self.token:
-            self.public_api_session = TokenSession(driver=RatedDriver())
-            self.public_api = aiovk.API(self.public_api_session)
+    async def execute(self, code, send_from=SendFrom.GROUP):
+        api_method = None
 
-    async def method(self, key: str, data=None, user=False):
-        """Выполняет метод API VK с дополнительными параметрами"""
-        if key != "execute":
-            task = RequestFuture(key, data, user)
+        if self.token and send_from == SendFrom.GROUP:
+            api_method = self.group_api
 
-            if not task.user and is_available_from_group(key):
-                self.bot.queue_group.put_nowait(task)
-            else:
-                self.bot.queue_user.put_nowait(task)
-
-            return await asyncio.wait_for(task, None)
-
-        if data is None:
-            data = {}
-        else:
-            for k, v in data.items():
-                data[k] = quote(v)
-
-        # Если мы работаем от имени группы
-        if self.token and not user:
-            # Если метод доступен от имени группы - используем API группы
-            if is_available_from_group(key):
-                api_method = self.group_api
-            # Если метод доступен от паблик апи - используем его
-            elif is_available_from_public(key):
-                api_method = self.public_api
-            elif self.user_api:
-                api_method = self.user_api
-            else:
-                hues.warn(f'Метод {key} нельзя вызвать от имени сообщества!')
-                return {}
-        else:
+        elif self.user_api and send_from == SendFrom.USER:
             api_method = self.user_api
+
+        if not api_method:
+            hues.error("Ошибка при выполнении execute:")
+            hues.error(code)
+            hues.error("Возможно, эти запросы невозможно выполнить из-за ограничений доступа.")
+            return
+
         try:
-            return unquote(await api_method(key, **data))
+            return unquote(await api_method("execute", code=quote(code)))
 
         except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
             # Пытаемся отправить запрос к API ещё раз
-            return unquote(await api_method(key, **data))
+            return unquote(await api_method("execute", code=quote(code)))
+
         except aiovk.exceptions.VkAuthError:
             message = 'TOKEN' if self.token else 'LOGIN и PASSWORD'
             fatal("Произошла ошибка при авторизации API, "
                   f"проверьте значение {message} в settings.py!")
-        except aiovk.exceptions.VkAPIError as ex:
-            # Код 9 - Flood error - слишком много одинаковых сообщений
-            if not ex.error_code == 9:
-                hues.error("Произошла ошибка при вызове метода API "
-                           f"{key} с значениями {data}:\n{ex}")
-                return {}
 
-            if 'message' not in data:
-                return {}
+    async def method(self, key: str, data=None, send_from=None):
+        """Выполняет метод API VK с дополнительными параметрами"""
+        if key != "execute":
+            if send_from is None:
+                if self.token and is_available_from_group(key):
+                    send_from = SendFrom.GROUP
 
-            data['message'] += f'\n Анти-флуд (API): {self.anti_flood()}'
-            try:
-                # Пытаемся отправить сообщение ещё раз
-                await self.method('messages.send', data)
-            except aiovk.exceptions.VkAPIError:
-                # Не знаю, может ли это случиться, или нет
-                hues.error('Обход анти-флуда API не удался =(')
-        return {}
+                elif is_available_from_public(key):
+                    if not self.user_api:
+                        hues.error("Вы пытаетесь вызвать публичный метод, для которого нужен акаунт пользователя!\n"
+                                   "Но у вас не установлен ни один пользователь!")
+                    send_from = SendFrom.USER
+
+                else:
+                    send_from = SendFrom.USER
+
+            task = RequestFuture(key, data, send_from)
+
+            self.bot.queues[send_from.value].put_nowait(task)
+
+            return await asyncio.wait_for(task, None)
 
     async def upload_photo(self, encoded_image) -> Attachment:
         data = aiohttp.FormData()
@@ -403,7 +388,7 @@ class Message(object):
         # Если длина сообщения больше 550 символов (получено эмпирическим путём)
         if len(msg) > 550:
             # Делим сообщение на список частей (каждая по 15 строк)
-            msgs = list(chunks(msg.splitlines(), 15))
+            msgs = list(chunks(msg, 15))
         else:
             # Иначе - создаём список из нашего сообщения
             msgs = [msg]

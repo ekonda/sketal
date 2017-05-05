@@ -3,7 +3,7 @@ import aiohttp
 from plugin_system import Plugin
 
 plugin = Plugin('Курсы валют',
-                usage='курс - узнать курс доллара, евро, и фунта к рублю')
+                usage=['курс - узнать курс доллара, евро, и фунта к рублю'])
 
 
 async def get_rate(first: str, to: str = "RUB"):
