@@ -6,7 +6,6 @@ import random
 import hues
 
 from plugin_system import Plugin
-from settings import TOKEN
 
 from gtts import gTTS
 
@@ -88,11 +87,8 @@ async def get_data(url, params=None):
 
 async def upload_voice(msg, audio_file):
     # Получаем URL для загрузки аудио сообщения
-    #if TOKEN:
-        #upload_method = 'docs.getWallUploadServer'
-    #else:
     upload_method = 'docs.getUploadServer'
-    upload_server = await msg.vk.method(upload_method, {'type': 'audio_message'}, True)
+    upload_server = await msg.vk.method(upload_method, {'type': 'audio_message'})
     url = upload_server.get('upload_url')
     if not url:
         return await msg.answer(FAIL_MSG)
@@ -108,7 +104,7 @@ async def upload_voice(msg, audio_file):
                 return await msg.answer(FAIL_MSG + 'NOT_FILE')
 
     # Сохраняем файл в документы (чтобы можно было прикрепить к сообщению)
-    saved_data = await msg.vk.method('docs.save', {'file': file}, True)
+    saved_data = await msg.vk.method('docs.save', {'file': file})
     if not saved_data:
         return await msg.answer(FAIL_MSG)
     # Получаем первый элемент, так как мы сохранили 1 файл

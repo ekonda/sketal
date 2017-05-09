@@ -10,7 +10,7 @@ plugin = Plugin("Пример плагина",
 # Обязательно принимает один аргумент: объект VkPlus
 @plugin.on_init()
 async def init(vk):
-    # Так-же есть plugin.temp_data, хранит в себе
+    # Есть plugin.temp_data, хранит в себе
     # что-нибудь нужное вам
     if "some_data" not in plugin.temp_data:
         plugin.temp_data["some_data"] = {}
