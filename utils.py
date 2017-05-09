@@ -56,7 +56,7 @@ class Attachment(object):
 class RequestFuture(asyncio.Future):
     __slots__ = ["key", "data", "send_from"]
 
-    def __init__(self, key, data, send_from=False):
+    def __init__(self, key, data, send_from=None):
         self.key = key
         self.data = data
         self.send_from = send_from

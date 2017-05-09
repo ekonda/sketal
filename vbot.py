@@ -11,24 +11,22 @@ import aiohttp
 import hues
 
 # Custom packages
+import logging
+
 from database import *
 from plugin_system import PluginSystem
-from utils import fatal, parse_msg_flags, MessageEventData, schedule_coroutine, SendFrom
+from utils import fatal, parse_msg_flags, MessageEventData, schedule_coroutine
 from vkplus import VkPlus, Message
 
 
 class Bot(object):
     """Главный класс бота"""
     __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "NEED_CONVERT", "APP_ID", "SCOPE",
-                 "FLOOD_INTERVAL", "TOKEN", "VK_LOGIN", "VK_PASSWORD", "SERVICE_KEY",
+                 "FLOOD_INTERVAL", "USERS", "PROXIES",
                  "messages_date", "plugin_system", "cmd_system", "scheduled_funcs", "longpoll_server", "longpoll_key",
-                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts", "queues"]
+                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts"]
 
     def __init__(self):
-        self.queues = [asyncio.Queue(), asyncio.Queue()]
-
-        schedule_coroutine(self.handle_queues())
-
         self.init_settings()
         self.vk_init()
         self.plugin_init()
@@ -56,19 +54,10 @@ class Bot(object):
                 self.APP_ID = settings.APP_ID
                 self.SCOPE = settings.SCOPE
                 self.FLOOD_INTERVAL = settings.FLOOD_INTERVAL
-                # Настройки по умолчанию
-                self.TOKEN = None
-                self.VK_LOGIN = None
-                self.VK_PASSWORD = None
-                # Если в настройках есть токен
-                if settings.TOKEN:
-                    self.TOKEN = settings.TOKEN
-                # Есои есть логин и пароль
-                if settings.LOGIN and settings.PASSWORD:
-                    self.VK_LOGIN = settings.LOGIN
-                    self.VK_PASSWORD = settings.PASSWORD
+                self.USERS = settings.USERS
+                self.PROXIES = settings.PROXIES
 
-                if not self.TOKEN and not(self.VK_LOGIN and self.VK_PASSWORD):
+                if not self.USERS:
                     fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
                           "Без них бот работать НЕ СМОЖЕТ.")
 
@@ -78,56 +67,12 @@ class Bot(object):
         else:
             fatal("settings.py и settings.py.sample не найдены, возможно вы их удалили?")
 
-    async def handle_queues(self):
-        while True:
-            for i in range(len(self.queues)):
-                if await self.process_queue(self.queues[i], i):
-                    await asyncio.sleep(0.33)
-
-            await asyncio.sleep(0.1)
-
-    async def process_queue(self, queue, queue_id):
-        if not queue.empty():
-            execute = "return ["
-
-            tasks = []
-
-            for i in range(25):
-                task = queue.get_nowait()
-
-                if task.data is None:
-                    task.data = {}
-
-                execute += 'API.' + task.key + '({'
-                execute += ", ".join((f"{k}: \"" + str(v).replace('"', '\\"') + "\"") for k, v in task.data.items())
-                execute += '}), '
-
-                tasks.append(task)
-
-                if queue.empty():
-                    break
-
-            execute += "];"
-
-            result = await self.vk.execute(execute, SendFrom(queue_id))
-
-            for task in tasks:
-                if result:
-                    task.set_result(result.pop(0))
-
-                else:
-                    task.set_result(None)
-
-            return True
-        return False
-
     def vk_init(self):
         hues.warn("Авторизация в ВКонтакте...")
         # Словарь вида ID -> время
         self.messages_date = {}
-        self.vk = VkPlus(token=self.TOKEN,
-                         login=self.VK_LOGIN,
-                         password=self.VK_PASSWORD,
+        self.vk = VkPlus(users_data=self.USERS,
+                         proxies=self.PROXIES,
                          bot=self,
                          scope=self.SCOPE,
                          app_id=self.APP_ID)
@@ -312,10 +257,7 @@ if __name__ == '__main__':
     except Exception as ex:
         import traceback
 
-        hues.error("Произошла фатальная ошибка во время работы:\n")
+        logging.warning("Fatal error:\n")
         traceback.print_exc()
-        # Закрываем сессии API (чтобы не было предупреждения)
-        bot.vk.api_session.close()
-        if bot.TOKEN:
-            bot.vk.public_api_session.close()
+
         exit(1)

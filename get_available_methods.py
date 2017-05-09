@@ -5,14 +5,14 @@ from bs4 import BeautifulSoup
 
 URL = "https://vk.com/dev/methods"
 BASE_URL = "https://vk.com"
-soup = BeautifulSoup(requests.get(URL).content)
+soup = BeautifulSoup(requests.get(URL).content, "html5lib")
 DATA = {}
 for a in soup.find_all('a', href=True):
     link = a['href']
     if '/dev/' in link and ('.' in link or 'execute' in link):
         REQ_LINK = BASE_URL + link
         html = requests.get(REQ_LINK)
-        thing = BeautifulSoup(html.content)
+        thing = BeautifulSoup(html.content, "html5lib")
         user = thing.findAll("div",
                              {"class": "dev_method_page_access_row_icon dev_method_page_access_row_open_icon fl_l"})
         if user:
@@ -21,7 +21,7 @@ for a in soup.find_all('a', href=True):
                 DATA[topic].append(method)
             else:
                 DATA[topic] = [method]
-        continue
+            continue
         group = thing.findAll("div", {
             "class": "dev_method_page_access_row_icon dev_method_page_access_row_group_icon fl_l"})
         if group:

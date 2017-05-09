@@ -8,11 +8,12 @@ import aiohttp
 import aiovk
 import hues
 
-from aiovk.drivers import HttpDriver
+from aiovk.drivers import HttpDriver, Socks5Driver
 from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
-from database import *
+from methods import is_available_from_group
+from methods import is_available_from_public
 from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote, RequestFuture, schedule_coroutine, \
     SendFrom
 
@@ -31,204 +32,174 @@ class NoPermissions(Exception):
     pass
 
 
-# Драйвер для ограничения запросов к API - 3 раза в секунду
-# На самом деле 3 запроса в 1.05 секунд (для уверенности)
-class RatedDriver(LimitRateDriverMixin, HttpDriver):
-    requests_per_period = 1
-    period = 0.35
+async def enter_captcha(url, sid):
+    if not solver:
+        return hues.warn('Введите данные для сервиса решения капч в settings.py!')
+
+    session = aiohttp.ClientSession()
+
+    with session as ses:
+        async with ses.get(url) as resp:
+            img_data = await resp.read()
+            data = solver.solve_captcha(img_data)
+            return data
+
+
+async def enter_confirmation_сode():
+    hues.error("Похоже, у вас утсановлена двухфакторная авторизация!")
+    hues.error("Пожалуйста, введите код подтверждения:")
+
+    code = input()
+
+    hues.success("Спасибо! Продолжаю приём сообщений")
+
+    return code
 
 
 class TokenSession(aiovk.TokenSession):
     async def enter_captcha(self, url, sid):
-        if not solver:
-            return hues.error('Введите данные для сервиса решения капч в settings.py!')
-
-        session = aiohttp.ClientSession()
-
-        with session as ses:
-            async with ses.get(url) as resp:
-                img_data = await resp.read()
-                data = solver.solve_captcha(img_data)
-                # hues.success(f"Капча {sid} решена успешно")
-                return data
+        await enter_captcha(url, sid)
 
 
 class ImplicitSession(aiovk.ImplicitSession):
     async def enter_captcha(self, url, sid):
-        if not solver:
-            return hues.error('Введите данные для сервиса решения капч в settings.py!')
-
-        session = aiohttp.ClientSession()
-
-        with session as ses:
-            async with ses.get(url) as resp:
-                img_data = await resp.read()
-                data = solver.solve_captcha(img_data)
-                # hues.success(f"Капча {sid} решена успешно")
-                return data
+        await enter_captcha(url, sid)
 
     async def enter_confirmation_сode(self):
-        hues.error("Похоже, у вас утсановлена двухфакторная авторизация!")
-        hues.error("Пожалуйста, введите код подтверждения:")
-
-        code = input()
-
-        hues.success("Спасибо! Продолжаю приём сообщений")
-
-        return code
-
-# Словарь, ключ - раздел API методов, значение - список разрешённых методов
-ALLOWED_METHODS = {
-    'groups': ('getById',
-               'getCallbackConfig',
-               'getCallbackServer',
-               'getCallbackSettings',
-               'getMembers',
-               'setCallbackServer',
-               'setCallbackServerSettings',
-               'setCallbackSettings'),
-
-    'photos': ('getMessagesUploadServer',
-               'saveMessagesPhoto')
-}
-# Словарь, ключ - раздел API методов, значение - список запрещённых методов
-DISALLOWED_MESSAGES = ('addChatUser',
-                       'allowMessagesFromGroup',
-                       'createChat',
-                       'denyMessagesFromGroup',
-                       'deleteChatPhoto',
-                       'editChat',
-                       'getChat',
-                       'getChatUsers',
-                       'getLastActivity',
-                       'markAsImportant',
-                       'removeChatUser',
-                       'searchDialogs',
-                       'setActivity',
-                       'setChatPhoto')
+        await enter_confirmation_сode()
 
 
-def is_available_from_group(key: str) -> bool:
-    """Проверяет, можно ли выполнить данный метод VK API от имени группы"""
-    # execute можно выполнять от имени группы
-    if key == 'execute':
-        return True
-    try:
-        topic, method = key.split('.')
-    except ValueError:
-        # Не должно случаться, но мало ли
-        hues.warn('Метод VK API должен состоять из раздела и метода,'
-                  ' разделённых точкой')
-        return False
-    # Если раздел - messages, проверяем, нельзя ли выполнить этот метод
-    if topic == 'messages':
-        return method not in DISALLOWED_MESSAGES
-    # Получаем список разрешённых методов для данного раздела
-    methods_allowed = ALLOWED_METHODS.get(topic, ())
-    if method in methods_allowed:
-        return True
+class RatedDriver(LimitRateDriverMixin, HttpDriver):
+    requests_per_period = 3
+    period = 1
 
 
-# Методы, которые можно выполнять без авторизации API
-ALLOWED_PUBLIC = {
-    'apps': ('get', 'getCatalog'),
-
-    'auth': ('checkPhone', 'confirm', 'restore', 'signup'),
-
-    'board': ('getComments', 'getTopics'),
-
-    'database': ('getChairs', 'getCities', 'getCitiesById',
-                 'getCountries', 'getCountriesById', 'getFaculties',
-                 'getRegions', 'getSchoolClasses', 'getSchools',
-                 'getStreetsById', 'getUniversities'),
-
-    'friends': ('get',),
-
-    'groups': ('getById', 'getMembers', 'isMember'),
-
-    'likes': ('getList',),
-
-    'newsfeed': ('search',),
-
-    'pages': ('clearCache',),
-
-    'photos': ('get', 'getAlbums', 'getById', 'search'),
-
-    'users': ('get', 'getFollowers', 'getSubscriptions'),
-
-    'utils': ('checkLink', 'getServerTime', 'resolveScreenName'),
-
-    'video': ('getCatalog', 'getCatalogSection'),
-
-    'wall': ('get', 'getById', 'getComments', 'getReposts', 'search'),
-
-    'widgets': ('getComments', 'getPages')
-}
-
-
-def is_available_from_public(key: str) -> bool:
-    """Проверяет, доступен ли метод через паблик апи"""
-    try:
-        topic, method = key.split('.')
-    except ValueError:
-        # Не должно случаться, но мало ли
-        hues.warn('Метод VK API должен состоять из раздела и метода,'
-                  ' разделённых точкой')
-        return False
-    methods = ALLOWED_PUBLIC.get(topic, ())
-    if method in methods:
-        return True
+class RatedDriverProxy(LimitRateDriverMixin, Socks5Driver):
+    requests_per_period = 3
+    period = 1
 
 
 class VkPlus(object):
-    group_api = None
-    user_api = None
-    public_api = None
-
-    def __init__(self, token=None, public_token=None, login=None, password=None, bot=None, app_id=5982451, scope=140489887):
-        # Методы, которые можно вызывать через токен сообщества
-        self.group_methods = ('groups.getById', 'groups.getMembers', 'execute')
-
+    def __init__(self, bot, users_data: list=[], proxies: list=[], app_id: int=5982451, scope=140489887):
         self.bot = bot
-
-        self.token = token
-        self.public_token = public_token
-        self.login = login
-        self.password = password
-        self.appid = app_id
+        self.users = []
+        self.tokens = []
         self.scope = scope
+        self.group = False
+        self.app_id = app_id
+        self.proxies = proxies
+        self.users_data = users_data
+        self.current_user = 0
+        self.current_token = 0
+
         self.init_vk()
 
+        self.queues = [asyncio.Queue(), asyncio.Queue()]
+
+        schedule_coroutine(self.handle_queues())
+
+    async def handle_queues(self):
+        while True:
+            for i in range(len(self.queues)):
+                if await self.process_queue(self.queues[i], i):
+                    await asyncio.sleep(0.33)
+
+            await asyncio.sleep(0.1)
+
+    async def process_queue(self, queue, queue_id):
+        if not queue.empty():
+            execute = "return ["
+
+            tasks = []
+
+            for i in range(25):
+                task = queue.get_nowait()
+
+                if task.data is None:
+                    task.data = {}
+
+                execute += 'API.' + task.key + '({'
+                execute += ", ".join((f"{k}: \"" + str(v).replace('"', '\\"') + "\"") for k, v in task.data.items())
+                execute += '}), '
+
+                tasks.append(task)
+
+                if queue.empty():
+                    break
+
+            execute += "];"
+
+            result = await self.execute(execute, SendFrom(queue_id))
+
+            for task in tasks:
+                if result:
+                    task_result = result.pop(0)
+
+                    if task_result is False:
+                        hues.error(f"Ошибка! Метод \"{task.key}\" нельзя вызвать с вашими данными!")
+                        hues.error(f"Или введите данные пользователя, или данные группы, чтобы всё работало!")
+
+                    task.set_result(task_result)
+
+                else:
+                    task.set_result(None)
+
+            return True
+        return False
+
     def init_vk(self):
-        """Инициализация сессии ВК API"""
-        if self.token:
-            self.api_session = TokenSession(access_token=self.token, driver=RatedDriver())
-            self.group_api = aiovk.API(self.api_session)
+        """Инициализация сессий ВК API"""
+        current_proxy = 0
 
-        if self.login and self.password:
-            self.login = self.login
-            self.password = self.password
-            self.api_session = ImplicitSession(self.login, self.password, self.appid,
-                                               scope=self.scope, driver=RatedDriver())  # all scopes
+        for user in self.users_data:
+            if self.proxies:
+                proxy = self.proxies[current_proxy % len(self.proxies)]
+                current_proxy += 1
 
-            self.user_api = aiovk.API(self.api_session)
+            driver = RatedDriver() if not self.proxies else RatedDriverProxy(*proxy)
 
-        if not self.user_api and not self.group_api:
-            fatal('Вы попытались инициализировать объект класса VkPlus без данных для авторизации!')
+            if len(user) == 1:
+                session = TokenSession(
+                    user[0],
+                    driver=driver
+                )
+
+                api = aiovk.API(session)
+
+                if api:
+                    self.group = True
+                    self.tokens.append(aiovk.API(session))
+
+            else:
+                session = ImplicitSession(
+                    user[0],
+                    user[1],
+                    self.app_id,
+                    scope=140489887,
+                    driver=driver
+                )
+
+                api = aiovk.API(session)
+
+                if api:
+                    self.users.append(aiovk.API(session))
 
     async def execute(self, code, send_from=SendFrom.GROUP):
         api_method = None
 
-        if self.token and send_from == SendFrom.GROUP:
-            api_method = self.group_api
+        if self.users and send_from == SendFrom.USER:
+            api_method = self.users[self.current_user % len(self.users)]
+            self.current_user += 1
 
-        elif self.user_api and send_from == SendFrom.USER:
-            api_method = self.user_api
+        elif self.tokens and send_from == SendFrom.GROUP:
+            api_method = self.tokens[self.current_token % len(self.tokens)]
+            self.current_token += 1
 
         if not api_method:
             hues.error("Ошибка при выполнении execute:")
             hues.error(code)
             hues.error("Возможно, эти запросы невозможно выполнить из-за ограничений доступа.")
+            hues.error(f"Доступ: {send_from}")
             return
 
         try:
@@ -247,13 +218,14 @@ class VkPlus(object):
         """Выполняет метод API VK с дополнительными параметрами"""
         if key != "execute":
             if send_from is None:
-                if self.token and is_available_from_group(key):
+                if self.group and is_available_from_group(key):
                     send_from = SendFrom.GROUP
 
                 elif is_available_from_public(key):
-                    if not self.user_api:
+                    if not self.users:
                         hues.error("Вы пытаетесь вызвать публичный метод, для которого нужен акаунт пользователя!\n"
                                    "Но у вас не установлен ни один пользователь!")
+
                     send_from = SendFrom.USER
 
                 else:
@@ -261,7 +233,7 @@ class VkPlus(object):
 
             task = RequestFuture(key, data, send_from)
 
-            self.bot.queues[send_from.value].put_nowait(task)
+            self.queues[send_from.value].put_nowait(task)
 
             return await asyncio.wait_for(task, None)
 

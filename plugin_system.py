@@ -13,9 +13,9 @@ import hues
 import types
 
 try:
-    from settings import TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS, DATABASE_SETTINGS
+    from settings import ENABLED_PLUGINS, DATABASE_SETTINGS
 except ImportError:
-    TOKEN, LOGIN, PASSWORD, ENABLED_PLUGINS, DATABASE_SETTINGS = None, None, None, None, None
+    ENABLED_PLUGINS, DATABASE_SETTINGS = None, None
 
 
 class Stopper:
@@ -31,7 +31,7 @@ class Plugin(object):
 
     def __init__(self, name: str = "Example", usage: list = None, need_db: bool = False):
         if need_db and not DATABASE_SETTINGS:
-            return None
+            return
 
         self.name = name
         self.first_command = ''
@@ -86,19 +86,19 @@ class Plugin(object):
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands, all_commands=False, group=True):
         def wrapper(func):
-            if TOKEN and not group:
-                # Если бот работает от токена, и плагин не работает от имени группы
-                # мы не добавляем эту команду
-                # Убираем usage, чтобы команда не отображалась в помощи
-                self.usage = []
-                return func
+            #if TOKEN and not group:
+            #    # Если бот работает от токена, и плагин не работает от имени группы
+            #    # мы не добавляем эту команду
+            #    # Убираем usage, чтобы команда не отображалась в помощи
+            #    self.usage = []
+            #    return func
             if commands:  # Если написали, какие команды используются
                 # Первая команда - отображается в списке команд (чтобы не было много команд не было)
                 self.first_command = commands[0]
                 # Если хоть в 1 команде есть пробел - она состоит из двух слов
-                if any(' ' in cmd.strip() for cmd in commands):
+                if any(len(cmd.strip().split()) > 2 for cmd in commands):
                     hues.error(f'В плагине {self.name} была использована команда '
-                               'из двух слов(более 2х слов не поддерживается)')
+                               'из более двух слов(это не поддерживается и команда работать не будет)')
                 for command in commands:
                     self.add_func(command, func)
             elif not all_commands:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)
@@ -110,11 +110,14 @@ class Plugin(object):
 
         return wrapper
 
-    def add_func(self, command, func):
+    def add_func(self, command, func, group=True):
         if command is None:
             raise ValueError("Command can not be None")
 
         def event(system: PluginSystem):
+            if system.vk.group and not group:
+                return
+
             system.add_command(command, func)
 
         self.deferred_events.append(event)
@@ -136,6 +139,7 @@ sys.modules[shared_space.__name__] = shared_space
 class PluginSystem(object):
     def __init__(self, vk, folder=None):
         self.commands = {}
+        self.group_commands = {}
         self.any_commands = []
         self.folder = folder
         self.plugins = set()
@@ -174,6 +178,9 @@ class PluginSystem(object):
         # Если есть плагины, которые могут обработать нашу команду
         for command_function in commands_:
             await command_function(*args, **kwargs)
+
+    def check_plugin(self, plugin_object: Plugin):
+        return True
 
     def init_variables(self, plugin_object: Plugin):
         plugin_object.process_pool = self.process_pool
@@ -224,8 +231,13 @@ class PluginSystem(object):
 
                         with open('log.txt', 'a') as log:
                             log.write(result)
+
+                        hues.error(f"Ошибка при загрузке плагина: {filename}")
                         continue
                     try:
+                        if not self.check_plugin(loaded_module.plugin):
+                            continue
+
                         self.plugins.add(loaded_module.plugin)
                         self.register_plugin(loaded_module.plugin)
                         self.init_variables(loaded_module.plugin)
