@@ -42,6 +42,7 @@ class Bot(object):
                       'проверьте ваши права на неё!')
             hues.info('Был создан файл settings.py, '
                       'не забудьте добавить данные для авторизации!')
+            exit()
         # Если у нас уже есть settings.py
         elif isfile('settings.py'):
             import settings

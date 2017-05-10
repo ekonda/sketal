@@ -1,12 +1,17 @@
 import peewee
 import peewee_async
 
-from settings import DATABASE_SETTINGS, DATABASE_DRIVER
+try:
+    from settings import DATABASE_SETTINGS, DATABASE_DRIVER
+except:
+    DATABASE_SETTINGS, DATABASE_DRIVER = (), None
 
 if DATABASE_DRIVER == "mysql":
     driver = peewee_async.MySQLDatabase
 elif DATABASE_DRIVER == "postgresql":
     driver = peewee_async.PostgresqlDatabase
+else:
+    driver = None
 
 if len(DATABASE_SETTINGS) == 0:
     database = False
