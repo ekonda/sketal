@@ -1,6 +1,6 @@
 from plugin_system import Plugin
 from settings import ADMINS
-plugin = Plugin('Сообщение админу', usage=['админу [текст] - отослать администрации сообщение']);
+plugin = Plugin('Сообщение админу', usage=['админу [текст] - отослать администрации сообщение'])
 
 
 @plugin.on_command('админу')

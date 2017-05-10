@@ -1,20 +1,25 @@
 import peewee
 import peewee_async
 
-from settings import DATABASE_SETTINGS
+from settings import DATABASE_SETTINGS, DATABASE_DRIVER
+
+if DATABASE_DRIVER == "mysql":
+    driver = peewee_async.MySQLDatabase
+elif DATABASE_DRIVER == "postgresql":
+    driver = peewee_async.PostgresqlDatabase
 
 if len(DATABASE_SETTINGS) == 0:
     database = False
 elif len(DATABASE_SETTINGS) == 1:
     name, = DATABASE_SETTINGS
-    database = peewee_async.PostgresqlDatabase(name)
+    database = driver(name)
 else:
     name, host, port, user, password = DATABASE_SETTINGS
-    database = peewee_async.PostgresqlDatabase(name,
-                                               host=host,
-                                               port=port,
-                                               user=user,
-                                               password=password)
+    database = driver(name,
+                      host=host,
+                      port=port,
+                      user=user,
+                      password=password)
 
 
 async def get_or_none(model, *args, **kwargs):
