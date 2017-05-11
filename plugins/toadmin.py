@@ -13,7 +13,7 @@ async def toadmin(msg, args):
     for uid in ADMINS:
         val = {
             'peer_id': uid,
-            'message': f"Сообщение от {sender_data['first_name']} {sender_data['last_name']}, (vk.com/id:{msg.id}):"
+            'message': f"Сообщение от {sender_data['first_name']} {sender_data['last_name']}, (vk.com/id{msg.id}):"
                        f"\n\"{data}\"",
         }
 
