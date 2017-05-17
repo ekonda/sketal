@@ -5,6 +5,7 @@ import random
 
 import hues
 
+from database import *
 from plugin_system import Plugin
 
 from gtts import gTTS

@@ -43,6 +43,7 @@ class BaseModel(peewee.Model):
 class User(BaseModel):
     uid = peewee.BigIntegerField(primary_key=True, unique=True)
     message_date = peewee.BigIntegerField(default=0)
+    in_group = peewee.BooleanField(default=False)
 
     do_not_disturb = peewee.BooleanField(default=False)
     memory = peewee.TextField(default="")

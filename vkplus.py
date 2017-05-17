@@ -138,6 +138,7 @@ class VkPlus(object):
                     if task_result is False:
                         hues.error(f"Ошибка! Метод \"{task.key}\" нельзя вызвать с вашими данными!")
                         hues.error(f"Или введите данные пользователя, или данные группы, чтобы всё работало!")
+                        hues.error(f"Или проблема с доступом к вконтакте!")
 
                     task.set_result(task_result)
 
