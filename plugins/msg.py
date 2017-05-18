@@ -33,7 +33,7 @@ async def anonymously(msg, args):
     if len(args) < 2 and text_required:
         return await msg.answer('Введите ID пользователя и сообщение для него.')
 
-    sender_id = msg.id
+    sender_id = msg.user_id
     possible_id = args.pop(0)
 
     if not possible_id.isdigit():
@@ -85,7 +85,7 @@ async def write_msg(msg, args):
     if (len(args) != 1 or not msg.brief_attaches) and len(args) < 2:
         return await msg.answer('Введите ID пользователя и сообщение для него.')
 
-    sender_id = msg.id
+    sender_id = msg.user_id
     possible_id = args.pop(0)
 
     if not possible_id.isdigit():
@@ -111,7 +111,7 @@ async def write_msg(msg, args):
     if check_links(data):
         return await msg.answer('В сообщении были обнаружены ссылки!')
 
-    sender_data = await msg.vk.method('users.get', {'user_ids': msg.id, 'name_case': "gen"})
+    sender_data = await msg.vk.method('users.get', {'user_ids': msg.user_id, 'name_case': "gen"})
     sender_data = sender_data[0]
 
     val = {
@@ -134,7 +134,7 @@ async def hide(msg, args):
     if len(args) < 1:
         return await msg.answer('Введите ID пользователя для игнорирования.')
 
-    sender_id = msg.id
+    sender_id = msg.user_id
     ignore_id = args.pop()
 
     if not ignore_id.isdigit():
@@ -155,7 +155,7 @@ async def show(msg, unignore):
     if len(unignore) < 1:
         return await msg.answer('Введите ID пользователя, которого вы хотите убрать из игнора.')
 
-    sender_id = msg.id
+    sender_id = msg.user_id
     unignore_id = unignore.pop()
 
     if not unignore_id.isdigit():
@@ -175,7 +175,7 @@ async def show(msg, unignore):
 
 @plugin.on_command('не беспокоить')
 async def do_not_disturb(msg, args):
-    user = await get_or_none(User, uid=msg.id)
+    user = await get_or_none(User, uid=msg.user_id)
 
     if not user:
         return await msg.answer('Вы не существуете!\n(или у бота проблемы с базой данных)')
@@ -189,7 +189,7 @@ async def do_not_disturb(msg, args):
 
 @plugin.on_command('беспокоить')
 async def do_disturb(msg, args):
-    user = await get_or_none(User, uid=msg.id)
+    user = await get_or_none(User, uid=msg.user_id)
 
     if not user:
         return await msg.answer('Вы не существуете!\n(или у бота проблемы с базой данных)')

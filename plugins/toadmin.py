@@ -8,7 +8,7 @@ plugin = Plugin('Сообщение админу', usage=['админу [тек�
 async def toadmin(msg, args):
     data = ' '.join(args)
 
-    sender_data = await msg.vk.method('users.get', {'user_ids': msg.id, 'name_case': "gen"})
+    sender_data = await msg.vk.method('users.get', {'user_ids': msg.user_id, 'name_case': "gen"})
     sender_data = sender_data[0]
 
     for uid in ADMINS:

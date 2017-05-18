@@ -15,10 +15,10 @@ async def music_pro(msg, args):
     music = None
     try:
         music = await msg.vk.method('audio.getRecommendations',
-                                    {'user_id': msg.id, 'shuffle': 1})
+                                    {'user_id': msg.user_id, 'shuffle': 1})
     except Exception as ex:
         print(ex)
-        print('Failed get music of id' + str(msg.id))
+        print('Failed get music of id' + str(msg.user_id))
 
     musicatt = []
     print(music)

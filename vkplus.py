@@ -5,17 +5,17 @@ import random
 import string
 
 import aiohttp
-import aiovk
 import hues
+import time
 
-from aiovk.drivers import HttpDriver, Socks5Driver
-from aiovk.mixins import LimitRateDriverMixin
 from captcha_solver import CaptchaSolver
 
 from methods import is_available_from_group
 from methods import is_available_from_public
-from utils import fatal, MessageEventData, chunks, Attachment, unquote, quote, RequestFuture, schedule_coroutine, \
-    SendFrom
+from utils import MessageEventData, chunks, Attachment, RequestFuture, schedule_coroutine, SendFrom
+
+from database import *
+from vkapi import VkClient
 
 solver = None
 
@@ -32,7 +32,7 @@ class NoPermissions(Exception):
     pass
 
 
-async def enter_captcha(url, sid):
+async def enter_captcha(url):
     if not solver:
         return hues.warn('Введите данные для сервиса решения капч в settings.py!')
 
@@ -56,29 +56,6 @@ async def enter_confirmation_сode():
     return code
 
 
-class TokenSession(aiovk.TokenSession):
-    async def enter_captcha(self, url, sid):
-        await enter_captcha(url, sid)
-
-
-class ImplicitSession(aiovk.ImplicitSession):
-    async def enter_captcha(self, url, sid):
-        await enter_captcha(url, sid)
-
-    async def enter_confirmation_сode(self):
-        await enter_confirmation_сode()
-
-
-class RatedDriver(LimitRateDriverMixin, HttpDriver):
-    requests_per_period = 3
-    period = 1
-
-
-class RatedDriverProxy(LimitRateDriverMixin, Socks5Driver):
-    requests_per_period = 3
-    period = 1
-
-
 class VkPlus(object):
     def __init__(self, bot, users_data: list=[], proxies: list=[], app_id: int=5982451, scope=140489887):
         self.bot = bot
@@ -92,63 +69,10 @@ class VkPlus(object):
         self.current_user = 0
         self.current_token = 0
 
-        self.init_vk()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.init_vk())
 
-        self.queues = [asyncio.Queue(), asyncio.Queue()]
-
-        schedule_coroutine(self.handle_queues())
-
-    async def handle_queues(self):
-        while True:
-            for i in range(len(self.queues)):
-                if await self.process_queue(self.queues[i], i):
-                    await asyncio.sleep(0.33)
-
-            await asyncio.sleep(0.1)
-
-    async def process_queue(self, queue, queue_id):
-        if not queue.empty():
-            execute = "return ["
-
-            tasks = []
-
-            for i in range(25):
-                task = queue.get_nowait()
-
-                if task.data is None:
-                    task.data = {}
-
-                execute += 'API.' + task.key + '({'
-                execute += ", ".join((f"{k}: \"" + str(v).replace('"', '\\"') + "\"") for k, v in task.data.items())
-                execute += '}), '
-
-                tasks.append(task)
-
-                if queue.empty():
-                    break
-
-            execute += "];"
-
-            result = await self.execute(execute, SendFrom(queue_id))
-
-            for task in tasks:
-                if result:
-                    task_result = result.pop(0)
-
-                    if task_result is False:
-                        hues.error(f"Ошибка! Метод \"{task.key}\" нельзя вызвать с вашими данными!")
-                        hues.error(f"Или введите данные пользователя, или данные группы, чтобы всё работало!")
-                        hues.error(f"Или проблема с доступом к вконтакте!")
-
-                    task.set_result(task_result)
-
-                else:
-                    task.set_result(None)
-
-            return True
-        return False
-
-    def init_vk(self):
+    async def init_vk(self):
         """Инициализация сессий ВК API"""
         current_proxy = 0
 
@@ -157,88 +81,73 @@ class VkPlus(object):
                 proxy = self.proxies[current_proxy % len(self.proxies)]
                 current_proxy += 1
 
-            driver = RatedDriver() if not self.proxies else RatedDriverProxy(*proxy)
+            else:
+                proxy = None
 
             if len(user) == 1:
-                session = TokenSession(
-                    user[0],
-                    driver=driver
-                )
+                client = VkClient(proxy)
+                await client.group(user[0])
 
-                api = aiovk.API(session)
-
-                if api:
-                    self.group = True
-                    self.tokens.append(aiovk.API(session))
+                self.tokens.append(client)
+                self.group = True
 
             else:
-                session = ImplicitSession(
-                    user[0],
-                    user[1],
-                    self.app_id,
-                    scope=140489887,
-                    driver=driver
-                )
+                client = VkClient(proxy)
+                await client.user(user[0], user[1], self.app_id, self.scope)
 
-                api = aiovk.API(session)
+                self.users.append(client)
 
-                if api:
-                    self.users.append(aiovk.API(session))
+    async def method(self, key: str, data=None, send_from=None, nowait=False):
+        """Выполняет метод API VK с дополнительными параметрами"""
+        if send_from is None:
+            if self.group and is_available_from_group(key):
+                send_from = SendFrom.GROUP
 
-    async def execute(self, code, send_from=SendFrom.GROUP):
-        api_method = None
+            elif is_available_from_public(key):
+                send_from = SendFrom.USER
+
+            else:
+                send_from = SendFrom.USER
+
+        task = RequestFuture(key, data, send_from)
+
+        client = None
 
         if self.users and send_from == SendFrom.USER:
-            api_method = self.users[self.current_user % len(self.users)]
+            client = self.users[self.current_user % len(self.users)]
             self.current_user += 1
 
         elif self.tokens and send_from == SendFrom.GROUP:
-            api_method = self.tokens[self.current_token % len(self.tokens)]
+            client = self.tokens[self.current_token % len(self.tokens)]
             self.current_token += 1
 
-        if not api_method:
-            hues.error("Ошибка при выполнении execute:")
-            hues.error(code)
-            hues.error("Возможно, эти запросы невозможно выполнить из-за ограничений доступа.")
-            hues.error(f"Доступ: {send_from}")
-            return
+        if not client:
+            hues.error(f"Некому выполнять: {task.key}")
+            return None
 
-        try:
-            return unquote(await api_method("execute", code=quote(code)))
+        client.queue.put_nowait(task)
 
-        except (asyncio.TimeoutError, json.decoder.JSONDecodeError):
-            # Пытаемся отправить запрос к API ещё раз
-            return unquote(await api_method("execute", code=quote(code)))
+        if nowait:
+            return None
 
-        except aiovk.exceptions.VkAuthError:
-            message = 'TOKEN' if self.token else 'LOGIN и PASSWORD'
-            fatal("Произошла ошибка при авторизации API, "
-                  f"проверьте значение {message} в settings.py!")
-
-    async def method(self, key: str, data=None, send_from=None):
-        """Выполняет метод API VK с дополнительными параметрами"""
-        if key != "execute":
-            if send_from is None:
-                if self.group and is_available_from_group(key):
-                    send_from = SendFrom.GROUP
-
-                elif is_available_from_public(key):
-                    if not self.users:
-                        hues.error("Вы пытаетесь вызвать публичный метод, для которого нужен акаунт пользователя!\n"
-                                   "Но у вас не установлен ни один пользователь!")
-
-                    send_from = SendFrom.USER
-
-                else:
-                    send_from = SendFrom.USER
-
-            task = RequestFuture(key, data, send_from)
-
-            self.queues[send_from.value].put_nowait(task)
-
-            return await asyncio.wait_for(task, None)
+        return await asyncio.wait_for(task, None)
 
     async def upload_photo(self, encoded_image) -> Attachment:
+        status, created = await db.get_or_create(BotStatus, name='main')
+
+        if status:
+            if time.time() - status.timestamp > 60 * 60 * 24:
+                status.timestamp = time.time()
+                status.photos = 0
+
+            elif status.photos >= 6969:
+                return None
+
+            else:
+                status.photos += 1
+
+            await db.update(status)
+
         data = aiohttp.FormData()
         data.add_field('photo',
                        encoded_image,
@@ -292,7 +201,7 @@ class VkPlus(object):
 
 class Message(object):
     """Класс, объект которого передаётся в плагин для упрощённого ответа"""
-    __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'id',
+    __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'user_id', "peer_id", "text",
                  'body', 'timestamp', 'answer_values', 'brief_attaches', '_full_attaches', 'msg_id')
 
     def __init__(self, vk_api_object: VkPlus, data: MessageEventData):
@@ -305,15 +214,17 @@ class Message(object):
             self.cid = int(data.peer_id)
         else:
             self.user = True
-        self.id = data.user_id
+        self.user_id = data.user_id
+        self.peer_id = data.peer_id
         self.body = data.body
+        self.text = self.body
         self.msg_id = data.msg_id
         self.timestamp = data.time
         self.brief_attaches = data.attaches
         self._full_attaches = []
         # Словарь для отправки к ВК при ответе
         if self.user:
-            self.answer_values = {'user_id': self.id}
+            self.answer_values = {'user_id': self.user_id}
         else:
             self.answer_values = {'chat_id': self.cid}
 
@@ -356,12 +267,12 @@ class Message(object):
 
         return self._full_attaches
 
-    async def answer(self, msg: str, **additional_values):
+    async def answer(self, msg: str, nowait=False, **additional_values):
         """Функция ответа на сообщение для плагинов"""
         # Если длина сообщения больше 550 символов (получено эмпирическим путём)
-        if len(msg) > 550:
+        if len(msg) > 2048:
             # Делим сообщение на список частей (каждая по 15 строк)
-            msgs = list(chunks(msg, 15))
+            msgs = list(chunks(msg, 2048))
         else:
             # Иначе - создаём список из нашего сообщения
             msgs = [msg]
@@ -371,4 +282,4 @@ class Message(object):
         for msg in msgs:
             data = msgs[0] if not len(msgs) > 1 else '\n'.join(msgs)
             values = dict(**self.answer_values, message=data, **additional_values)
-            await self.vk.method('messages.send', values)
+            await self.vk.method('messages.send', values, nowait=nowait)

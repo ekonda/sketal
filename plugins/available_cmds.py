@@ -6,13 +6,13 @@ import asyncio
 from utils import schedule_coroutine
 
 plugin = Plugin('Помощь',
-                usage='команды - узнать список доступных команд')
+                usage=['команды - узнать список доступных команд'])
 
 
 @plugin.on_command('команды', 'помоги', 'помощь')
 async def call(msg, args):
     usages = "🔘Доступные команды:🔘\n"
-    t = []
+
     for plugin in msg.vk.get_plugins():
         if not plugin.usage:
             continue
@@ -25,9 +25,9 @@ async def call(msg, args):
         temp += "\n"
 
         if len(usages) + len(temp) >= 550:
-            await msg.answer(usages)
+            await msg.answer(usages, True)
             usages = ""
 
         usages += temp
 
-    await msg.answer(usages)
+    await msg.answer(usages, True)

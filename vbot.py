@@ -21,10 +21,11 @@ from vkplus import VkPlus, Message
 
 class Bot(object):
     """Главный класс бота"""
-    __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "NEED_CONVERT", "APP_ID", "SCOPE",
-                 "FLOOD_INTERVAL", "USERS", "PROXIES",
-                 "messages_date", "plugin_system", "cmd_system", "scheduled_funcs", "longpoll_server", "longpoll_key",
-                 "event_loop", "last_message_id", "vk", "longpoll_values", "last_ts"]
+    __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS",
+                 "FLOOD_INTERVAL", "USERS", "PROXIES", "SCOPE", "APP_ID",
+                 "messages_date", "plugin_system", "cmd_system", "last_ts",
+                 "scheduled_funcs", "longpoll_server", "longpoll_key",
+                 "longpoll_values", "event_loop", "last_message_id", "vk"]
 
     def __init__(self):
         self.init_settings()
@@ -51,7 +52,6 @@ class Bot(object):
                 self.PREFIXES = settings.PREFIXES
                 self.LOG_MESSAGES = settings.LOG_MESSAGES
                 self.LOG_COMMANDS = settings.LOG_COMMANDS
-                self.NEED_CONVERT = settings.NEED_CONVERT
                 self.APP_ID = settings.APP_ID
                 self.SCOPE = settings.SCOPE
                 self.FLOOD_INTERVAL = settings.FLOOD_INTERVAL
@@ -97,7 +97,7 @@ class Bot(object):
 
         from command import CommandSystem
         self.cmd_system = CommandSystem(command_names,
-                                        self.plugin_system, self.NEED_CONVERT)
+                                        self.plugin_system)
         self.scheduled_funcs = self.plugin_system.scheduled_events
         hues.success("Загрузка плагинов завершена")
 

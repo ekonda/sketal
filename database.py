@@ -1,5 +1,8 @@
+import asyncio
+
 import peewee
 import peewee_async
+import time
 
 try:
     from settings import DATABASE_SETTINGS, DATABASE_DRIVER
@@ -58,11 +61,26 @@ class Ignore(BaseModel):
             (('ignored', 'ignored_by'), True),
         )
 
+
+class BotStatus(BaseModel):
+    name = peewee.TextField(primary_key=True, unique=True)
+
+    last_top = peewee.TextField(default="")
+
+    photos = peewee.IntegerField(default=0)
+    timestamp = peewee.IntegerField(default=time.time())
+
+
 if database:
     db = peewee_async.Manager(database)
 
     User.create_table(True)
     Ignore.create_table(True)
+
+    BotStatus.create_table(True)
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(db.get_or_create(BotStatus, name="main"))
 
 else:
     from fake_database import *

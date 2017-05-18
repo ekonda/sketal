@@ -7,7 +7,7 @@ plugin = Plugin('Выключение',
 
 @plugin.on_command('выключить')
 async def shutdown(msg, args):
-    uid = msg.id
+    uid = msg.user_id
     if uid in ADMINS:
         await msg.answer('Выключаюсь, мой господин...')
         exit()

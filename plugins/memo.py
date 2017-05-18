@@ -12,7 +12,7 @@ plugin = Plugin('Блокнот',
 async def memo_write(msg, args):
     string = ' '.join(args)
 
-    user = await get_or_none(User, uid=msg.id)
+    user = await get_or_none(User, uid=msg.user_id)
 
     if not user:
         return await msg.answer('Вас не существует или база данных бота не настроена.')
@@ -26,7 +26,7 @@ async def memo_write(msg, args):
 
 @plugin.on_command('напомни', 'вспомни')
 async def memo_read(msg, args):
-    user = await get_or_none(User, uid=msg.id)
+    user = await get_or_none(User, uid=msg.user_id)
 
     if not user:
         return await msg.answer('Вас не существует или база данных бота не настроена.')

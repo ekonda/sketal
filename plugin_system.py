@@ -167,7 +167,7 @@ class PluginSystem(object):
         # Несколько плагинов МОГУТ обрабатывать одну команду
         commands_ = self.commands.get(command_name)
 
-        if not commands_:
+        if not commands_ or not command_name:
             # Если нет функций, которые могут обработать команду
             # То выполняем функции с all_commands=True
             for func in self.any_commands:
