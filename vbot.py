@@ -23,6 +23,7 @@ class Bot(object):
     """Главный класс бота"""
     __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS",
                  "FLOOD_INTERVAL", "USERS", "PROXIES", "SCOPE", "APP_ID",
+                 "DATABASE_CHARSET",
                  "messages_date", "plugin_system", "cmd_system", "last_ts",
                  "scheduled_funcs", "longpoll_server", "longpoll_key",
                  "longpoll_values", "event_loop", "last_message_id", "vk"]

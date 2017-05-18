@@ -95,10 +95,7 @@ class Plugin(object):
             if commands:  # Если написали, какие команды используются
                 # Первая команда - отображается в списке команд (чтобы не было много команд не было)
                 self.first_command = commands[0]
-                # Если хоть в 1 команде есть пробел - она состоит из двух слов
-                if any(len(cmd.strip().split()) > 2 for cmd in commands):
-                    hues.error(f'В плагине {self.name} была использована команда '
-                               'из более двух слов(это не поддерживается и команда работать не будет)')
+
                 for command in commands:
                     self.add_func(command, func)
             elif not all_commands:  # Если нет - используем имя плагина в качестве команды (в нижнем регистре)

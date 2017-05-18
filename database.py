@@ -5,12 +5,14 @@ import peewee_async
 import time
 
 try:
-    from settings import DATABASE_SETTINGS, DATABASE_DRIVER
+    from settings import DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET
 except:
-    DATABASE_SETTINGS, DATABASE_DRIVER = (), None
+    DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET = (), None, "utf8"
 
+additional_values = {}
 if DATABASE_DRIVER == "mysql":
     driver = peewee_async.MySQLDatabase
+    additional_values['charset'] = DATABASE_CHARSET
 elif DATABASE_DRIVER == "postgresql":
     driver = peewee_async.PostgresqlDatabase
 else:
@@ -27,7 +29,8 @@ else:
                       host=host,
                       port=port,
                       user=user,
-                      password=password)
+                      password=password,
+                      **additional_values)
 
 
 async def get_or_none(model, *args, **kwargs):

@@ -160,8 +160,6 @@ class VkClient:
         self.app_id = app_id
         self.scope = scope
 
-        self.token = "cafabc3474cbb29fcc63af465840e14d89a8a9a4920bbf7f56a92eb5c80cb120e8ffc3533c4aab240ed94"
-        return
         self.token = await get_token(username, password, app_id, scope)
         hues.warn(f"User's token: {self.token}")
 

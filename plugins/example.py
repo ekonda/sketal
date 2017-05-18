@@ -27,7 +27,9 @@ async def init(vk):
 # Желательно первой командой указывать основную (она будет в списке команд)
 @plugin.on_command('тест', 'test')
 async def command(msg, args):
+    # msg.text - для полного текста сообщения без команды
     # msg.body - для полного текста сообщения
+    # msg.user_id - id пользоватлея, который обратился к боту
 
     if msg.brief_attaches: # короткий список вложений
         attachments = await msg.full_attaches # полные вложения
