@@ -268,10 +268,14 @@ async def get_token(username, password, app_id, scope):
     async with session.post(url_get_token, data=token_data, headers=headers) as resp:
         html = await resp.text()
 
-        response_url_query = get_url_query(resp.url)
+        response_url_query1 = get_url_query(resp.url)
+        response_url_query2 = get_url_query(resp.history[-1].headers["Location"])
 
-        if 'access_token' in response_url_query:
-            return response_url_query['access_token']
+        if 'access_token' in response_url_query1:
+            return response_url_query1['access_token']
+
+        elif 'access_token' in response_url_query2:
+            return response_url_query2['access_token']
 
         else:
             form_action = get_form_action(html)
@@ -280,10 +284,14 @@ async def get_token(username, password, app_id, scope):
         async with session.post(form_action, headers=headers) as resp:
             html = await resp.text()
 
-            response_url_query = get_url_query(resp.history[-1].headers["Location"])
+            response_url_query1 = get_url_query(resp.url)
+            response_url_query2 = get_url_query(resp.history[-1].headers["Location"])
 
-            if 'access_token' in response_url_query:
-                return response_url_query['access_token']
+            if 'access_token' in response_url_query1:
+                return response_url_query1['access_token']
+
+            elif 'access_token' in response_url_query2:
+                return response_url_query2['access_token']
 
     fatal("Can't get token!")
 
