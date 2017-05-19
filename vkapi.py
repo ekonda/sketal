@@ -19,7 +19,7 @@ class VkClient:
                  "username", "password", "app_id", "scope",
                  "queue", "requests")
 
-    def __init__(self, proxy: list=None):
+    def __init__(self, proxy: list = None):
         self.req_kwargs = {}
         if proxy:
             url, username, password, encoding = *proxy, None, None, None
@@ -165,6 +165,7 @@ class VkClient:
     async def group(self, token):
         self.token = token
 
+
 ############################################################################
 # Thanks to: https://github.com/pohmelie/aiovk
 
@@ -212,6 +213,7 @@ def json_iter_parse(response_text):
         obj, idx = decoder.raw_decode(response_text, idx)
         yield obj
 
+
 ############################################################################
 async def auth_check_is_needed(html, session):
     auth_check_form_action = get_form_action(html)
@@ -242,6 +244,7 @@ async def auth_captcha_is_needed(response, login_form_data, captcha_url, session
     async with session.post(captcha_form_action, data=login_form_data) as resp:
         await resp.text()
 
+
 #############################################################################
 async def get_token(username, password, app_id, scope):
     url_get_token = "https://oauth.vk.com/authorize"
@@ -269,7 +272,11 @@ async def get_token(username, password, app_id, scope):
         html = await resp.text()
 
         response_url_query1 = get_url_query(resp.url)
-        response_url_query2 = get_url_query(resp.history[-1].headers["Location"])
+
+        if resp.history:
+            response_url_query2 = get_url_query(resp.history[-1].headers["Location"])
+        else:
+            response_url_query2 = {}
 
         if 'access_token' in response_url_query1:
             return response_url_query1['access_token']
@@ -285,7 +292,11 @@ async def get_token(username, password, app_id, scope):
             html = await resp.text()
 
             response_url_query1 = get_url_query(resp.url)
-            response_url_query2 = get_url_query(resp.history[-1].headers["Location"])
+
+            if resp.history:
+                response_url_query2 = get_url_query(resp.history[-1].headers["Location"])
+            else:
+                response_url_query2 = {}
 
             if 'access_token' in response_url_query1:
                 return response_url_query1['access_token']
