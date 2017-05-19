@@ -1,14 +1,13 @@
-from urllib.parse import urlparse, parse_qsl
-
-import aiohttp
 import asyncio
 import json
 import re
+from urllib.parse import urlparse, parse_qsl
 
+import aiohttp
 import hues
 
 import vkplus
-from utils import fatal, SendFrom, schedule_coroutine
+from utils import fatal, schedule_coroutine
 
 AUTHORIZATION_FAILED = 5
 CAPTCHA_IS_NEEDED = 14
@@ -176,6 +175,20 @@ def get_form_action(html):
         return form_action[0]
 
 
+def get_token_from_url(url):
+    if not isinstance(url, str):
+        url = str(url)
+
+    url = url.split("access_token=")
+
+    if len(url) < 2:
+        return None
+
+    url = url[1].split("&")
+
+    return url[0]
+
+
 def get_url_query(url):
     if not isinstance(url, str):
         url = str(url)
@@ -184,6 +197,11 @@ def get_url_query(url):
     url_query = parse_qsl(parsed_url.fragment or parsed_url.query)
     # login_response_url_query can have multiple key
     url_query = dict(url_query)
+
+    token = get_token_from_url(url)
+    if token:
+        url_query["access_token"] = token
+
     return url_query
 
 
@@ -234,7 +252,7 @@ async def get_token(username, password, app_id, scope):
 
     token_data = {
         "client_id": app_id,
-        "redirect_uri": "https://oauth.vk.com/blank.html",
+        "redirect_uri": "https://oauth.vk.com/blank.html?",
         "response_type": "token",
         "scope": scope,
         "display": "mobile",

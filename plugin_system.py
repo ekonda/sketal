@@ -4,18 +4,17 @@ import os
 import sys
 import threading
 import traceback
-from os.path import isfile
-from importlib import machinery, util
-
+import types
 from concurrent.futures import ProcessPoolExecutor
+from importlib import machinery, util
+from os.path import isfile
 
 import hues
-import types
 
 try:
-    from settings import ENABLED_PLUGINS, DATABASE_SETTINGS
+    from settings import ENABLED_PLUGINS, DATABASE_SETTINGS, IS_GROUP
 except ImportError:
-    ENABLED_PLUGINS, DATABASE_SETTINGS = None, None
+    ENABLED_PLUGINS, DATABASE_SETTINGS, IS_GROUP = None, None, False
 
 
 class Stopper:
@@ -86,12 +85,12 @@ class Plugin(object):
     # Декоратор события (запускается при первом запуске)
     def on_command(self, *commands, all_commands=False, group=True):
         def wrapper(func):
-            #if TOKEN and not group:
-            #    # Если бот работает от токена, и плагин не работает от имени группы
-            #    # мы не добавляем эту команду
-            #    # Убираем usage, чтобы команда не отображалась в помощи
-            #    self.usage = []
-            #    return func
+            if IS_GROUP and not group:
+                # Если бот работает от имени группы, и плагин не работает от имени группы
+                # мы не добавляем эту команду
+                # Убираем usage, чтобы команда не отображалась в помощи
+                self.usage = []
+                return func
             if commands:  # Если написали, какие команды используются
                 # Первая команда - отображается в списке команд (чтобы не было много команд не было)
                 self.first_command = commands[0]
