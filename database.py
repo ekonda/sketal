@@ -1,8 +1,8 @@
 import asyncio
+import time
 
 import peewee
 import peewee_async
-import time
 
 try:
     from settings import DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET
@@ -66,7 +66,7 @@ class Ignore(BaseModel):
 
 
 class BotStatus(BaseModel):
-    name = peewee.TextField(primary_key=True, unique=True)
+    name = peewee.TextField(null=False, unique=True)
 
     last_top = peewee.TextField(default="")
 
