@@ -54,7 +54,7 @@ CAPTCHA_SERVER = "rucaptcha"  # Сервис для решения капч.
 CAPTCHA_KEY = ""  # API ключ для сервиса решения капч
 
 # Данные для базы данных PostgreSQL
-# DATABASE_SETTINGS = ("DATABASE NAME", "HOST", "PORT", "USER", "PASSWORD")
+# DATABASE_SETTINGS = ("DATABASE NAME", "HOST", PORT, "USER", "PASSWORD")
 DATABASE_SETTINGS = ()
 DATABASE_DRIVER = "postgresql"  #  Может принимать значения: mysql, postgresql
 DATABASE_CHARSET = 'utf8'  # utf8, utf8mb4, latin1 и т.д.
