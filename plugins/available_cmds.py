@@ -1,10 +1,6 @@
 from plugin_system import Plugin
 from settings import PREFIXES
 
-import asyncio
-
-from utils import schedule_coroutine
-
 plugin = Plugin('Помощь',
                 usage=['команды - узнать список доступных команд'])
 
@@ -24,7 +20,7 @@ async def call(msg, args):
 
         temp += "\n"
 
-        if len(usages) + len(temp) >= 550:
+        if len(usages) + len(temp) >= 3072:
             await msg.answer(usages, True)
             usages = ""
 
