@@ -1,26 +1,22 @@
 # Standart library
-import asyncio
 import json
 import random
 import string
 
 import aiohttp
 import hues
-import time
-
 from captcha_solver import CaptchaSolver
 
+from database import *
 from methods import is_available_from_group
 from methods import is_available_from_public
-from utils import MessageEventData, chunks, Attachment, RequestFuture, schedule_coroutine, SendFrom
-
-from database import *
+from utils import MessageEventData, chunks, Attachment, RequestFuture, SendFrom
 from vkapi import VkClient
 
 solver = None
 
 try:
-    from settings import CAPTCHA_KEY, CAPTCHA_SERVER, TOKEN, SCOPE, APP_ID
+    from settings import CAPTCHA_KEY, CAPTCHA_SERVER, SCOPE, APP_ID
 
     if CAPTCHA_KEY and CAPTCHA_KEY:
         solver = CaptchaSolver(CAPTCHA_SERVER, api_key=CAPTCHA_KEY)
