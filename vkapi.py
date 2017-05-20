@@ -122,7 +122,7 @@ class VkClient:
                 if 'error' in data:
                     error_data = data['error']
                     if error_data['error_code'] == CAPTCHA_IS_NEEDED:
-                        code = vkplus.enter_captcha(error_data["captcha_img"])
+                        code = await vkplus.enter_captcha(error_data["captcha_img"])
 
                         if not code:
                             return False
@@ -217,7 +217,7 @@ def json_iter_parse(response_text):
 ############################################################################
 async def auth_check_is_needed(html, session):
     auth_check_form_action = get_form_action(html)
-    auth_check_code = vkplus.enter_confirmation_сode()
+    auth_check_code = await vkplus.enter_confirmation_сode()
 
     auth_check_data = {
         'code': auth_check_code,
@@ -239,7 +239,7 @@ async def auth_captcha_is_needed(response, login_form_data, captcha_url, session
     captcha_url = '%s?s=%s&sid=%s' % (captcha_url, response_url_dict['s'], response_url_dict['sid'])
 
     login_form_data['captcha_sid'] = response_url_dict['sid']
-    login_form_data['captcha_key'] = vkplus.enter_captcha(captcha_url)
+    login_form_data['captcha_key'] = await vkplus.enter_captcha(captcha_url)
 
     async with session.post(captcha_form_action, data=login_form_data) as resp:
         await resp.text()
