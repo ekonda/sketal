@@ -7,7 +7,7 @@ import peewee_async
 try:
     from settings import DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET
 except:
-    DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET = (), None, "utf8"
+    DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET = (), None, "utf8mb4"
 
 additional_values = {}
 if DATABASE_DRIVER == "mysql":
