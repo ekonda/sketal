@@ -131,7 +131,7 @@ class VkClient:
                         new_data["captcha_key"] = code
                         new_data["captcha_sid"] = error_data["captcha_sid"]
 
-                        return self.execute(code, **new_data)
+                        return await self.execute(code, **new_data)
 
                     error_codes.append(error_data['error_code'])
                     errors.append(error_data)
