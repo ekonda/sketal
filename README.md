@@ -90,4 +90,3 @@ from database import *
 #### Связь с нами
 Разработчиков этого бота можно найти в вк:
 * https://vk.com/michaelkrukov
-* https://vk.com/tiberium_1111
