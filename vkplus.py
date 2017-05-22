@@ -266,9 +266,9 @@ class Message(object):
     async def answer(self, msg: str, nowait=False, **additional_values):
         """Функция ответа на сообщение для плагинов"""
         # Если длина сообщения больше 550 символов (получено эмпирическим путём)
-        if len(msg) > 2048:
+        if len(msg) > 3072:
             # Делим сообщение на список частей (каждая по 15 строк)
-            msgs = list(chunks(msg, 2048))
+            msgs = list(chunks(msg, 3072))
         else:
             # Иначе - создаём список из нашего сообщения
             msgs = [msg]
