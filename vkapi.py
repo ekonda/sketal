@@ -127,9 +127,7 @@ class VkClient:
                         if not code:
                             return False
 
-                        new_data = {}
-                        new_data["captcha_key"] = code
-                        new_data["captcha_sid"] = error_data["captcha_sid"]
+                        new_data = {"captcha_key": code, "captcha_sid": error_data["captcha_sid"]}
 
                         return await self.execute(code, **new_data)
 
