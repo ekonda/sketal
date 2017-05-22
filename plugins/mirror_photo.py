@@ -1,14 +1,9 @@
 import io
 
 import aiohttp
-import asyncio
-
 from PIL import Image
 
 from plugin_system import Plugin
-import publicsuffixlist
-
-psl = publicsuffixlist.PublicSuffixList()
 
 plugin = Plugin('Зеркало', usage="отзеркаль <прикреплённые фото> - ")
 

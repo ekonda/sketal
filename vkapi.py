@@ -127,11 +127,9 @@ class VkClient:
                         if not code:
                             return False
 
-                        new_data = {}
-                        new_data["captcha_key"] = code
-                        new_data["captcha_sid"] = error_data["captcha_sid"]
+                        new_data = {"captcha_key": code, "captcha_sid": error_data["captcha_sid"]}
 
-                        return await self.execute(code, **new_data)
+                        return await self.execute(code, **additional_values, **new_data)
 
                     error_codes.append(error_data['error_code'])
                     errors.append(error_data)
@@ -141,6 +139,10 @@ class VkClient:
                         hues.warn(str(error))
 
                     self.retry = 0
+
+                    if data['response'] is None:
+                        error_codes.append(AUTHORIZATION_FAILED)
+                        errors.append("unknown")
 
                     return data['response']
 

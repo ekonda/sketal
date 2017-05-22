@@ -50,7 +50,7 @@ async def anonymously(msg, args):
     if await get_or_none(Ignore, ignored=sender_id, ignored_by=uid):
         return await msg.answer('Вы находитесь в чёрном списке у этого пользователя!')
 
-    user = await msg.db.get_user(uid)
+    user = await get_or_none(User, uid=uid)
     if user and user.do_not_disturb:
         return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
