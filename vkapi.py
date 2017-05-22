@@ -122,12 +122,12 @@ class VkClient:
                 if 'error' in data:
                     error_data = data['error']
                     if error_data['error_code'] == CAPTCHA_IS_NEEDED:
-                        code = await vkplus.enter_captcha(error_data["captcha_img"])
+                        captcha_key = await vkplus.enter_captcha(error_data["captcha_img"])
 
-                        if not code:
+                        if not captcha_key:
                             return False
 
-                        new_data = {"captcha_key": code, "captcha_sid": error_data["captcha_sid"]}
+                        new_data = {"captcha_key": captcha_key, "captcha_sid": error_data["captcha_sid"]}
 
                         return await self.execute(code, **additional_values, **new_data)
 
