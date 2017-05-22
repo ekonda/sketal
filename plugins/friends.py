@@ -1,16 +1,13 @@
-import asyncio
-import hues
-
 from plugin_system import Plugin
+from settings import ACCEPT_FRIENDS, IS_GROUP
 from utils import schedule_coroutine
-from settings import ACCEPT_FRIENDS
 
 if ACCEPT_FRIENDS:
     plugin = Plugin("Автоматическое добавление друзей(каждые 10 секунд)")
 
     @plugin.on_init()
     async def get_vk(vk):
-        if vk.user_api:
+        if not IS_GROUP:
             schedule_coroutine(add_friends(vk))
 
     # Функция, если её запустить(см. get_vk для примера с выполнением в фоне),
