@@ -1,5 +1,6 @@
 from database import *
 from plugin_system import Plugin
+from settings import ADMINS
 
 plugin = Plugin("Отправка сообщения",
                 usage=["напиши [id] [сообщение] - написать сообщение пользователю",
@@ -78,6 +79,40 @@ async def anonymously(msg, args):
     if not result:
         return await msg.answer('Сообщение не удалось отправить!')
     await msg.answer('Сообщение успешно отправлено!')
+
+
+@plugin.on_command('админу')
+async def to_admin(msg, args):
+    sender_id = msg.user_id
+
+    for uid in ADMINS:
+        if await get_or_none(Ignore, ignored=sender_id, ignored_by=uid):
+            return await msg.answer('Вы находитесь в чёрном списке у этого пользователя!')
+
+        user = await get_or_none(User, uid=uid)
+        if user and user.do_not_disturb:
+            return await msg.answer('Этот пользователь попросил его не беспокоить!')
+
+        data = ' '.join(args)
+
+        if check_links(data):
+            return await msg.answer('В сообщении были обнаружены ссылки!')
+
+        sender_data = await msg.vk.method('users.get', {'user_ids': msg.user_id, 'name_case': "gen"})
+        sender_data = sender_data[0]
+
+        val = {
+            'peer_id': uid,
+            'message': f"Вам сообщение от {sender_data['first_name']} {sender_data['last_name']}!\n\"{data}\"",
+        }
+
+        if "attach1" in msg.brief_attaches:
+            val['attachment'] = ",".join(str(x) for x in await msg.full_attaches)
+
+        result = await msg.vk.method('messages.send', val)
+        if not result:
+            return await msg.answer('Сообщение не удалось отправить!')
+        await msg.answer('Сообщение успешно отправлено!')
 
 
 @plugin.on_command('написать', 'напиши', 'лс', 'письмо')
