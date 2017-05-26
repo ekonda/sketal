@@ -1,17 +1,11 @@
 # Standart library
-import asyncio
 import json
+import logging
 import shutil
-
-import os
 from os.path import abspath, isfile
 
-# 3rd party packages
 import aiohttp
 import hues
-
-# Custom packages
-import logging
 
 from database import *
 from plugin_system import PluginSystem
@@ -209,7 +203,7 @@ class Bot(object):
             try:
                 resp = await session.get(self.longpoll_server,
                                          params=self.longpoll_values)
-            except aiohttp.ClientOSError:
+            except (aiohttp.ClientOSError, asyncio.TimeoutError):
                 # У меня были такие ошибки на Manjaro 16.10.3 Fringilla
                 # ВК почему-то присылал сервер, к которому нельзя подключиться
                 hues.warn('Сервер Long Polling не отвечает, подключаюсь к другому...')

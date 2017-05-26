@@ -12,6 +12,7 @@ from utils import fatal, schedule_coroutine
 AUTHORIZATION_FAILED = 5
 CAPTCHA_IS_NEEDED = 14
 ACCESS_DENIED = 15
+INTERNAL_ERROR = 10
 
 
 class VkClient:
@@ -105,7 +106,7 @@ class VkClient:
                 task.set_result(None)
 
     async def execute(self, code, **additional_values):
-        if self.retry > 5:
+        if self.retry > 10:
             hues.warn("Не могу войти в ВК!")
 
             return False
@@ -141,10 +142,19 @@ class VkClient:
                     self.retry = 0
 
                     if data['response'] is None:
-                        error_codes.append(AUTHORIZATION_FAILED)
+                        error_codes.append(INTERNAL_ERROR)
                         errors.append("unknown")
 
                     return data['response']
+
+            if INTERNAL_ERROR in error_codes:
+                hues.warn("Ошибка у ВК.")
+                await self.user(self.username, self.password, self.app_id, self.scope)
+                self.retry += 1
+
+                await asyncio.sleep(1)
+
+                return await self.execute(code)
 
             if AUTHORIZATION_FAILED in error_codes:
                 hues.warn("Пользователь не отвечает. Попробую переполучить токен.")

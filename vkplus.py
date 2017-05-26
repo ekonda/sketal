@@ -129,20 +129,21 @@ class VkPlus(object):
         return await asyncio.wait_for(task, None)
 
     async def upload_photo(self, encoded_image) -> Attachment:
-        status, created = await db.get_or_create(BotStatus, name='main')
+        if not isinstance(db, Puppet):
+            status, created = await db.get_or_create(BotStatus, name='main')
 
-        if status:
-            if time.time() - status.timestamp > 60 * 60 * 24:
-                status.timestamp = time.time()
-                status.photos = 0
+            if status:
+                if time.time() - status.timestamp > 60 * 60 * 24:
+                    status.timestamp = time.time()
+                    status.photos = 0
 
-            elif status.photos >= 6969:
-                return None
+                elif status.photos >= 6969:
+                    return None
 
-            else:
-                status.photos += 1
+                else:
+                    status.photos += 1
 
-            await db.update(status)
+                await db.update(status)
 
         data = aiohttp.FormData()
         data.add_field('photo',

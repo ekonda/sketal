@@ -5,7 +5,6 @@ import hues
 import settings
 from plugin_system import PluginSystem
 from settings import PREFIXES
-from utils import MessageEventData
 from vkplus import Message
 
 
@@ -62,7 +61,7 @@ class Command(object):
             return False
 
         for command in command_system.commands:
-            if self.text.startswith(command):
+            if self.text.startswith(command + " ") or self.text == command:
                 self.command = command
                 self.args = self.text.replace(command, "", 1).split()
                 self.msg.text = " ".join(self.args)
