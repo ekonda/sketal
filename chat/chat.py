@@ -1,18 +1,24 @@
-from chat.chatter import Chatter, Two, One, Any, Compare, Join
+from chat.chatter import Chatter, ChatterBot, Two, One, Any, Compare, Join
+from settings import USE_CHATTER
 
-chatter = Chatter()
+if USE_CHATTER:
+    chatter = ChatterBot()
 
-hello = "привет", "приветики", "привет!", "ку", "привет"
+else:
+    chatter = Chatter()
 
-only_hello = Any(hello, Compare.equals, 0)
-has_hello = Any(hello, Compare.inside, 0)
-has_hello_last = Any(hello, Compare.inside, 2)
+    hello = "привет", "приветики", "привет!", "ку", "привет"
 
-chatter.add(Two(has_hello_last, has_hello, Join.everything), "ты уже здоровался!")
-chatter.add(only_hello, "я приветствую тебя!")
-chatter.add(has_hello, "я приветствую тебя, но я не понял остальной части предложения!")
+    only_hello = Any(hello, Compare.equals, 0)
+    has_hello = Any(hello, Compare.inside, 0)
+    has_hello_last = Any(hello, Compare.inside, 2)
 
-chatter.add(One("", Compare.inside, 0), "Я не понял!")
+    chatter.add(Two(has_hello_last, has_hello, Join.everything), "ты уже здоровался!")
+    chatter.add(only_hello, "я приветствую тебя!")
+    chatter.add(has_hello, "я приветствую тебя, но я не понял остальной части предложения!")
+
+    chatter.add(One("", Compare.inside, 0), "Я не понял!")
+
 '''
 ** Важные пункты:
 1. Всё взаимодействие происходит через chatter, его нельзя переназначать и т.д.

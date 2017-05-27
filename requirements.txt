@@ -12,3 +12,4 @@ gTTS  # Озвучивание текста через Google TTS
 Pillow  # Работа с изображениями
 
 xmltodict  # Работа с XML
+chatterbot # Чат-бот

@@ -1,5 +1,7 @@
 import difflib
 
+from chatterbot import ChatBot
+
 
 class ConditionModel:
     def check(self, chat_data):
@@ -147,3 +149,18 @@ class Chatter:
                 return dialog.answer
 
         return None
+
+
+class ChatterBot:
+    __slots__ = ("chatbot", )
+
+    def __init__(self):
+        self.chatbot = ChatBot(
+            'Валера',
+            trainer='chatterbot.trainers.ChatterBotCorpusTrainer'
+        )
+
+        self.chatbot.train("chatterbot.corpus.russian")
+
+    def parse_message(self, chat_data):
+        return str(self.chatbot.get_response(chat_data[0]))
