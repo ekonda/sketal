@@ -4,6 +4,7 @@ False - нет, True - да
 () - кортеж, заполняется элементами через запятую
 '' - строка, само содержимое пишется между кавычками
 """
+
 # Данные для авторизации бота
 # Кортеж из одного элемента - токен группы
 # Кортеж из 2х элементов - логин/ пароль пользователя
@@ -26,38 +27,53 @@ USERS = (
 PROXIES = (
         # ("ADDRESS", PORT, "USER", "PASSWORD"),
     )
-# Является ли бот группой
-IS_GROUP = False
-# Нужно ли писать получаемые сообщения в лог
-LOG_MESSAGES = False
-# Нужно ли писать выполняемые команды в лог
-LOG_COMMANDS = True
+
 # Префиксы сообщений, с помощью которых бот будет понимать, что обращаются к нему.
 PREFIXES = ('!', )
-# Принимать ли все заявки в друзья автоматически
-ACCEPT_FRIENDS = False
-# Черный список пользователей (не особо полезно)
-BLACKLIST = (0, )
-# Список администраторов
-ADMINS = ()
+
 # ID приложения, через которое бот будет авторизовываться
 APP_ID = 5982451
 # Максимальные права - https://vk.com/dev/permissions
 SCOPE = 140489887
-
 # Задержка между исполнением команд для одного пользователя. Антифлуд
 # Рекомендуемое значение - 1 секунда
 FLOOD_INTERVAL = 1
+
+# Данные для базы данных PostgreSQL или MySQL
+# Имя базы данных не должно быть database.db
+# DATABASE_SETTINGS = ("DATABASE NAME", "HOST", PORT, "USER", "PASSWORD")
+DATABASE_SETTINGS = ()
+DATABASE_DRIVER = "postgresql"  #  Может принимать значения: mysql, postgresql
+DATABASE_CHARSET = 'utf8mb4'  # utf8mb4, latin1 и т.д.
+
+# Является ли бот группой
+IS_GROUP = False
+
+# Нужно ли, чтобы бот болтал с пользователями, если они написали не команду
+DO_CHAT = True
+# Если True, бот будет только общаться с пользователем, без команд
+ONLY_CHAT = True
+# Если True - бот будет использовать https://github.com/gunthercox/ChatterBot для общения
+# с пользователем и плагин chatter.py будет отключён!
+USE_CHATTER = True
 
 # На текущий момент может принимать значение -  rucaptcha или antigate
 CAPTCHA_SERVER = "rucaptcha"  # Сервис для решения капч.
 CAPTCHA_KEY = ""  # API ключ для сервиса решения капч
 
-# Данные для базы данных PostgreSQL
-# DATABASE_SETTINGS = ("DATABASE NAME", "HOST", PORT, "USER", "PASSWORD")
-DATABASE_SETTINGS = ()
-DATABASE_DRIVER = "postgresql"  #  Может принимать значения: mysql, postgresql
-DATABASE_CHARSET = 'utf8mb4'  # utf8mb4, latin1 и т.д.
+# Нужно ли писать получаемые сообщения в лог
+LOG_MESSAGES = False
+# Нужно ли писать выполняемые команды в лог
+LOG_COMMANDS = True
+
+# Принимать ли все заявки в друзья автоматически
+ACCEPT_FRIENDS = False
+
+# Черный список пользователей (не особо полезно)
+BLACKLIST = (0, )
+
+# Список администраторов
+ADMINS = ()
 
 # Загружаются только указанные плагины или все, при отсутствии значения
 # ENABLED_PLUGINS = [

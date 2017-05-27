@@ -6,6 +6,7 @@ settings.py
 .idea/
 *.mp3
 log.txt
+database.db
 
 # plugin's temp data
 plugins/temp/*

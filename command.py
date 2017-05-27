@@ -8,41 +8,6 @@ from settings import PREFIXES
 from vkplus import Message
 
 
-class CommandSystem(object):
-    def __init__(self, commands, plugin_system: PluginSystem):
-        # Система плагинов
-        self.system = plugin_system
-        # self.commands - список с командами
-        self.commands = commands
-        self.ANY_COMMANDS = bool(plugin_system.any_commands)
-
-    async def process_command(self, msg_obj: Message):
-        """Обрабатывает команду (объект Message)"""
-        cmd = Command(msg_obj)
-
-        if not cmd.check_command(self):
-            return False
-
-        cmd_text = cmd.command
-        # Логгируем команду, если нужно (но не логгируем плагины,
-        # которые реагируют на любые команды)
-        if settings.LOG_COMMANDS and not self.ANY_COMMANDS:
-            cmd.log()
-        try:
-            await self.system.call_command(cmd_text, msg_obj, cmd.args)
-
-            return True
-        # Если в плагине произошла какая-то ошибка
-        except Exception:
-            await msg_obj.answer(f"{msg_obj.vk.anti_flood()}. "
-                                 f"Произошла ошибка при выполнении команды <{cmd_text}> "
-                                 "пожалуйста, сообщите об этом разработчику!")
-            hues.error(
-                f"Произошла ошибка при вызове команды '{cmd_text}' с аргументами {cmd.args}. "
-                f"Текст сообщения: '{msg_obj._data}'."
-                f"Ошибка:\n{traceback.format_exc()}")
-
-
 class Command(object):
     __slots__ = ('has_prefix', 'text',
                  'command', 'args', "msg")
@@ -94,3 +59,39 @@ class Command(object):
 
         else:
             self.has_prefix = False
+
+
+
+class CommandSystem(object):
+    def __init__(self, commands, plugin_system: PluginSystem):
+        # Система плагинов
+        self.system = plugin_system
+        # self.commands - список с командами
+        self.commands = commands
+        self.ANY_COMMANDS = bool(plugin_system.any_commands)
+
+    async def process_command(self, msg_obj: Message, cmd: Command):
+        """Обрабатывает команду"""
+        cmd = Command(msg_obj)
+
+        if not cmd.check_command(self):
+            return
+
+        cmd_text = cmd.command
+        # Логгируем команду, если нужно (но не логгируем плагины,
+        # которые реагируют на любые команды)
+        if settings.LOG_COMMANDS and not self.ANY_COMMANDS:
+            cmd.log()
+        try:
+            await self.system.call_command(cmd_text, msg_obj, cmd.args)
+
+            return True
+        # Если в плагине произошла какая-то ошибка
+        except Exception:
+            await msg_obj.answer(f"{msg_obj.vk.anti_flood()}. "
+                                 f"Произошла ошибка при выполнении команды <{cmd_text}> "
+                                 "пожалуйста, сообщите об этом разработчику!")
+            hues.error(
+                f"Произошла ошибка при вызове команды '{cmd_text}' с аргументами {cmd.args}. "
+                f"Текст сообщения: '{msg_obj._data}'."
+                f"Ошибка:\n{traceback.format_exc()}")

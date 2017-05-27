@@ -7,7 +7,8 @@ from os.path import abspath, isfile
 import aiohttp
 import hues
 
-from chat.chatter import normalize
+from chat.chatter import normalize, ChatterBot
+from command import Command
 from database import *
 from plugin_system import PluginSystem
 from utils import fatal, parse_msg_flags, MessageEventData, schedule_coroutine
@@ -18,7 +19,7 @@ class Bot(object):
     """Главный класс бота"""
     __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS",
                  "FLOOD_INTERVAL", "USERS", "PROXIES", "SCOPE", "APP_ID",
-                 "DATABASE_CHARSET", "ONLY_CHAT",
+                 "DATABASE_CHARSET", "ONLY_CHAT", "USE_CHATTER", "DO_CHAT",
                  "messages_date", "plugin_system", "cmd_system", "last_ts",
                  "scheduled_funcs", "longpoll_server", "longpoll_key", "chatter",
                  "longpoll_values", "event_loop", "last_message_id", "vk"]
@@ -28,8 +29,12 @@ class Bot(object):
         self.vk_init()
         self.plugin_init()
 
-        from chat.chat import chatter
-        self.chatter = chatter
+        if self.DO_CHAT:
+            if self.USE_CHATTER:
+                self.chatter = ChatterBot()
+            else:
+                from chat.chat import chatter
+                self.chatter = chatter
 
     def init_settings(self):
         """Функция инициализации файла настроек и его создания"""
@@ -49,14 +54,21 @@ class Bot(object):
             try:
                 self.BLACKLIST = settings.BLACKLIST
                 self.PREFIXES = settings.PREFIXES
+
                 self.LOG_MESSAGES = settings.LOG_MESSAGES
                 self.LOG_COMMANDS = settings.LOG_COMMANDS
+
                 self.APP_ID = settings.APP_ID
                 self.SCOPE = settings.SCOPE
+
                 self.FLOOD_INTERVAL = settings.FLOOD_INTERVAL
+
                 self.USERS = settings.USERS
                 self.PROXIES = settings.PROXIES
+
+                self.DO_CHAT = settings.DO_CHAT
                 self.ONLY_CHAT = settings.ONLY_CHAT
+                self.USE_CHATTER = settings.USE_CHATTER
 
                 if not self.USERS:
                     fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
@@ -192,12 +204,15 @@ class Bot(object):
         await self.check_if_command(data, user)
 
     async def do_chat(self, msg, user):
+        if not self.DO_CHAT:
+            return
+
         if user.chat_data:
             chat_data = json.loads(user.chat_data)
-            chat_data.append(normalize(msg.body))
+            chat_data.append(normalize(msg.text))
             chat_data = chat_data[::-1]
         else:
-            chat_data = [normalize(msg.body)]
+            chat_data = [normalize(msg.text)]
 
         answer = self.chatter.parse_message(chat_data)
 
@@ -214,11 +229,16 @@ class Bot(object):
     async def check_if_command(self, data: MessageEventData, user) -> None:
         msg_obj = Message(self.vk, data, user)
 
-        if self.ONLY_CHAT:
+        cmd = Command(msg_obj)
+
+        if not cmd.has_prefix:
+            return
+
+        if self.ONLY_CHAT and self.DO_CHAT:
             await self.do_chat(msg_obj, user)
 
         else:
-            result = await self.cmd_system.process_command(msg_obj)
+            result = await self.cmd_system.process_command(msg_obj, cmd)
 
             if not result:
                 await self.do_chat(msg_obj, user)
