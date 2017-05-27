@@ -20,6 +20,7 @@ class Bot(object):
     __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS",
                  "FLOOD_INTERVAL", "USERS", "PROXIES", "SCOPE", "APP_ID",
                  "DATABASE_CHARSET", "ONLY_CHAT", "USE_CHATTER", "DO_CHAT",
+                 "IGNORE_PREFIX",
                  "messages_date", "plugin_system", "cmd_system", "last_ts",
                  "scheduled_funcs", "longpoll_server", "longpoll_key", "chatter",
                  "longpoll_values", "event_loop", "last_message_id", "vk"]
@@ -69,6 +70,7 @@ class Bot(object):
                 self.DO_CHAT = settings.DO_CHAT
                 self.ONLY_CHAT = settings.ONLY_CHAT
                 self.USE_CHATTER = settings.USE_CHATTER
+                self.IGNORE_PREFIX = settings.IGNORE_PREFIX
 
                 if not self.USERS:
                     fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
@@ -232,6 +234,9 @@ class Bot(object):
         cmd = Command(msg_obj)
 
         if not cmd.has_prefix:
+            if self.DO_CHAT and self.IGNORE_PREFIX:
+                await self.do_chat(msg_obj, user)
+
             return
 
         if self.ONLY_CHAT and self.DO_CHAT:
