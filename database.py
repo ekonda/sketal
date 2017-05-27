@@ -68,7 +68,7 @@ class Ignore(BaseModel):
 
 
 class BotStatus(BaseModel):
-    name = peewee.TextField(null=False, unique=True)
+    name = peewee.TextField()
 
     last_top = peewee.TextField(default="")
 

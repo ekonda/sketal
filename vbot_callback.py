@@ -35,7 +35,7 @@ class CallbackBot(Bot):
                                     obj["id"], ["yes"] if obj["attachments"] else [])
 
             uid = int(obj['user_id'])
-            user = await db.get_or_create(uid=uid)
+            user = await db.get_or_create(User, uid=uid)
 
             await self.check_if_command(data, user)
         if type == 'group_join':

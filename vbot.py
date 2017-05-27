@@ -199,9 +199,10 @@ class Bot(object):
                 return
 
             user.message_date = ts
+
             await db.update(user)
         else:
-            await db.create(User, uid=user_id)
+            user = await db.create(User, uid=user_id)
 
         await self.check_if_command(data, user)
 
