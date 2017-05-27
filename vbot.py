@@ -7,6 +7,7 @@ from os.path import abspath, isfile
 import aiohttp
 import hues
 
+from chat.chatter import normalize
 from database import *
 from plugin_system import PluginSystem
 from utils import fatal, parse_msg_flags, MessageEventData, schedule_coroutine
@@ -17,15 +18,18 @@ class Bot(object):
     """Главный класс бота"""
     __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS",
                  "FLOOD_INTERVAL", "USERS", "PROXIES", "SCOPE", "APP_ID",
-                 "DATABASE_CHARSET",
+                 "DATABASE_CHARSET", "ONLY_CHAT",
                  "messages_date", "plugin_system", "cmd_system", "last_ts",
-                 "scheduled_funcs", "longpoll_server", "longpoll_key",
+                 "scheduled_funcs", "longpoll_server", "longpoll_key", "chatter",
                  "longpoll_values", "event_loop", "last_message_id", "vk"]
 
     def __init__(self):
         self.init_settings()
         self.vk_init()
         self.plugin_init()
+
+        from chat.chat import chatter
+        self.chatter = chatter
 
     def init_settings(self):
         """Функция инициализации файла настроек и его создания"""
@@ -52,6 +56,7 @@ class Bot(object):
                 self.FLOOD_INTERVAL = settings.FLOOD_INTERVAL
                 self.USERS = settings.USERS
                 self.PROXIES = settings.PROXIES
+                self.ONLY_CHAT = settings.ONLY_CHAT
 
                 if not self.USERS:
                     fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
@@ -184,11 +189,40 @@ class Bot(object):
         else:
             await db.create(User, uid=user_id)
 
-        await self.check_if_command(data, msg_id)
+        await self.check_if_command(data, user)
 
-    async def check_if_command(self, data: MessageEventData, msg_id: int) -> None:
-        msg_obj = Message(self.vk, data)
-        result = await self.cmd_system.process_command(msg_obj)
+    async def do_chat(self, msg, user):
+        if user.chat_data:
+            chat_data = json.loads(user.chat_data)
+            chat_data.append(normalize(msg.body))
+            chat_data = chat_data[::-1]
+        else:
+            chat_data = [normalize(msg.body)]
+
+        answer = self.chatter.parse_message(chat_data)
+
+        if answer is not None:
+            chat_data = chat_data[::-1]
+            chat_data.append(normalize(answer))
+
+            user.chat_data = json.dumps(chat_data)
+
+            await db.update(user)
+
+            await msg.answer(answer)
+
+    async def check_if_command(self, data: MessageEventData, user) -> None:
+        msg_obj = Message(self.vk, data, user)
+
+        if self.ONLY_CHAT:
+            await self.do_chat(msg_obj, user)
+
+        else:
+            result = await self.cmd_system.process_command(msg_obj)
+
+            if not result:
+                await self.do_chat(msg_obj, user)
+
         if self.LOG_MESSAGES:
             who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
             hues.info(f"Сообщение из {who} > {data.body}")

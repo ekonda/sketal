@@ -54,6 +54,8 @@ class User(BaseModel):
     do_not_disturb = peewee.BooleanField(default=False)
     memory = peewee.TextField(default="")
 
+    chat_data = peewee.TextField(default="")
+
 
 class Ignore(BaseModel):
     ignored = peewee.ForeignKeyField(User, related_name='ignored_by')

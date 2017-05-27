@@ -21,7 +21,7 @@ class CommandSystem(object):
         cmd = Command(msg_obj)
 
         if not cmd.check_command(self):
-            return
+            return False
 
         cmd_text = cmd.command
         # Логгируем команду, если нужно (но не логгируем плагины,
@@ -29,7 +29,9 @@ class CommandSystem(object):
         if settings.LOG_COMMANDS and not self.ANY_COMMANDS:
             cmd.log()
         try:
-            return await self.system.call_command(cmd_text, msg_obj, cmd.args)
+            await self.system.call_command(cmd_text, msg_obj, cmd.args)
+
+            return True
         # Если в плагине произошла какая-то ошибка
         except Exception:
             await msg_obj.answer(f"{msg_obj.vk.anti_flood()}. "

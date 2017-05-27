@@ -201,16 +201,16 @@ class Message(object):
     __slots__ = ('_data', 'vk', 'conf', 'user', 'cid', 'user_id', "peer_id", "text",
                  'body', 'timestamp', 'answer_values', 'brief_attaches', '_full_attaches', 'msg_id')
 
-    def __init__(self, vk_api_object: VkPlus, data: MessageEventData):
+    def __init__(self, vk_api_object: VkPlus, data: MessageEventData, user):
         self._data = data
         self.vk = vk_api_object
-        self.user = False
+        self.user = user
         # Если сообщение из конференции
         if data.conf:
-            self.user = False
+            self.conf = True
             self.cid = int(data.peer_id)
         else:
-            self.user = True
+            self.conf = False
         self.user_id = data.user_id
         self.peer_id = data.peer_id
         self.body = data.body
@@ -220,10 +220,10 @@ class Message(object):
         self.brief_attaches = data.attaches
         self._full_attaches = []
         # Словарь для отправки к ВК при ответе
-        if self.user:
-            self.answer_values = {'user_id': self.user_id}
-        else:
+        if self.conf:
             self.answer_values = {'chat_id': self.cid}
+        else:
+            self.answer_values = {'user_id': self.user_id}
 
     @property
     async def full_attaches(self):

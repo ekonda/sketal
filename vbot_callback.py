@@ -1,10 +1,7 @@
 # Standart library
-import asyncio
-import hues
-
-# Custom packages
 import logging
 
+import hues
 from aiohttp import web
 
 from database import *
@@ -36,7 +33,11 @@ class CallbackBot(Bot):
             # Человек написал сообщение
             data = MessageEventData(False, 0, obj['user_id'], obj['body'], obj['date'],
                                     obj["id"], ["yes"] if obj["attachments"] else [])
-            await self.check_if_command(data)
+
+            uid = int(obj['user_id'])
+            user = await db.get_or_create(uid=uid)
+
+            await self.check_if_command(data, user)
         if type == 'group_join':
             # Человек присоединился к группе
             uid = int(obj['user_id'])

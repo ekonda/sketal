@@ -5,7 +5,7 @@ import sys
 import threading
 import traceback
 import types
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from importlib import machinery, util
 from os.path import isfile
 
@@ -141,7 +141,7 @@ class PluginSystem(object):
         self.plugins = set()
         self.scheduled_events = []
 
-        self.process_pool = ProcessPoolExecutor()
+        self.process_pool = ThreadPoolExecutor()
         self.vk = vk
 
     def get_plugins(self) -> set:
