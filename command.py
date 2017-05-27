@@ -2,14 +2,17 @@ import traceback
 
 import hues
 
-import settings
 from plugin_system import PluginSystem
-from settings import PREFIXES
 from vkplus import Message
+
+try:
+    import settings
+except ImportError:
+    pass
 
 
 class Command(object):
-    __slots__ = ('has_prefix', 'text',
+    __slots__ = ('has_prefix', 'text', 'bot',
                  'command', 'args', "msg")
 
     def __init__(self, msg: Message):
@@ -49,7 +52,7 @@ class Command(object):
 
     def _get_prefix(self):
         """Пытается получить префикс из текста команды"""
-        for prefix in PREFIXES:
+        for prefix in settings.PREFIXES:
             # Если команда начинается с префикса
             if self.text.startswith(prefix):
                 # Убираем префикс из текста
@@ -59,7 +62,6 @@ class Command(object):
 
         else:
             self.has_prefix = False
-
 
 
 class CommandSystem(object):
@@ -72,8 +74,6 @@ class CommandSystem(object):
 
     async def process_command(self, msg_obj: Message, cmd: Command):
         """Обрабатывает команду"""
-        cmd = Command(msg_obj)
-
         if not cmd.check_command(self):
             return
 
