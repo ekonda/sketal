@@ -75,7 +75,7 @@ class CommandSystem(object):
     async def process_command(self, msg_obj: Message, cmd: Command):
         """Обрабатывает команду"""
         if not cmd.check_command(self):
-            return
+            return False
 
         cmd_text = cmd.command
         # Логгируем команду, если нужно (но не логгируем плагины,
