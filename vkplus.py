@@ -42,7 +42,7 @@ async def enter_captcha(url):
 
 
 async def enter_confirmation_сode():
-    hues.error("Похоже, у вас утсановлена двухфакторная авторизация!")
+    hues.error("Похоже, у вас установлена двухфакторная авторизация!")
     hues.error("Пожалуйста, введите код подтверждения:")
 
     code = input()
@@ -118,7 +118,8 @@ class VkPlus(object):
             self.current_token += 1
 
         if not client:
-            hues.error(f"Некому выполнять: {task.key}")
+            hues.error(f"Для выполнения метода({task.key}) необходимо ввести недостающие данные пользователя "
+                       f"или токен группы.")
             return None
 
         client.queue.put_nowait(task)
@@ -129,7 +130,7 @@ class VkPlus(object):
         return await asyncio.wait_for(task, None)
 
     async def upload_photo(self, encoded_image) -> Attachment:
-        if not isinstance(db, Puppet):
+        if isinstance(db, peewee_async.Manager):
             status, created = await db.get_or_create(BotStatus, name='main')
 
             if status:

@@ -47,7 +47,7 @@ class Command(object):
     def log(self):
         """Пишет в лог, что была распознана команда"""
         pid = self.msg.peer_id
-        who = ("ЛС {}" if self.msg.user else "конференции {}").format(pid)
+        who = ("конференции {}" if self.msg.conf else "ЛС {}").format(pid)
         hues.info(f"Команда '{self.command}' из {who} с аргументами {self.args}")
 
     def _get_prefix(self):

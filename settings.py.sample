@@ -40,7 +40,7 @@ SCOPE = 140489887
 FLOOD_INTERVAL = 1
 
 # Данные для базы данных PostgreSQL или MySQL
-# Имя базы данных не должно быть database.db
+# Имя базы данных не должно быть "database.db"
 # DATABASE_SETTINGS = ("DATABASE NAME", "HOST", PORT, "USER", "PASSWORD")
 DATABASE_SETTINGS = ()
 DATABASE_DRIVER = "postgresql"  #  Может принимать значения: mysql, postgresql
@@ -52,7 +52,7 @@ IS_GROUP = False
 # Нужно ли, чтобы бот болтал с пользователями, если они написали не команду
 DO_CHAT = True
 # Если True, бот будет только общаться с пользователем, без команд
-ONLY_CHAT = True
+ONLY_CHAT = False
 # Если True - бот будет использовать https://github.com/gunthercox/ChatterBot для общения
 # с пользователем и плагин chatter.py будет отключён!
 USE_CHATTER = True

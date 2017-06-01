@@ -96,10 +96,6 @@ class VkClient:
             if result:
                 task_result = result.pop(0)
 
-                if task_result is False:
-                    hues.error(f"Ошибка! Метод \"{task.key}\" ничего не вернул!")
-                    hues.error(f"Или введены неправильные данные или проблема в чём-то другом!")
-
                 task.set_result(task_result)
 
             else:
@@ -134,6 +130,9 @@ class VkClient:
 
                     error_codes.append(error_data['error_code'])
                     errors.append(error_data)
+
+                if errors:
+                    hues.error("Ошибка при запросе:\n" + "\n".join(errors))
 
                 if 'response' in data:
                     for error in errors:

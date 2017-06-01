@@ -1,5 +1,6 @@
 # Standart library
 import logging
+from os import getenv
 
 import hues
 from aiohttp import web
@@ -11,9 +12,6 @@ from vbot import Bot
 
 class CallbackBot(Bot):
     CONF_CODE = ""  # Введите код подтверждения тут
-
-    YOUR_IP = ""  # IP для сервера
-    YOUR_PORT = ""  # Порт для сервера
 
     async def process_callback(self, request):
         """Функция для обработки запроса от VK Callback API группы"""
@@ -30,29 +28,34 @@ class CallbackBot(Bot):
         obj = data['object']
 
         if type == 'message_new':
-            # Человек написал сообщение
-            data = MessageEventData(False, 0, obj['user_id'], obj['body'], obj['date'],
-                                    obj["id"], ["yes"] if obj["attachments"] else [])
-
             uid = int(obj['user_id'])
-            user = await db.get_or_create(User, uid=uid)
+
+            data = MessageEventData(False, 0, uid, obj['body'], obj['date'],
+                                    obj["id"], ["yes"] if ("attachments" in obj) else [])
+
+            user, create = await db.get_or_create(User, uid=uid)
 
             await self.check_if_command(data, user)
         if type == 'group_join':
             # Человек присоединился к группе
             uid = int(obj['user_id'])
-            user = await db.get_or_create(uid=uid)
+
+            user, create = await db.get_or_create(uid=uid)
+
             user.in_group = True
+
             await db.update(user)
 
         if type == 'group_leave':
             # Человек вышел из группы
             uid = int(obj['user_id'])
-            user = await db.get_or_create(uid=uid)
+
+            user, create = await db.get_or_create(uid=uid)
+
             user.in_group = False
+
             await db.update(user)
 
-        # Возвращаем ответ, что всё ок
         return web.Response(text='ok')
 
 
@@ -65,7 +68,10 @@ if __name__ == '__main__':
     hues.success("Приступаю к приему сообщений")
 
     try:
-        web.run_app(app, host=bot.YOUR_IP, port=bot.YOUR_PORT)
+        IP = getenv('IP', '0.0.0.0')
+        PORT = int(getenv('PORT', 8000))
+
+        web.run_app(app, host=IP, port=PORT)
     except (KeyboardInterrupt, SystemExit):
         hues.warn("Выключение бота...")
 

@@ -246,7 +246,7 @@ class Bot(object):
         else:
             result = await self.cmd_system.process_command(msg_obj, cmd)
 
-            if not result:
+            if result is False:
                 await self.do_chat(msg_obj, user)
 
         if self.LOG_MESSAGES:
