@@ -57,7 +57,7 @@ ONLY_CHAT = False
 # с пользователем и плагин chatter.py будет отключён!
 USE_CHATTER = True
 # Должен ли бот отвечать на сообщения без префикса?
-IGNORE_PREFIX = False
+IGNORE_PREFIX = True
 
 # На текущий момент может принимать значение -  rucaptcha или antigate
 CAPTCHA_SERVER = "rucaptcha"  # Сервис для решения капч.
