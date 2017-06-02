@@ -70,6 +70,7 @@ if __name__ == '__main__':
     try:
         IP = getenv('IP', '0.0.0.0')
         PORT = int(getenv('PORT', 8000))
+        PORT = 80
 
         web.run_app(app, host=IP, port=PORT)
     except (KeyboardInterrupt, SystemExit):
