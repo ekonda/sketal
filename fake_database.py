@@ -27,6 +27,8 @@ class Puppet:
 
         users[u.uid] = u
 
+        return u
+
     async def update(self, user):
         users[user.uid] = user
 
