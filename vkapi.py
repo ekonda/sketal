@@ -96,7 +96,10 @@ class VkClient:
             if result:
                 task_result = result.pop(0)
 
-                task.set_result(task_result)
+                try:
+                    task.set_result(task_result)
+                except asyncio.InvalidStateError:
+                    pass
 
             else:
                 task.set_result(None)
@@ -107,7 +110,7 @@ class VkClient:
 
             return False
 
-        new = code.replace("\n", "<br>")
+        new = code.replace("\n", "<br>").replace("\r", "")
 
         url = f"https://api.vk.com/method/execute?access_token={self.token}&v=5.64"
 
@@ -131,13 +134,7 @@ class VkClient:
                     error_codes.append(error_data['error_code'])
                     errors.append(error_data)
 
-                if errors:
-                    hues.error("Ошибка при запросе:\n" + "\n".join(errors))
-
                 if 'response' in data:
-                    for error in errors:
-                        hues.warn(str(error))
-
                     self.retry = 0
 
                     if data['response'] is None:
@@ -161,6 +158,13 @@ class VkClient:
                 self.retry += 1
 
                 return await self.execute(code)
+
+        if errors:
+            hues.error("Ошибка при запросе:")
+            for k in errors:
+                hues.error(k.get("error_code", ""))
+                hues.error(k.get("error_msg", ""))
+                hues.error(k.get("request_params", ""))
 
         return False
 

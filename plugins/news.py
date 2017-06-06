@@ -1,12 +1,11 @@
 from random import choice
 
 import aiohttp
+import xmltodict
 
 from plugin_system import Plugin
 from settings import PREFIXES
 from utils import unquote
-
-import xmltodict
 
 # yandex news
 news = {"армия": "https://news.yandex.ru/army.rss",

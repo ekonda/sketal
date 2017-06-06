@@ -1,4 +1,3 @@
-import hues
 import math
 
 from plugin_system import Plugin

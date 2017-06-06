@@ -1,9 +1,9 @@
 # Various helpers
+import asyncio
 import html
 import urllib
 from enum import Enum
 from typing import List
-import asyncio
 
 import hues
 
