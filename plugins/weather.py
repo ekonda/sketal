@@ -1,6 +1,7 @@
+import time
+
 import aiohttp
 import hues
-import time
 
 from plugin_system import Plugin
 from utils import schedule_coroutine

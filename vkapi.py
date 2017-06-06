@@ -96,7 +96,10 @@ class VkClient:
             if result:
                 task_result = result.pop(0)
 
-                task.set_result(task_result)
+                try:
+                    task.set_result(task_result)
+                except asyncio.InvalidStateError:
+                    pass
 
             else:
                 task.set_result(None)
@@ -161,6 +164,8 @@ class VkClient:
                 self.retry += 1
 
                 return await self.execute(code)
+
+        hues.error(errors)
 
         return False
 
