@@ -135,6 +135,13 @@ class VkClient:
                     errors.append(error_data)
 
                 if 'response' in data:
+                    if errors:
+                        hues.error("Ошбка во время запроса(запрос вернул что-то)")
+                        for k in errors:
+                            hues.error(k.get("error_code", ""))
+                            hues.error(k.get("error_msg", ""))
+                            hues.error(k.get("request_params", ""))
+
                     self.retry = 0
 
                     if data['response'] is None:
@@ -160,7 +167,7 @@ class VkClient:
                 return await self.execute(code)
 
         if errors:
-            hues.error("Ошибка при запросе:")
+            hues.error("Ошибка при запросе!")
             for k in errors:
                 hues.error(k.get("error_code", ""))
                 hues.error(k.get("error_msg", ""))
