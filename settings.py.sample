@@ -22,11 +22,11 @@ False - нет, True - да
 USERS = (
         # ("TOKEN",),
         # ("LOGIN", "PASSWORD"),
-    )
+)
 # Прокси для подключения к VK API с помощью данных из USERS
 PROXIES = (
         # ("ADDRESS", PORT, "USER", "PASSWORD"),
-    )
+)
 
 # Префиксы сообщений, с помощью которых бот будет понимать, что обращаются к нему.
 PREFIXES = ('!', )
@@ -40,7 +40,6 @@ SCOPE = 140489887
 FLOOD_INTERVAL = 1
 
 # Данные для базы данных PostgreSQL или MySQL
-# Имя базы данных не должно быть "database.db"
 # DATABASE_SETTINGS = ("DATABASE NAME", "HOST", PORT, "USER", "PASSWORD")
 DATABASE_SETTINGS = ()
 DATABASE_DRIVER = "postgresql"  #  Может принимать значения: mysql, postgresql
@@ -71,8 +70,13 @@ LOG_COMMANDS = True
 # Принимать ли все заявки в друзья автоматически
 ACCEPT_FRIENDS = False
 
-# Черный список пользователей (не особо полезно)
-BLACKLIST = (0, )
+# Черный список пользователей
+BLACKLIST = ()
+BLACKLIST_MESSAGE = "Вы не можете писать боту! Вы находитесь в чёрном списке!"
+# Белый список пользователей (если не пуст - только пользователи в этом списке
+# могут писать боту и получать от него ответы, иначе - боту могу писать все)
+WHITELIST = ()
+WHITELIST_MESSAGE = "Вы не можете писать боту! Для этого надо быть в белом списке!"
 
 # Список администраторов
 ADMINS = ()

@@ -1,7 +1,6 @@
 # Various helpers
 import asyncio
 import html
-import urllib
 from enum import Enum
 from typing import List
 
@@ -144,22 +143,5 @@ def unquote(data):
     if issubclass(temp.__class__, list):
         for i in range(len(temp)):
             temp[i] = unquote(temp[i])
-
-    return temp
-
-
-def quote(data):
-    temp = data
-
-    if issubclass(temp.__class__, str):
-        return urllib.parse.quote(urllib.parse.quote(temp.replace("\n", "<br>")))
-
-    if issubclass(temp.__class__, dict):
-        for k, v in temp.items():
-            data[k] = quote(v)
-
-    if issubclass(temp.__class__, list):
-        for i in range(len(temp)):
-            temp[i] = quote(temp[i])
 
     return temp

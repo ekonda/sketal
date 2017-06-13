@@ -5,7 +5,7 @@ from PIL import Image
 
 from plugin_system import Plugin
 
-plugin = Plugin('Зеркало', usage="отзеркаль <прикреплённые фото> - ")
+plugin = Plugin('Зеркало', usage=["отзеркаль <прикреплённые фото> - отзеркаливает прикреплённое фото"])
 
 FAIL_MSG = 'К сожалению, произошла какая-то ошибка :('
 

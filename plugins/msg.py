@@ -1,6 +1,5 @@
 from database import *
 from plugin_system import Plugin
-from settings import ADMINS
 
 plugin = Plugin("Отправка сообщения",
                 usage=["напиши [id] [сообщение] - написать сообщение пользователю",
@@ -85,7 +84,7 @@ async def anonymously(msg, args):
 async def to_admin(msg, args):
     sender_id = msg.user_id
 
-    for uid in ADMINS:
+    for uid in await db.execute(Role.select(Role.user_id).where(Role.role == "admin")):
         if await get_or_none(Ignore, ignored=sender_id, ignored_by=uid):
             return await msg.answer('Вы находитесь в чёрном списке у этого пользователя!')
 

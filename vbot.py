@@ -1,4 +1,5 @@
 # Standart library
+import asyncio
 import json
 import logging
 import shutil
@@ -17,10 +18,10 @@ from vkplus import VkPlus, Message
 
 class Bot(object):
     """Главный класс бота"""
-    __slots__ = ["BLACKLIST", "PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS",
+    __slots__ = ["PREFIXES", "LOG_MESSAGES", "LOG_COMMANDS", "WHITELISTED",
                  "FLOOD_INTERVAL", "USERS", "PROXIES", "SCOPE", "APP_ID",
                  "DATABASE_CHARSET", "ONLY_CHAT", "USE_CHATTER", "DO_CHAT",
-                 "IGNORE_PREFIX",
+                 "IGNORE_PREFIX", "BLACKLIST_MESSAGE", "WHITELIST_MESSAGE",
                  "messages_date", "plugin_system", "cmd_system", "last_ts",
                  "scheduled_funcs", "longpoll_server", "longpoll_key", "chatter",
                  "longpoll_values", "event_loop", "last_message_id", "vk"]
@@ -53,7 +54,10 @@ class Bot(object):
         elif isfile('settings.py'):
             import settings
             try:
-                self.BLACKLIST = settings.BLACKLIST
+                self.WHITELISTED = False
+                self.WHITELIST_MESSAGE = settings.WHITELIST_MESSAGE
+                self.BLACKLIST_MESSAGE = settings.BLACKLIST_MESSAGE
+
                 self.PREFIXES = settings.PREFIXES
 
                 self.LOG_MESSAGES = settings.LOG_MESSAGES
@@ -71,6 +75,10 @@ class Bot(object):
                 self.ONLY_CHAT = settings.ONLY_CHAT
                 self.USE_CHATTER = settings.USE_CHATTER
                 self.IGNORE_PREFIX = settings.IGNORE_PREFIX
+
+                settings.ADMINS
+                settings.BLACKLIST
+                settings.WHITELIST
 
                 if not self.USERS:
                     fatal("Проверьте, что у есть LOGIN и PASSWORD, или же TOKEN в файле settings.py!"
@@ -164,14 +172,25 @@ class Bot(object):
             return  # Если событие - не новое сообщение
 
         msg_id, flags, peer_id, ts, subject, text, attaches = new_event
-        # Если ID находится в чёрном списке
-        if peer_id in self.BLACKLIST:
-            return
+
         # Получаем параметры сообщения
         # https://vk.com/dev/using_longpoll_2
         flags = parse_msg_flags(flags)
         # Если сообщение - исходящее
         if flags['outbox']:
+            return
+
+        # Если ID находится в чёрном списке
+        if await get_or_none(Role, user_id=peer_id, role="blacklisted"):
+            if self.BLACKLIST_MESSAGE:
+                await self.vk.method("messages.send", {"user_id": peer_id, "message": self.BLACKLIST_MESSAGE})
+
+            return
+
+        if self.WHITELISTED and not await get_or_none(Role, user_id=peer_id, role="whitelisted"):
+            if self.WHITELIST_MESSAGE:
+                await self.vk.method("messages.send", {"user_id": peer_id, "message": self.WHITELIST_MESSAGE})
+
             return
 
         # Тип сообщения - конференция или ЛС?
@@ -230,6 +249,10 @@ class Bot(object):
             await msg.answer(answer)
 
     async def check_if_command(self, data: MessageEventData, user) -> None:
+        if self.LOG_MESSAGES:
+            who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
+            hues.info(f"Сообщение из {who} > {data.body}")
+
         msg_obj = Message(self.vk, data, user)
 
         cmd = Command(msg_obj)
@@ -248,10 +271,6 @@ class Bot(object):
 
             if result is False:
                 await self.do_chat(msg_obj, user)
-
-        if self.LOG_MESSAGES:
-            who = f"{'конференции' if data.conf else 'ЛС'} {data.peer_id}"
-            hues.info(f"Сообщение из {who} > {data.body}")
 
     async def run(self, event_loop):
         """Главная функция бота - тут происходит ожидание новых событий (сообщений)"""
@@ -301,10 +320,15 @@ class Bot(object):
 
 
 if __name__ == '__main__':
+    hues.info("Приступаю к запуску VBot v5.0")
+
     bot = Bot()
-    hues.success("Приступаю к приему сообщений")
+
     main_loop = asyncio.get_event_loop()
-    # Запускаем бота
+    main_loop.run_until_complete(set_up_roles(bot))
+
+    hues.success("Приступаю к приему сообщений")
+
     try:
         main_loop.run_until_complete(bot.run(main_loop))
     except (KeyboardInterrupt, SystemExit):
