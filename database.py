@@ -1,8 +1,10 @@
-import asyncio
+import datetime
 import time
 
 import peewee
 import peewee_async
+
+from utils import fatal
 
 try:
     from settings import DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET
@@ -40,10 +42,44 @@ async def get_or_none(model, *args, **kwargs):
     except peewee.DoesNotExist:
         return None
 
+async def set_up_roles(bot):
+    from settings import BLACKLIST, WHITELIST, ADMINS
 
+    if WHITELIST:
+        bot.WHITELISTED = True
+
+    for u in WHITELIST:
+        await db.get_or_create(Role, user_id=u, role="whitelisted")
+
+    for u in BLACKLIST:
+        await db.get_or_create(Role, user_id=u, role="blacklisted")
+
+    for u in ADMINS:
+        await db.get_or_create(Role, user_id=u, role="admin")
+
+    await check_white_list(bot)
+
+
+async def check_white_list(bot):
+    if await db.count(Role.select().where(Role.role == "whitelisted")) > 0:
+        bot.WHITELISTED = True
+
+    else:
+        bot.WHITELISTED = False
+
+
+#############################################################################################
 class BaseModel(peewee.Model):
     class Meta:
         database = database
+
+
+class Role(BaseModel):
+    user_id = peewee.BigIntegerField()
+    role = peewee.TextField()
+    # blacklisted - юзер забанен
+    # whitelisted - юзер находится в белом списке
+    # admin - юзер является админом
 
 
 class User(BaseModel):
@@ -67,10 +103,14 @@ class Ignore(BaseModel):
         )
 
 
-class BotStatus(BaseModel):
-    name = peewee.TextField()
+class ListForMail(BaseModel):
+    user_id = peewee.BigIntegerField(unique=True)
+    date = peewee.DateTimeField(default=datetime.datetime.now())
 
+
+class BotStatus(BaseModel):
     last_top = peewee.TextField(default="")
+    mail_data = peewee.TextField(default="")
 
     photos = peewee.IntegerField(default=0)
     timestamp = peewee.IntegerField(default=time.time())
@@ -81,11 +121,9 @@ if database:
 
     User.create_table(True)
     Ignore.create_table(True)
-
+    ListForMail.create_table(True)
     BotStatus.create_table(True)
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(db.get_or_create(BotStatus, name="main"))
+    Role.create_table(True)
 
 else:
-    from fake_database import *
+    fatal("Не удалось создать базу данных! Проверьте настройки и попробуйте снова!")

@@ -1,4 +1,5 @@
 # Standart library
+import asyncio
 import json
 import random
 import string
@@ -131,7 +132,7 @@ class VkPlus(object):
 
     async def upload_photo(self, encoded_image) -> Attachment:
         if isinstance(db, peewee_async.Manager):
-            status, created = await db.get_or_create(BotStatus, name='main')
+            status, created = await db.get_or_create(BotStatus, id=0)
 
             if status:
                 if time.time() - status.timestamp > 60 * 60 * 24:
@@ -237,7 +238,7 @@ class Message(object):
         # Получаем полную информацию о сообщении в ВК (включая аттачи)
         full_message_data = await self.vk.method('messages.getById', values)
 
-        if not full_message_data:
+        if not full_message_data or not full_message_data['items']:
             # Если пришёл пустой ответ от VK API
             return []
 

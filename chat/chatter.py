@@ -1,4 +1,5 @@
 import difflib
+from random import choice
 
 from chatterbot import ChatBot
 
@@ -115,12 +116,12 @@ class Join:
     def nothing(x: bool, y: bool):
         return not x and not y
 
-#####################################################################################
 
+#####################################################################################
 class Dialog:
     __slots__ = ("condition", "answer")
 
-    def __init__(self, condition, answer):
+    def __init__(self, condition, *answer):
         self.condition = condition
         self.answer = answer
 
@@ -146,7 +147,7 @@ class Chatter:
     def parse_message(self, chat_data):
         for dialog in self.dialogs:
             if dialog.check(chat_data):
-                return dialog.answer
+                return choice(dialog.answer)
 
         return None
 
