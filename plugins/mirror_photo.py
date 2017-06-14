@@ -23,6 +23,9 @@ async def mirror(msg, args):
 
     attach = (await msg.full_attaches)[0]
 
+    if not attach.link:
+        return await msg.answer('Вы не прислали фото!')
+
     async with aiohttp.ClientSession() as sess:
         async with sess.get(attach.link) as response:
             img = Image.open(io.BytesIO(await response.read()))
