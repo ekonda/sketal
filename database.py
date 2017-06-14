@@ -1,12 +1,11 @@
-import datetime
+import asyncio
 import time
 
-import hues
 import peewee
 import peewee_async
 
 try:
-    from settings import DATABASE_SETTINGS
+    from settings import DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET
 except:
     DATABASE_SETTINGS, DATABASE_DRIVER, DATABASE_CHARSET = (), None, "utf8mb4"
 
