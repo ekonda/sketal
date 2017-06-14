@@ -1,6 +1,7 @@
 import datetime
 import time
 
+import hues
 import peewee
 import peewee_async
 
