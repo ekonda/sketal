@@ -84,11 +84,11 @@ async def anonymously(msg, args):
 async def to_admin(msg, args):
     sender_id = msg.user_id
 
-    for uid in await db.execute(Role.select(Role.user_id).where(Role.role == "admin")):
-        if await get_or_none(Ignore, ignored=sender_id, ignored_by=uid):
+    for role in await db.execute(Role.select().where(Role.role == "admin")):
+        if await get_or_none(Ignore, ignored=sender_id, ignored_by=role.user_id):
             return await msg.answer('Вы находитесь в чёрном списке у этого пользователя!')
 
-        user = await get_or_none(User, uid=uid)
+        user = await get_or_none(User, uid=role.user_id)
         if user and user.do_not_disturb:
             return await msg.answer('Этот пользователь попросил его не беспокоить!')
 
@@ -101,7 +101,7 @@ async def to_admin(msg, args):
         sender_data = sender_data[0]
 
         val = {
-            'peer_id': uid,
+            'peer_id': role.user_id,
             'message': f"Вам сообщение от {sender_data['first_name']} {sender_data['last_name']}!\n\"{data}\"",
         }
 
