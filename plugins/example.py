@@ -16,7 +16,7 @@ async def init(vk):
         plugin.temp_data["some_data"] = {}
 
 
-# Если необходимо выполнить какую-то длительную задачу(которую нелья переписать как корутину),
+# Если необходимо выполнить какую-то длительную задачу(которую нельзя переписать как корутину),
 # не блокируя исполнения команд другими пользователями - ипользуйте plugin.process_pool:
 # result = await loop.run_in_executor(plugin.process_pool, long_function, argument1, argument2)
 
