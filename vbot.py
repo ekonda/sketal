@@ -180,19 +180,6 @@ class Bot(object):
         if flags['outbox']:
             return
 
-        # Если ID находится в чёрном списке
-        if await get_or_none(Role, user_id=peer_id, role="blacklisted"):
-            if self.BLACKLIST_MESSAGE:
-                await self.vk.method("messages.send", {"user_id": peer_id, "message": self.BLACKLIST_MESSAGE})
-
-            return
-
-        if self.WHITELISTED and not await get_or_none(Role, user_id=peer_id, role="whitelisted"):
-            if self.WHITELIST_MESSAGE:
-                await self.vk.method("messages.send", {"user_id": peer_id, "message": self.WHITELIST_MESSAGE})
-
-            return
-
         # Тип сообщения - конференция или ЛС?
         try:
             # Пробуем получить ID пользователя, который отправил
@@ -205,6 +192,19 @@ class Bot(object):
             user_id = peer_id
             conf = False
         user_id = int(user_id)
+        
+         # Если ID находится в чёрном списке
+        if await get_or_none(Role, user_id=user_id, role="blacklisted"):
+            if self.BLACKLIST_MESSAGE:
+                await self.vk.method("messages.send", {"user_id": user_id, "message": self.BLACKLIST_MESSAGE})
+
+            return
+
+        if self.WHITELISTED and not await get_or_none(Role, user_id=user_id, role="whitelisted"):
+            if self.WHITELIST_MESSAGE:
+                await self.vk.method("messages.send", {"user_id": user_id, "message": self.WHITELIST_MESSAGE})
+
+            return
 
         cleaned_body = text.replace('<br>', '\n')
 
