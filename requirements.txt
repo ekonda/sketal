@@ -1,18 +1,7 @@
-hues  # Логгирование с указанием времени и цвета
-
-aiohttp # Асинхронные HTTP запросы
-peewee # Запросы к БД
-
-aiomysql # Асинхронные запросы к БД
-aiopg # Асинхронные запросы к БД
-peewee_async # Асинхронные запросы к БД
-
-captcha_solver  # Решение Captcha
-
-langdetect  # Определение языка в плагине озвучивания текста
-gTTS  # Озвучивание текста через Google TTS
-
-Pillow  # Работа с изображениями
-
-xmltodict  # Работа с XML
-chatterbot # Чат-бот
+requests
+aiohttp
+captcha_solver
+python-dateutil
+xmltodict
+Pillow
+qrcode

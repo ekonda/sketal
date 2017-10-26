@@ -1,108 +1,55 @@
-# Various helpers
 import asyncio
+import datetime
 import html
-from enum import Enum
-from typing import List
+from contextlib import contextmanager
 
-import hues
-
-
-class SendFrom(Enum):
-    USER = 0
-    GROUP = 1
+import json
+from dateutil.relativedelta import relativedelta
 
 
-def schedule_coroutine(target):
-    """Schedules target coroutine in the given event loop
-    If not given, *loop* defaults to the current thread's event loop
-    Returns the scheduled task.
-    """
-    if asyncio.iscoroutine(target):
-        return asyncio.ensure_future(target, loop=asyncio.get_event_loop())
+def traverse(o, tree_types=(list, tuple)):
+    if isinstance(o, tree_types):
+        for value in o:
+            for subvalue in traverse(value, tree_types):
+                yield subvalue
     else:
-        raise TypeError("target must be a coroutine, "
-                        "not {!r}".format(type(target)))
+        yield o
 
 
-# http://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
-def chunks(l, n):
-    """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
+cases = (2, 0, 1, 1, 1, 2)
 
 
-class Attachment(object):
-    __slots__ = ('type', 'owner_id', 'id', 'access_key', 'link')
+def plural_form(n: int, v: (list, tuple)):
+    """Функция возвращает число и просклонённое слово после него
 
-    def __init__(self, attach_type: str, owner_id: int, aid: int, access_key: str, link: str):
-        self.type = attach_type
-        self.owner_id = owner_id
-        self.id = aid
-        self.access_key = access_key
-        self.link = link
+    Аргументы:
+    :param n: число
+    :param v: варианты слова в формате (для 1, для 2, для 5)
 
-    def as_str(self):
-        """Возвращает приложение в формате ownerid_id_accesskey"""
-        if self.access_key:
-            return f'{self.owner_id}_{self.id}_{self.access_key}'
+    Пример:
+    plural_form(difference.days, ("день", "дня", "дней"))
 
-        return f'{self.owner_id}_{self.id}'
+    :return: Число и просклонённое слово после него
+    """
 
-    def __repr__(self):
-        return f'{self.type}{self.as_str()}'
+    return f"{n}  {v[2 if (4 < n % 100 < 20) else cases[min(n % 10, 5)]]}"
 
 
-class RequestFuture(asyncio.Future):
-    __slots__ = ["key", "data", "send_from"]
+def age(date):
+    """Возвращает возраст в годах по дате рождения
 
-    def __init__(self, key, data, send_from=None):
-        self.key = key
-        self.data = data
-        self.send_from = send_from
+    Функция
+    :param date: дата рождения
+    :return: возраст
+    """
 
-        super().__init__()
+    # Get the current date
+    now = datetime.datetime.utcnow()
+    now = now.date()
 
-
-class MessageEventData(object):
-    __slots__ = ('conf', 'peer_id', 'user_id', 'body', 'time', "msg_id", "attaches")
-
-    def __init__(self, conf: bool, pid: int, uid: int, body: str, time: int, msg_id: int, attaches: List):
-        self.conf = conf
-        self.peer_id = pid
-        self.user_id = uid
-        self.body = body
-        self.time = time
-        self.msg_id = msg_id
-        self.attaches = attaches
-
-    def __repr__(self):
-        return self.body
-
-
-def fatal(*args):
-    """Отправляет args в hues.error() и выходит"""
-    hues.error(*args)
-    exit()
-
-
-# Characters are taken from http://gsgen.ru/tools/perevod-raskladki-online/
-ENGLISH = "Q-W-E-R-T-Y-U-I-O-P-A-S-D-F-G-H-J-K-L-Z-X-C-V-B-N-M"
-ENG_EXPR = ENGLISH + ENGLISH.lower() + "-" + ":-^-~-`-{-[-}-]-\"-'-<-,->-.-;-?-/-&-@-#-$"
-RUS_EXPR = "Й-Ц-У-К-Е-Н-Г-Ш-Щ-З-Ф-Ы-В-А-П-Р-О-Л-Д-Я-Ч-С-М-И-Т-Ь"
-rus_expr = RUS_EXPR + RUS_EXPR.lower() + "-" + "Ж-:-Ё-ё-Х-х-Ъ-ъ-Э-э-Б-б-Ю-ю-ж-,-.-?-\"-№-;"
-
-ENG_TO_RUS = str.maketrans(ENG_EXPR, rus_expr)
-RUS_TO_ENG = str.maketrans(rus_expr, ENG_EXPR)
-
-
-def convert_to_rus(text: str) -> str:
-    """Конвертировать текст, написанный на русском с английской раскладкой в русский"""
-    return text.translate(ENG_TO_RUS)
-
-
-def convert_to_en(text: str) -> str:
-    """Конвертировать текст, написанный на русском с русской раскладкой в английскую раскладку"""
-    return text.translate(RUS_TO_ENG)
+    # Get the difference between the current date and the birthday
+    res = relativedelta(now, date)
+    return res.years
 
 
 keys = [
@@ -115,22 +62,31 @@ keys = [
     'spam',
     'deleted',
     'fixed',
-    'media'
+    'media',
+    'hidden'
 ]
 
 
-def parse_msg_flags(bitmask: int) -> dict:
+def parse_msg_flags(bitmask, keys=('unread', 'outbox', 'replied', 'important', 'chat',
+                                   'friends', 'spam', 'deleted', 'fixed', 'media', 'hidden')):
     """Функция для чтения битовой маски и возврата словаря значений"""
+
     start = 1
     values = []
-    for x in range(1, 11):
+    for x in range(1, 12):
         result = bitmask & start
         start *= 2
         values.append(bool(result))
     return dict(zip(keys, values))
 
 
-def unquote(data):
+def unquote(data: (str, dict, list)):
+    """Функция, раскодирующая ответ от ВК
+
+    :param data: строка для раскодировки
+    :return: раскодированный ответ
+    """
+
     temp = data
 
     if issubclass(temp.__class__, str):
@@ -145,3 +101,11 @@ def unquote(data):
             temp[i] = unquote(temp[i])
 
     return temp
+
+
+def json_iter_parse(response_text):
+    decoder = json.JSONDecoder(strict=False)
+    idx = 0
+    while idx < len(response_text):
+        obj, idx = decoder.raw_decode(response_text, idx)
+        yield obj

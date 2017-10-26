@@ -1,5 +1,3 @@
-import hues
-
 # Словарь, ключ - раздел API методов, значение - список разрешённых методов
 ALLOWED_METHODS = {
     'groups': ('getById',
@@ -10,6 +8,9 @@ ALLOWED_METHODS = {
                'setCallbackServer',
                'setCallbackServerSettings',
                'setCallbackSettings'),
+
+    'docs': ('getMessagesUploadServer',
+             'getWallUploadServer'),
 
     'photos': ('getMessagesUploadServer',
                'saveMessagesPhoto')
@@ -32,22 +33,24 @@ DISALLOWED_MESSAGES = ('addChatUser',
 
 
 def is_available_from_group(key: str) -> bool:
-    """Проверяет, можно ли выполнить данный метод VK API от имени группы"""
-    # execute можно выполнять от имени группы
     if key == 'execute':
         return True
+
     try:
         topic, method = key.split('.')
     except ValueError:
-        # Не должно случаться, но мало ли
-        hues.warn('Метод VK API должен состоять из раздела и метода,'
-                  ' разделённых точкой')
         return False
+
     # Если раздел - messages, проверяем, нельзя ли выполнить этот метод
     if topic == 'messages':
         return method not in DISALLOWED_MESSAGES
+
     # Получаем список разрешённых методов для данного раздела
-    methods_allowed = ALLOWED_METHODS.get(topic, ())
+    methods_allowed = ALLOWED_METHODS.get(topic, None)
+
+    if not methods_allowed:
+        return False
+
     if method in methods_allowed:
         return True
 
@@ -90,14 +93,11 @@ ALLOWED_PUBLIC = {
 
 
 def is_available_from_public(key: str) -> bool:
-    """Проверяет, доступен ли метод через паблик апи"""
     try:
         topic, method = key.split('.')
     except ValueError:
-        # Не должно случаться, но мало ли
-        hues.warn('Метод VK API должен состоять из раздела и метода,'
-                  ' разделённых точкой')
         return False
+
     methods = ALLOWED_PUBLIC.get(topic, ())
     if method in methods:
         return True
