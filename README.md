@@ -48,8 +48,4 @@ USERS = (
 - Многие функции, примеры, возможности можно найти, изучая исходный код плагинов и файлы бота. Например: `tests.py`, `vk_special_methods.py`, `handler/base_plugin.py` и т.д.
 - Тесты - это важно, интересно и полезно!
 
-<<<<<<< HEAD
 @michaelkrukov http://michaelkrukov.ru/
-=======
-@Myzon http://michaelkrukov.ru/
->>>>>>> 3d8893bec06c1c58f684a81cc1109b51cba1162a
