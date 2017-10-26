@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/Myzon/vk-sketal/blob/master/nothing/title.png?raw=true" alt="vk-sketal logo"/>
+    <img src="https://github.com/vk-brain/sketal/blob/master/nothing/title.png?raw=true" alt="vk-sketal logo"/>
 </p>
 
 ## sketal
@@ -48,6 +48,4 @@ USERS = (
 - Многие функции, примеры, возможности можно найти, изучая исходный код плагинов и файлы бота. Например: `tests.py`, `vk_special_methods.py`, `handler/base_plugin.py` и т.д.
 - Тесты - это важно, интересно и полезно!
 
-Предшественник и большой донор кода: https://github.com/VKBots/VBot
-
-@Myzon http://michaelkrukov.ru/
+@michaelkrukov http://michaelkrukov.ru/
