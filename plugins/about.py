@@ -5,7 +5,7 @@ from vk_plus_data import Message
 class AboutPlugin(CommandPlugin):
     __slots__ = ("version", )
 
-    def __init__(self, *commands, prefixes=None, strict=False, version=1.01):
+    def __init__(self, *commands, prefixes=None, strict=False, version=7.00):
         """Answers with information about bot."""
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
@@ -26,7 +26,7 @@ class AboutPlugin(CommandPlugin):
                   "можно строить очень сложные системы и сервисы. Этот бот очень надёжен и стабилен - обрабатывает " \
                   "очень многие ошибки и избегает их. Бот обновляется, обретает новые плагины и т.д.\n" \
                   "🌲 Версия: " + str(self.version) + "\n" \
-                  "🌲 https://github.com/michaelkrukov/sketal\n" \
+                  "🌲 https://github.com/vk-brain/sketal\n" \
                   "🌲 http://michaelkrukov.ru/"
 
         return await msg.answer(message)
