@@ -6,14 +6,10 @@ class BaseSettings:
     APP_ID = 5982451
     CAPTCHA_KEY = ""
     CAPTCHA_SERVER = "rucaptcha"
-    DATABASE_NAME = ""
-    DATABASE_HOST = ""
-    DATABASE_USER = ""
-    DATABASE_PASSWORD = ""
-    DATABASE_PORT = 0
-    DATABASE_TABLES_PREFIX = ""
     READ_OUT = False
     PLUGINS = ()
+
+    # Заполнять ниже `BotSettings`
 
 
 class BotSettings(BaseSettings):
