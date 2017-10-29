@@ -4,6 +4,7 @@ from plugins.calculation.calculator import Calculator
 from enum import Enum
 import itertools
 import random
+import copy
 import os
 import re
 
@@ -99,14 +100,28 @@ class ChatterPlugin(BasePlugin):
         return result
 
     def setup_instructions(self):
+        memory = [""] * 16
+
         def gen_regexp(s):
             return r"(^|\?|!|\.|,|:|;|-|\s|\n)" + re.escape(s) +  r"($|\?|!|\.|,|:|;|-|\s|\n)"
 
         def get_variables(msg):
             variables = {"text": msg.text, "arg0": msg.text}
+
             for i, arg in enumerate(msg.text.split()):
                 variables[f"arg{i + 1}"] = arg
                 variables[f"a{i + 1}"] = arg
+
+            for i in range(len(memory)):
+                def wrapper(i):
+                    d = copy.copy(i)
+
+                    def g():
+                        return memory[d]
+
+                    return g
+
+                variables[f"v{i + 1}"] = wrapper(i)
 
             return variables
 
@@ -148,25 +163,33 @@ class ChatterPlugin(BasePlugin):
 
         # read
         async def cw(msg, value, text):
-            value = value.lower()
+            value = process_value(msg, value).lower()
 
             return re.search(gen_regexp(value), text.lower()) is not None
 
         async def CW(msg, value, text):
+            value =  process_value(msg, value)
+
             return re.search(gen_regexp(value), text) is not None
 
         async def pw(msg, value, text):
-            value = value.lower()
+            value =  process_value(msg, value).lower()
 
             return any(re.search(gen_regexp(f"{p}{value}"), text.lower()) is not None for p in self.prefixes)
 
         async def PW(msg, value, text):
+            value =  process_value(msg, value)
+
             return any(re.search(gen_regexp(f"{p}{value}"), text) is not None for p in self.prefixes)
 
         async def e(msg, value, text):
+            value =  process_value(msg, value)
+
             return value.lower() == text.lower()
 
         async def E(msg, value, text):
+            value =  process_value(msg, value)
+
             return value == text
 
         self.instructions["cw"] = cw
@@ -175,6 +198,26 @@ class ChatterPlugin(BasePlugin):
         self.instructions["PW"] = PW
         self.instructions["e"] = e
         self.instructions["E"] = E
+
+        for k, v in list(self.instructions.items()):
+            async def temp(*args, **kwargs):
+                return not (await v(*args, **kwargs))
+
+            self.instructions[f"n{k}"] = temp
+
+        # variables
+        def wrapper(num):
+            d = copy.copy(num)
+
+            async def v(msg, value, text):
+                memory[d] = process_value(msg, value)
+
+                return True
+
+            return v
+
+        for i in range(len(memory)):
+            self.instructions[f"v{i + 1}"] = wrapper(i)
 
         # write
         async def a(msg, value, text):

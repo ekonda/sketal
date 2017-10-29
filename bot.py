@@ -114,7 +114,7 @@ class Bot:
             'act': 'a_check',
             'key': longpoll_key,
             'ts': last_ts,
-            'wait': 25,
+            'wait': 20,
             'mode': 10,
             'version': 2
         }
@@ -174,39 +174,43 @@ class Bot:
     async def longpoll_processor(self):
         await self.init_long_polling()
 
-        with aiohttp.ClientSession(loop=self.loop) as session:
-            while True:
-                try:
-                    self.longpoll_request = session.get(self.server, params=self.values)
+        session = aiohttp.ClientSession(loop=self.loop)
 
-                    resp = await self.longpoll_request
+        while True:
+            try:
+                self.longpoll_request = session.get(self.server, params=self.values)
 
-                except (aiohttp.ClientOSError, asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
-                    self.logger.warning("Long polling server doesn't respond. Changing server")
-                    await self.init_long_polling()
-                    continue
+                resp = await self.longpoll_request
 
-                try:
-                    events = json.loads(await resp.text())
-                except ValueError:
-                    continue
+            except aiohttp.ClientOSError:
+                session = aiohttp.ClientSession(loop=self.loop)
 
-                failed = events.get('failed')
+            except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
+                self.logger.warning("Long polling server doesn't respond. Changing server")
+                await self.init_long_polling()
+                continue
 
-                if failed:
-                    err_num = int(failed)
+            try:
+                events = json.loads(await resp.text())
+            except ValueError:
+                continue
 
-                    if err_num == 1:  # 1 - update timestamp
-                        self.values['ts'] = events['ts']
+            failed = events.get('failed')
 
-                    elif err_num in (2, 3):  # 2, 3 - new data for long polling
-                        await self.init_long_polling(err_num)
+            if failed:
+                err_num = int(failed)
 
-                    continue
+                if err_num == 1:  # 1 - update timestamp
+                    self.values['ts'] = events['ts']
 
-                self.values['ts'] = events['ts']
-                for event in events['updates']:
-                    asyncio.ensure_future(self.process_longpoll_event(event))
+                elif err_num in (2, 3):  # 2, 3 - new data for long polling
+                    await self.init_long_polling(err_num)
+
+                continue
+
+            self.values['ts'] = events['ts']
+            for event in events['updates']:
+                asyncio.ensure_future(self.process_longpoll_event(event))
 
     async def callback_processor(self, request):
         try:

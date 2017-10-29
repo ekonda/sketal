@@ -71,11 +71,11 @@ class AnagramsPlugin(BasePlugin):
             msg.data["_command"] = "start"
             return True
 
-        if any(check_text.startswith(v.lower()) for v in self.commands_stop):
+        if self in msg.occupied_by and any(check_text.startswith(v.lower()) for v in self.commands_stop):
             msg.data["_command"] = "stop"
             return True
 
-        if self.games.get(msg.peer_id, False):
+        if self in msg.occupied_by:
             for v in self.commands_attempt:
                 if check_text.startswith(v + " "):
                     msg.data["_command"] = "attempt"
@@ -102,7 +102,6 @@ class AnagramsPlugin(BasePlugin):
     async def process_message(self, msg):
         if msg.data["_command"] == "stop":
             current = self.games.get(msg.peer_id, [])
-
             if current:
                 del self.games[msg.peer_id]
 

@@ -398,7 +398,7 @@ class RequestsQueue:
                 result = await asyncio.shield(self.vk_client.execute(execute))
                 break
 
-            except ClientOSError:
+            except aiohttp.ClientOSError:
                 try:
                     await self.session.close()
                 except:
