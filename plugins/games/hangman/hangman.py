@@ -141,7 +141,7 @@ class HangmanPlugin(BasePlugin):
 
                 return await msg.answer("Вы не можете сейчас начать игру!" + reason )
 
-            self.games[msg.peer_id] = [random.choice(self.words), "", 8]
+            self.games[msg.peer_id] = [choice(self.words), "", 8]
 
             tip = f"\n\n{self.prefixes[0]}{self.commands_attempt[0]} - назвать букву, " \
                   f"{self.prefixes[0]}{self.commands_stop[0]} - остановить игру"
