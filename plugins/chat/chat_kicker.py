@@ -87,6 +87,4 @@ class ChatKickerPlugin(CommandPlugin):
 
             del self.exiled[evnt.source_mid]
 
-            return True
-
         return False
