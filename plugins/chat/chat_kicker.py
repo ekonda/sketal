@@ -86,3 +86,7 @@ class ChatKickerPlugin(CommandPlugin):
                 return await self.api.messages.removeChatUser(chat_id=evnt.chat_id, user_id=evnt.source_mid)
 
             del self.exiled[evnt.source_mid]
+
+            return True
+
+        return False
