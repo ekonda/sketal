@@ -380,9 +380,6 @@ if __name__ == "__main__":
         from settings_real import BotSettings
 
     except ImportError:
-        import traceback
-        traceback.print_exc()
-
         from settings import BotSettings
 
     bot = Bot(BotSettings)

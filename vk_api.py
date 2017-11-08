@@ -4,6 +4,7 @@ import json
 import aiohttp
 import logging
 import time
+import re
 
 from utils import json_iter_parse
 from vk_auth import Auth
@@ -14,7 +15,7 @@ CAPTCHA_IS_NEEDED = 14
 ACCESS_DENIED = 15
 INTERNAL_ERROR = 10
 EXECUTE_ERROR = 10000
-VERSION = "5.67"
+VERSION = "5.68"
 
 class VkClient:
     """Class for organazing, controlling and processing requests to vk from group or user."""
@@ -377,7 +378,7 @@ class RequestsQueue:
             execute.append("({")
 
             for k, v in task.data.items():
-                v = str(v).replace('"', '\\"')
+                v = re.sub(r'((?<=\\\\)|(?<!\\))"', r'\"', str(v))
                 execute.append(str(k) + ': "' + v + '", ')
 
             execute.append('}),')

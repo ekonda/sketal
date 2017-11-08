@@ -50,8 +50,8 @@ class BasePlugin:
         return False
 
     async def global_before_message_checks(self, msg):
-        """ Takes Message `msg` as argument and returns message to be processed
-        or `False` if nothing should be processed
+        """ Takes Message `msg` as argument and returns `True` if message should be processed or
+        `False` if nothing should be processed
 
         Executed before message was checked
         """
@@ -84,7 +84,8 @@ class BasePlugin:
         return False
 
     async def global_before_event_checks(self, evnt):
-        """ Takes event `evnt` and returns event to be processed or `False` if nothing should be processed
+        """ Takes event `evnt` and returns `True` if event should be processed or
+        `False` if nothing should be processed
 
         Executed before message was checked
         """
