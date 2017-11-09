@@ -196,9 +196,6 @@ class Attachment(object):
 
         return f'{self.type}{self.owner_id}_{self.id}'
 
-    def __repr__(self):
-        return self.value()
-
     def __str__(self):
         return self.value()
 

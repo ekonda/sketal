@@ -47,7 +47,7 @@ class VkClient:
 
         self.session = aiohttp.ClientSession()
 
-        self.queue = RequestsQueue(self)
+        self.queue = RequestsQueue(self, logger=self.logger)
 
         self.username = ""
         self.password = ""
@@ -58,6 +58,9 @@ class VkClient:
         self.user_id = 0
 
         self.token = ""
+
+    def __str__(self):
+        return f"Group ({self.group_id})" if self.group_id else f"User ({self.user_id})"
 
     async def method(self, key, **data):
         """ Return a result of executing vk's method `method`
@@ -276,9 +279,14 @@ class VkClient:
 
 class RequestsQueue:
     __slots__ = ("vk_client", "queue", "hold", "requests_done_clear_time",
-                 "_requests_done", "release", "processing")
+                 "_requests_done", "release", "processing", "logger")
 
-    def __init__(self, vk_client):
+    def __init__(self, vk_client, logger=None):
+        if logger:
+            self.logger = logger
+        else:
+            self.logger = logging.Logger("vk_reqque")
+
         self.vk_client = vk_client
 
         self.hold = False
@@ -391,6 +399,8 @@ class RequestsQueue:
         execute.append("];")
 
         execute = "".join(execute)
+
+        self.logger.debug(f"Executing vk's execute with code:\n{execute}\nwith {self.vk_client}")
 
         for i in range(2):
             self._requests_done += 1

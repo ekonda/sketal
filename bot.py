@@ -23,6 +23,8 @@ class Bot:
                  "settings", "api", "handler", "logger_file")
 
     def __init__(self, settings, logger=None, handler=None, loop=asyncio.get_event_loop()):
+        self.settings = settings
+
         self.logger = None
         self.init_logger(logger)
 
@@ -35,7 +37,6 @@ class Bot:
         self.longpoll_request = None
 
         self.main_task = None
-        self.settings = settings
 
         self.logger.info("Initializing vk clients")
         self.api = VkController(settings, logger=self.logger)
@@ -54,7 +55,7 @@ class Bot:
 
     def init_logger(self, logger):
         if not logger:
-            logger = logging.Logger("sketal", level=logging.INFO)
+            logger = logging.Logger("sketal", level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
 
         formatter = logging.Formatter(fmt=u'%(filename)-10s [%(asctime)s] %(levelname)-8s: %(message)s',
                                       datefmt='%y.%m.%d %H:%M:%S')
@@ -66,7 +67,7 @@ class Bot:
         self.logger_file = file_handler
 
         stream_handler = logging.StreamHandler()
-        stream_handler.setLevel(logging.INFO)
+        stream_handler.setLevel(level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
         stream_handler.setFormatter(formatter)
 
         logger.addHandler(file_handler)

@@ -30,7 +30,7 @@ class QRCodePlugin(CommandPlugin):
             border=4,
         )
 
-        qr.add_data(msg.text)
+        qr.add_data(text)
 
         try:
             qr.make(fit=True)

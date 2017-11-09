@@ -9,6 +9,8 @@ class BaseSettings:
     READ_OUT = False
     PLUGINS = ()
 
+    DEBUG = False
+
     # Заполнять ниже `BotSettings`
 
 

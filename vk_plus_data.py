@@ -286,6 +286,9 @@ class LongpollEvent(Event):
         self.id = evnt_id
         self.data = evnt_data
 
+    def __str__(self):
+        return f"LongpollEvent ({self.id}, {self.data[1] if len(self.data) > 1 else '_'})"
+
 
 # https://vk.com/dev/callback_api
 class CallbackEvent(Event):
@@ -296,6 +299,9 @@ class CallbackEvent(Event):
 
         self.subtype = evnt_subtype
         self.data = evnt_data
+
+    def __str__(self):
+        return f"CallbackEvent ({self.subtype}" + (", " + self.data["id"] if "id" in self.data else "") + ")"
 
 
 class ChatChangeEvent(Event):
