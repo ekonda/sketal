@@ -79,11 +79,7 @@ class TestBot(unittest.TestCase):
         with self.assertLogs(self.bot.logger, level='ERROR') as cm:
             self.bot.do(self.bot.api.messages.send())
 
-        self.assertIn(f'ERROR:{self.bot.logger.name}:Errors while executing vk method:', cm.output)
-        self.assertIn(f'ERROR:{self.bot.logger.name}:', cm.output)
-        self.assertIn(f'ERROR:{self.bot.logger.name}:' + r"{'code': 100, 'method': 'messages.send', "
-                      r"'error_msg': 'One of the parameters specified was missing or invalid: you should "
-                      r"specify peer_id, user_id, domain, chat_id or user_ids param'}", cm.output)
+        self.assertIn(r"ERROR:sketal:Errors while executing vk method: {'code': 100, 'method': 'messages.send', 'error_msg': 'One of the parameters specified was missing or invalid: you should specify peer_id, user_id, domain, chat_id or user_ids param'}, {'code': 100, 'method': 'execute', 'error_msg': 'One of the parameters specified was missing or invalid: you should specify peer_id, user_id, domain, chat_id or user_ids param'}", cm.output)
 
     def test_upload(self):
         with open("tests_content/image", "rb") as f:
