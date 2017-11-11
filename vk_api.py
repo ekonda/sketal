@@ -85,8 +85,7 @@ class VkClient:
             try:
                 results = json_iter_parse(await resp.text())
             except json.JSONDecodeError:
-                self.logger.error("Error while executing vk method:")
-                self.logger.error("Vk's response is wrong!")
+                self.logger.error("Error while executing vk method: vk's response is wrong!")
 
                 return False
 
@@ -116,10 +115,13 @@ class VkClient:
             errors_codes = []
 
             try:
-                results = json_iter_parse(await resp.text())
+                response = await resp.text()
+
+                self.logger.debug(f"Request with code:\n{code}\nResponse:\n{response}")
+
+                results = json_iter_parse(response)
             except json.JSONDecodeError:
-                self.logger.error("Error while executing vk method:")
-                self.logger.error("Vk's response is wrong!")
+                self.logger.error("Error while executing vk method: vk's response is wrong!")
 
                 return False
 
@@ -167,11 +169,11 @@ class VkClient:
 
                 return await self.execute(code, reties + 1)
 
-        self.logger.error("")
-        self.logger.error("Errors while executing vk method:")
+        error_text = ""
         for error in errors:
-            self.logger.error(error)
-        self.logger.error("")
+            error_text += (str(error)) + ", "
+
+        self.logger.error("Errors while executing vk method: " + error_text[:-2])
 
         return False
 
@@ -399,8 +401,6 @@ class RequestsQueue:
         execute.append("];")
 
         execute = "".join(execute)
-
-        self.logger.debug(f"Executing vk's execute with code:\n{execute}\nwith {self.vk_client}")
 
         for i in range(2):
             self._requests_done += 1

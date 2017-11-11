@@ -178,7 +178,7 @@ class Message(object):
 
         return result
 
-    async def answer(self, message, wait=Wait.NO, **additional_values):
+    async def answer(self, message="", wait=Wait.NO, **additional_values):
         """ Send message to this message's sender (chat or user) with wait settings `wait` and additional_values
         `additional_values` for `messages.send`
         """
@@ -203,11 +203,29 @@ class Message(object):
         messages_amount = len(messages)
 
         if "attachment" in additional_values:
-            attachment = additional_values["attachment"]
+            if isinstance(additional_values["attachment"], Attachment):
+                attachment = str(additional_values["attachment"])
+
+            elif isinstance(additional_values["attachment"], (list, tuple)):
+                attachment = ""
+
+                for a in additional_values["attachment"]:
+                    if isinstance(a, Attachment):
+                        attachment += str(a) + ","
+
+                    elif isinstance(a, str):
+                        attachment += a + ","
+
+            else:
+                attachment = additional_values["attachment"]
+
             del additional_values["attachment"]
 
         else:
             attachment = ""
+
+        if not message and not attachment:
+            raise AttributeError("No message or attachment")
 
         result = []
 
@@ -266,11 +284,13 @@ class Chat:
 
 
 class Event:
-    __slots__ = ("api", "type", "reserved_by", "occupied_by")
+    __slots__ = ("api", "type", "reserved_by", "occupied_by", "data")
 
-    def __init__(self, api, evnt_type: EventType):
+    def __init__(self, api, evnt_type):
         self.api = api
         self.type = evnt_type
+
+        self.data = {}
 
         self.reserved_by = []
         self.occupied_by = []
@@ -278,30 +298,30 @@ class Event:
 
 # https://vk.com/dev/using_longpoll
 class LongpollEvent(Event):
-    __slots__ = ("data", "id")
+    __slots__ = ("evnt_data", "id")
 
     def __init__(self, api, evnt_id, evnt_data):
         super().__init__(api, EventType.Longpoll)
 
         self.id = evnt_id
-        self.data = evnt_data
+        self.evnt_data = evnt_data
 
     def __str__(self):
-        return f"LongpollEvent ({self.id}, {self.data[1] if len(self.data) > 1 else '_'})"
+        return f"LongpollEvent ({self.id}, {self.evnt_data[1] if len(self.evnt_data) > 1 else '_'})"
 
 
 # https://vk.com/dev/callback_api
 class CallbackEvent(Event):
-    __slots__ = ("subtype", "data")
+    __slots__ = ("subtype", "evnt_data")
 
     def __init__(self, api, evnt_subtype, evnt_data):
         super().__init__(api, EventType.Callback)
 
         self.subtype = evnt_subtype
-        self.data = evnt_data
+        self.evnt_data = evnt_data
 
     def __str__(self):
-        return f"CallbackEvent ({self.subtype}" + (", " + self.data["id"] if "id" in self.data else "") + ")"
+        return f"CallbackEvent ({self.subtype}" + (", " + self.evnt_data["id"] if "id" in self.evnt_data else "") + ")"
 
 
 class ChatChangeEvent(Event):

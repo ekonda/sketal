@@ -26,8 +26,6 @@ class MessageHandler:
             plugin.initiate()
 
     async def process(self, msg):
-        self.bot.logger.debug(f"Processing message from {{id: {msg.msg_id}, multichat: {msg.is_multichat}, peer_id: {msg.peer_id}}}: {msg.text}")
-
         for plugin in self.plugins:
             if await plugin.global_before_message_checks(msg) is False:
                 self.bot.logger.debug(f"Message ({msg.msg_id}) cancelled with {plugin.name}")
@@ -35,15 +33,13 @@ class MessageHandler:
 
         plugins_to_check = msg.reserved_by if msg.reserved_by else self.plugins
 
-        self.bot.logger.debug(f"Checking message ({msg.msg_id}) with plugins [{', '.join(p.name for p in plugins_to_check)}]")
-
         for plugin in plugins_to_check:
             if await plugin.check_message(msg):
                 if await self.process_with_plugin(msg, plugin) is not False:
                     self.bot.logger.debug(f"Finished with message ({msg.msg_id}) on {plugin.name}")
                     break
 
-        else: self.bot.logger.debug(f"Processed message ({msg.msg_id}) with plugins")
+        else: self.bot.logger.debug(f"Processed message ({msg.msg_id})")
 
     async def process_with_plugin(self, msg, plugin):
         for p in self.plugins:
@@ -58,8 +54,6 @@ class MessageHandler:
         return result
 
     async def process_event(self, evnt):
-        self.bot.logger.debug(f"Processing event: {evnt}")
-
         for plugin in self.plugins:
             if await plugin.global_before_event_checks(evnt) is False:
                 self.bot.logger.debug(f"Event {evnt} cancelled with {plugin.name}")
@@ -67,15 +61,13 @@ class MessageHandler:
 
         plugins_to_check = evnt.reserved_by if evnt.reserved_by else self.plugins
 
-        self.bot.logger.debug(f"Checking event: {evnt} with plugins [{', '.join(p.name for p in plugins_to_check)}]")
-
         for plugin in plugins_to_check:
             if await plugin.check_event(evnt):
                 if await self.process_event_with_plugin(evnt, plugin) is not False:
                     self.bot.logger.debug(f"Finished with event ({evnt}) on {plugin.name}")
                     break
 
-        else: self.bot.logger.debug(f"Processed event ({evnt}) with plugins")
+        else: self.bot.logger.debug(f"Processed event ({evnt})")
 
     async def process_event_with_plugin(self, evnt, plugin):
         for p in self.plugins:

@@ -6,3 +6,6 @@ xmltodict
 Pillow
 qrcode
 tinydb
+
+gTTS
+langdetect

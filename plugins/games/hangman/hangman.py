@@ -8,7 +8,7 @@ class HangmanPlugin(BasePlugin):
     __slots__ = ("commands_start", "save_data", "commands_stop", "commands_attempt", "prefixes", "games",
                  "words")
 
-    def __init__(self, *commands_start, commands_stop=None, commands_attempt=None,
+    def __init__(self, commands_start=None, commands_stop=None, commands_attempt=None,
             prefixes=(), words=None, save_data=False):
         """Game "Hangman"."""
 

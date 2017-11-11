@@ -59,6 +59,9 @@ class CommandPlugin(BasePlugin):
                 msg.data["__prefix__"] = v
 
                 text = text.replace(v, "", 1)
+
+                if text[0] == " ": text = text[1:]
+
                 break
 
         else:

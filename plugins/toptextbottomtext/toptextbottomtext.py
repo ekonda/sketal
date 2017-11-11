@@ -123,8 +123,10 @@ class ToptextbottomtextPlugin(CommandPlugin):
         draw.text(top_text_position, strings[0], (255, 255, 255), font=font)
         draw.text(bottom_text_position, strings[1], (255, 255, 255), font=font)
 
-        buffer = io.BytesIO()
-        img.save(buffer, format='png')
-        buffer.seek(0)
+        f = io.BytesIO()
+        img.save(f, format='png')
+        f.seek(0)
+        attachment = await upload_photo(self.bot.api, f, msg.user_id)
+        f.close()
 
-        return await msg.answer('Результат:', attachment=str(await upload_photo(self.bot.api, buffer, msg.user_id)))
+        return await msg.answer('Результат:', attachment=str(attachment))

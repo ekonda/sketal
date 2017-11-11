@@ -40,7 +40,7 @@ class VkController(object):
             self.users_data = []
 
         self.solver = None
-        if settings.CAPTCHA_KEY and settings.CAPTCHA_KEY:
+        if settings.CAPTCHA_KEY and settings.CAPTCHA_SERVER:
             self.solver = CaptchaSolver(settings.CAPTCHA_SERVER, api_key=settings.CAPTCHA_KEY)
 
         loop = asyncio.get_event_loop()
@@ -61,7 +61,7 @@ class VkController(object):
                 proxy = None
 
             if user[0] == "group":
-                client = VkClient(proxy, logger=self.logger)
+                client = VkClient(proxy=proxy, solver=self.solver, logger=self.logger)
 
                 await client.group(user[1])
 
@@ -71,7 +71,7 @@ class VkController(object):
                 self.group = True
 
             else:
-                client = VkClient(proxy, logger=self.logger)
+                client = VkClient(proxy=proxy, solver=self.solver, logger=self.logger)
 
                 if len(user) == 2:
                     await client.user_with_token(user[1])

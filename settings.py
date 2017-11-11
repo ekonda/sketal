@@ -14,6 +14,9 @@ class BaseSettings:
     # Заполнять ниже `BotSettings`
 
 
+from plugins import *
+
+
 class BotSettings(BaseSettings):
     USERS = (
         ("group", "API КЛЮЧ СООБЩЕСТВА",),
@@ -37,16 +40,6 @@ class BotSettings(BaseSettings):
     CAPTCHA_KEY = ""
     CAPTCHA_SERVER = "rucaptcha"
 
-    # Database
-
-    DATABASE_NAME = ""
-    DATABASE_HOST = ""
-    DATABASE_USER = ""
-    DATABASE_PASSWORD = ""
-    DATABASE_PORT = 0
-
-    DATABASE_TABLES_PREFIX = ""
-
     # Other
 
     READ_OUT = False
@@ -61,14 +54,7 @@ class BotSettings(BaseSettings):
     # You can import any plugins inside `plugins` using special bot-specific package:
     # from plugin import AboutPlugin
     #
-    # You can import all plugins as once using `from plugins import *` at module-level.
-
-    from plugins import AboutPlugin, BirthdayPlugin, MembersPlugin, PairPlugin, WhoIsPlugin, YandexNewsPlugin, \
-                            HelpPlugin, TimePlugin, DispatchPlugin, ResendCommanderPlugin, QRCodePlugin, \
-                            RandomPostPlugin, ChatKickerPlugin, CalculatorPlugin, ResendCheckerPlugin, ChatterPlugin
-
-    from plugins import HangmanPlugin
-    from plugins import ToptextbottomtextPlugin
+    # You can import all plugins at once using `from plugins import *` at module-level.
 
     prefixes = ("!", "бот ", "бот, ", "бот,")
     admins = (87641997, )
@@ -76,7 +62,8 @@ class BotSettings(BaseSettings):
     hp = HelpPlugin("помощь", "команды", "?", prefixes=prefixes)
 
     PLUGINS = (
-        HangmanPlugin("виселица", prefixes=prefixes),
+        AnagramsPlugin(["анаграмма", "анаграммы"], prefixes=prefixes),
+        HangmanPlugin(["виселица"], prefixes=prefixes),
         MembersPlugin("кто тут", prefixes=prefixes),
         PairPlugin("кто кого", prefixes=prefixes),
         WhoIsPlugin("кто", prefixes=prefixes),
@@ -90,6 +77,7 @@ class BotSettings(BaseSettings):
         ChatKickerPlugin(["кик"], ["фри", "анкик"], prefixes=prefixes, admins=admins, admins_only=True),
         RandomPostPlugin({"random": "-111759315", "memes": "-77127883", "мемы": "-77127883"}, prefixes=prefixes),
         CalculatorPlugin("посчитай", "посч", prefixes=prefixes),
+        SayerPlugin("скажи", prefixes=prefixes),
         hp,
 
         ResendCommanderPlugin(), ChatterPlugin(prefixes=prefixes),

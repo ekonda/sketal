@@ -49,6 +49,9 @@ class ChatterPlugin(BasePlugin):
 
         for root, dirs, files in os.walk(self.get_path("scripts")):
             for f in files:
+                if f.startswith("_"):
+                    continue
+
                 result = self.read_plugin(root + os.sep + f)
 
                 if result[0]:
@@ -87,7 +90,7 @@ class ChatterPlugin(BasePlugin):
 
                 elif node_pr and node_pr.type == Type.Inst and (not skiptoerr or node_pr.value == "f"):
                     try:
-                        if not await self.instructions[node_pr.value](msg, node.value, msg.text):
+                        if not await self.instructions[node_pr.value](msg, node.value, msg.full_text):
                             if not stmscheck:
                                 result = True
 

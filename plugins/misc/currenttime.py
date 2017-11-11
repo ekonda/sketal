@@ -24,4 +24,9 @@ class TimePlugin(CommandPlugin):
         time = (datetime.datetime.now(datetime.timezone.utc) + self.delta)
         timestr = time.strftime('%d-%m-%Y %H:%M:%S')
 
-        await msg.answer(f'{self.message}\n{timestr}\nСегодня {self.days[time.weekday()]}')
+        user = msg.data["tdb"].get_user(msg.user_id)
+        user["used_time"] =  user.get("used_time", 0) + 1
+        msg.data["tdb"].save_user(msg.user_id, user)
+
+        await msg.answer(f'{self.message}\n{timestr}\nСегодня {self.days[time.weekday()]}\n\n'
+                         f'Вы спрашивали время у меня: {user["used_time"]} раз.')
