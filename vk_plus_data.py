@@ -107,6 +107,7 @@ class Message(object):
             obj.chat_id = self.chat_id
             obj.user_id = self.user_id
             obj.is_multichat = self.is_multichat
+            obj.is_out = self.is_out
 
             m = await Message.create(self.api, obj)
 

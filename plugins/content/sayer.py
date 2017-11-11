@@ -37,7 +37,8 @@ class SayerPlugin(CommandPlugin):
                             f"{example} [тест] - произнести текст (+ значит ударение перед ударной гласной)."]
 
     def initiate(self):
-        self.bot.logger.warning("You are using public key for Speechkit Cloud! Get your own: https://tech.yandex.ru/speechkit/cloud/")
+        if self.key == "e02d4514-b2a7-4edb-8ee8-825f854ef890":
+            self.bot.logger.warning("You are using public key for Speechkit Cloud! Get your own: https://tech.yandex.ru/speechkit/cloud/")
 
     def get_lang(self, text):
         resu = None
