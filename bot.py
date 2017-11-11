@@ -378,6 +378,11 @@ class Bot:
 
 if __name__ == "__main__":
     try:
+        import sys
+
+        if "-defs" in sys.argv:
+            raise ImportError
+
         from settings_real import BotSettings
 
     except ImportError:

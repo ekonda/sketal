@@ -80,9 +80,9 @@ class BotSettings(BaseSettings):
         SayerPlugin("скажи", prefixes=prefixes),
         hp,
 
-        ResendCommanderPlugin(), ChatterPlugin(prefixes=prefixes),
+        ChatterPlugin(prefixes=prefixes),
 
-        ResendCheckerPlugin(),
+        ResendCommanderPlugin(), ResendCheckerPlugin(),
     )
 
     hp.add_plugins(PLUGINS)

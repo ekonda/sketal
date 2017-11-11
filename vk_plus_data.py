@@ -13,7 +13,7 @@ class Message(object):
     __slots__ = ('message_data', 'api', 'is_multichat', 'chat_id', 'user_id', 'is_out', 'true_user_id',
                  'timestamp', 'answer_values', 'msg_id', 'text', 'full_text', 'data', 'is_event',
                  'brief_attaches', 'brief_forwarded', '_full_attaches', '_full_forwarded',
-                 'reserved_by', 'occupied_by', 'peer_id')
+                 'reserved_by', 'occupied_by', 'peer_id', "is_forwarded")
 
     def __init__(self, vk_api_object, message_data):
         self.message_data = message_data
@@ -25,6 +25,7 @@ class Message(object):
 
         self.is_event = False
         self.is_multichat = message_data.is_multichat
+        self.is_forwarded = message_data.is_forwarded
 
         self.user_id = message_data.user_id
         self.true_user_id = message_data.true_user_id
@@ -108,6 +109,7 @@ class Message(object):
             obj.user_id = self.user_id
             obj.is_multichat = self.is_multichat
             obj.is_out = self.is_out
+            obj.is_forwarded = True
 
             m = await Message.create(self.api, obj)
 

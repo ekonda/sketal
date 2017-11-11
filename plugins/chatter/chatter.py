@@ -61,7 +61,7 @@ class ChatterPlugin(BasePlugin):
                     self.bot.logger.error(f"Loading script `{f}` for ChatterPlugin... Error: \"{result[1]}\"")
 
     async def check_message(self, msg):
-        return not msg.is_out
+        return not msg.is_out and not msg.is_forwarded
 
     async def process_message(self, msg):
         skiptoeoe = False

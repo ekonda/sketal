@@ -203,7 +203,7 @@ class Attachment(object):
 class MessageEventData(object):
     __slots__ = ('is_multichat', 'user_id', 'full_text', "full_message_data",
                  'time', "msg_id", "attaches", "is_out", "forwarded", "chat_id",
-                 'true_user_id')
+                 'true_user_id', "is_forwarded")
 
     @staticmethod
     def from_message_body(obj):
@@ -234,6 +234,7 @@ class MessageEventData(object):
         data.full_text = obj['body']
         data.time = int(obj['date'])
         data.is_out = obj.get('out', False)
+        data.is_forwarded = False
         data.full_message_data = obj
 
         return data
@@ -303,6 +304,7 @@ class MessageEventData(object):
 
     def __init__(self):
         self.is_multichat = False
+        self.is_forwarded = False
         self.is_out = False
 
         self.chat_id = 0
