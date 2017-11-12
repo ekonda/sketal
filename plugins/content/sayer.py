@@ -143,7 +143,6 @@ class yTTS(object):
     async def _write_to_fp(self, f):
         async with aiohttp.ClientSession(raise_for_status=True) as sess:
             async with sess.get(self.base_url, params=self.params) as resp:
-                print(str(resp.url))
                 while True:
                     chunk = await resp.content.read(1024)
 
