@@ -34,7 +34,7 @@ class BirthdayPlugin(CommandPlugin):
             while True:
                 result = await msg.api.groups.getMembers(group_id=argument, offset=offset, fields="bdate")
 
-                if not result["items"]:
+                if not result or "items" not in result or not result["items"]:
                     if offset == 0:
                         return await msg.answer("Не удалось получить сообщество или оно пусто!")
 

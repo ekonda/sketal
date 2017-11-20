@@ -84,14 +84,15 @@ class VkClient:
         async with self.session.post(url, data=data, **self.req_kwargs) as resp:
             try:
                 results = json_iter_parse(await resp.text())
+
+                for data in results:
+                    if 'response' in data:
+                        return data['response']
+
             except json.JSONDecodeError:
                 self.logger.error("Error while executing vk method: vk's response is wrong!")
 
                 return False
-
-            for data in results:
-                if 'response' in data:
-                    return data['response']
 
         return False
 
@@ -120,54 +121,55 @@ class VkClient:
                 self.logger.debug(f"Request with code:\n{code}\nResponse:\n{response}")
 
                 results = json_iter_parse(response)
+
+                for data in results:
+                    if 'error' in data:
+                        if data['error']['error_code'] == CAPTCHA_IS_NEEDED:
+                            captcha_key = await self.enter_captcha(data['error']["captcha_img"])
+
+                            if not captcha_key:
+                                return False
+
+                            new_data = {"captcha_key": captcha_key, "captcha_sid": data['error']["captcha_sid"]}
+                            new_data.update(additional_values)
+
+                            return await self.execute(code, **new_data)
+
+                        errors.append(data['error'])
+                        errors_codes.append(data['error']['error_code'])
+
+                    if 'execute_errors' in data:
+                        for error in data['execute_errors']:
+                            errors.append({'code': error['error_code'],
+                                           'method': error['method'],
+                                           'error_msg': error['error_msg']})
+                            errors_codes.append(error['error_code'])
+
+                        errors_codes.append(EXECUTE_ERROR)
+
+                        continue
+
+                    if 'response' in data:
+                        return data['response']
+
+                if INTERNAL_ERROR in errors_codes:
+                    await asyncio.sleep(1)
+
+                    if self.app_id:
+                        await self.user(self.username, self.password, self.app_id, self.scope)
+
+                    return await self.execute(code, reties + 1)
+
+                if AUTHORIZATION_FAILED in errors_codes:
+                    if self.app_id:
+                        await self.user(self.username, self.password, self.app_id, self.scope)
+
+                    return await self.execute(code, reties + 1)
+
             except json.JSONDecodeError:
                 self.logger.error("Error while executing vk method: vk's response is wrong!")
 
                 return False
-
-            for data in results:
-                if 'error' in data:
-                    if data['error']['error_code'] == CAPTCHA_IS_NEEDED:
-                        captcha_key = await self.enter_captcha(data['error']["captcha_img"])
-
-                        if not captcha_key:
-                            return False
-
-                        new_data = {"captcha_key": captcha_key, "captcha_sid": data['error']["captcha_sid"]}
-                        new_data.update(additional_values)
-
-                        return await self.execute(code, **new_data)
-
-                    errors.append(data['error'])
-                    errors_codes.append(data['error']['error_code'])
-
-                if 'execute_errors' in data:
-                    for error in data['execute_errors']:
-                        errors.append({'code': error['error_code'],
-                                       'method': error['method'],
-                                       'error_msg': error['error_msg']})
-                        errors_codes.append(error['error_code'])
-
-                    errors_codes.append(EXECUTE_ERROR)
-
-                    continue
-
-                if 'response' in data:
-                    return data['response']
-
-            if INTERNAL_ERROR in errors_codes:
-                await asyncio.sleep(1)
-
-                if self.app_id:
-                    await self.user(self.username, self.password, self.app_id, self.scope)
-
-                return await self.execute(code, reties + 1)
-
-            if AUTHORIZATION_FAILED in errors_codes:
-                if self.app_id:
-                    await self.user(self.username, self.password, self.app_id, self.scope)
-
-                return await self.execute(code, reties + 1)
 
         error_text = ""
         for error in errors:
@@ -331,6 +333,13 @@ class RequestsQueue:
             self.release = True
 
     async def queue_processor(self):
+        try:
+            await self._queue_processor()
+        except:
+            import traceback
+            traceback.print_exc()
+
+    async def _queue_processor(self):
         """Process queue"""
 
         for _ in range(4):

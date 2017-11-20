@@ -13,8 +13,6 @@ General sample usage:
 >>> db.insert({'name': 'John', 'age': 22})
 >>> db.search(User.name == 'John')
 [{'name': 'John', 'age': 22}]
-
-For example usage see `currenttime.py`
 """
 
 

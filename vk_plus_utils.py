@@ -217,7 +217,10 @@ class MessageEventData(object):
             c += 1
 
             data.attaches[f'attach{c}_type'] = a['type']
-            data.attaches[f'attach{c}'] = f'{a[a["type"]]["owner_id"]}_{a[a["type"]]["id"]}'
+            try:
+                data.attaches[f'attach{c}'] = f'{a[a["type"]]["owner_id"]}_{a[a["type"]]["id"]}'
+            except KeyError:
+                data.attaches[f'attach{c}'] = ""
 
         if 'fwd_messages' in obj:
             data.forwarded = MessageEventData.parse_brief_forwarded_messages(obj)
