@@ -7,6 +7,5 @@ log.txt
 settings_real.py
 *private
 
-games.json
-base.json
-tinydb_database.json
+*.json
+*.notjson
