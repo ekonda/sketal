@@ -19,7 +19,7 @@ from plugins import *
 
 class BotSettings(BaseSettings):
     USERS = (
-        ("group", "API КЛЮЧ СООБЩЕСТВА",),
+        ("user", "c663a2a68a9a32386d49fadad2dd7c91607b871a21a9456c55d0b3efbe4c6fbccecaee9c370dd378e6213",),
     )
 
     PROXIES = (
@@ -42,7 +42,7 @@ class BotSettings(BaseSettings):
 
     # Other
 
-    READ_OUT = False
+    READ_OUT = True
 
     # Plugins
 
@@ -62,6 +62,9 @@ class BotSettings(BaseSettings):
     hp = HelpPlugin("помощь", "команды", "?", prefixes=prefixes)
 
     PLUGINS = (
+        AdminPlugin(prefixes=prefixes, admins=admins, setadmins=True),
+        
+        WikiPlugin("что такое", prefixes=prefixes),
         AnagramsPlugin(["анаграмма", "анаграммы"], prefixes=prefixes),
         HangmanPlugin(["виселица"], prefixes=prefixes),
         MembersPlugin("кто тут", prefixes=prefixes),

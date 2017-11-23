@@ -7,11 +7,11 @@ class AdminPlugin(BasePlugin):
     __slots__ = ("admins", "moders", "banset", "prefixes", "commands", "setadmins")
 
     def __init__(self, commands=None, admins=None, moders=None, banset=None, prefixes=(), setadmins=False):
-        """Allows admins to ban people"""
+        """Allows admins to ban people and control admins for plugins"""
 
         super().__init__()
 
-        self.commands = commands if commands else ["ban", "unban", "admin", "unadmin", "moder", "unmoder", "banned", "admins"]
+        self.commands = list(commands) if commands else ["ban", "unban", "admin", "unadmin", "moder", "unmoder", "banned", "admins"]
         self.admins = list(admins) if admins else list()
         self.moders =  list(moderators) if moders else list()
         self.banset = list(banset) if banset else list()
@@ -23,7 +23,7 @@ class AdminPlugin(BasePlugin):
     def initiate(self):
         if self.setadmins:
             for plugin in self.handler.plugins:
-                if hasattr(plugin, admins):
+                if hasattr(plugin, "admins"):
                     plugin.admins = self.admins
 
     def get_pathes(self):
@@ -38,21 +38,21 @@ class AdminPlugin(BasePlugin):
         try:
             with open(path_admins, "r") as o:
                 for u in o.read().split(","):
-                    if u: self.admins.append(int(u))
+                    if u and u not in self.admins: self.admins.append(int(u))
         except FileNotFoundError:
             pass
 
         try:
             with open(path_moders, "r") as o:
                 for u in o.read().split(","):
-                    if u: self.moders.append(int(u))
+                    if u and u not in self.moders: self.moders.append(int(u))
         except FileNotFoundError:
             pass
 
         try:
             with open(path_banset, "r") as o:
                 for u in o.read().split(","):
-                    if u and int(u) not in self.admins: self.banset.append(u)
+                    if u and u not in self.banset and int(u) not in self.admins: self.banset.append(u)
         except FileNotFoundError:
             pass
 
