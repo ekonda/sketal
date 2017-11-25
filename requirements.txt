@@ -2,10 +2,20 @@ requests
 aiohttp
 captcha_solver
 python-dateutil
+
 xmltodict
+
 Pillow
+
 qrcode
+
+peewee
+peewee_async
+aiomysql
+aiopg
+
 tinydb
 
 gTTS
 langdetect
+
