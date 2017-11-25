@@ -11,10 +11,10 @@ Docs: http://docs.peewee-orm.com/en/latest/
 """
 
 
-class PostgreSQLPlugin(BasePlugin):
+class PeeweePlugin(BasePlugin):
     __slots__ = ("database", "manager", "models")
 
-    def __init__(self, dbname, dbuser, dbpassword, dbhost):
+    def __init__(self, dbname, dbuser, dbpassword, dbhost, custom_driver=None, **kwargs):
         """Adds self to messages and event's `data` field.
         Through this instance you can access peewee_async.Manager instance (data["peewee_async"].manager).
         This plugin should be included first!
@@ -22,7 +22,14 @@ class PostgreSQLPlugin(BasePlugin):
 
         super().__init__()
 
-        self.database = peewee_async.PostgresqlDatabase(dbname, user=dbuser, password=dbpassword, host=dbhost)
+        # You can replace PostgresqlDatabase with MysqlDatabase or pass driver you want tot use in custom_driver argument
+
+        if custom_driver is None:
+            driver = peewee_async.PostgresqlDatabase
+        else:
+            driver = custom_driver
+
+        self.database = driver(dbname, user=dbuser, password=dbpassword, host=dbhost, **kwagrs)
 
         self.models = []
 
@@ -31,7 +38,7 @@ class PostgreSQLPlugin(BasePlugin):
         self.manager = peewee_async.Manager(self.database)
 
         database.set_allow_sync(False)
-        
+
     def create_models(self):
         class TestModel(peewee.Model):
             text = peewee.CharField()

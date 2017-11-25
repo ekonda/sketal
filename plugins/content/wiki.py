@@ -7,6 +7,8 @@ class WikiPlugin(CommandPlugin):
     __slots__ = ()
 
     def __init__(self, *commands, prefixes=None, strict=False):
+        """Asnwers with found data from wikipedia"""
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
     async def process_message(self, msg):
@@ -21,19 +23,24 @@ class WikiPlugin(CommandPlugin):
             async with sess.get(url) as resp:
                 result = await resp.json()
 
-                if not result:
+                if not result or len(result) < 4:
                     return await msg.answer("Ничего не найдено!")
 
                 length = len(result[1])
 
                 for i in range(length):
-                    if result[2][i][-1] == ":":
-                        answer += "Возможные значения: " + result[3][i] + "\n"
+                    try:
+                        if result[2][i][-1] == ":":
+                            answer += "Возможные значения: " + result[3][i] + "\n"
 
-                    else:
-                        answer += result[2][i] + "\n"
-                        answer += "Подробнее: " + result[3][i] + "\n"
+                        else:
+                            answer += result[2][i] + "\n"
+                            answer += "Подробнее: " + result[3][i] + "\n"
 
-                    answer += "\n"
+                            answer += "\n"
+                            
+                    except Exception as e:
+                        if self.bot.settings.DEBUG:
+                            self.bot.logger.warning("WikiPlugin error: " + str(e))
 
                 return await msg.answer(answer)

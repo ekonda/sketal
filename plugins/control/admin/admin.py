@@ -25,6 +25,8 @@ class AdminPlugin(BasePlugin):
             for plugin in self.handler.plugins:
                 if hasattr(plugin, "admins"):
                     plugin.admins = self.admins
+                if hasattr(plugin, "moders"):
+                    plugin.moders = self.moders
 
     def get_pathes(self):
         return self.get_path("/admins.notjson"), self.get_path("/moders.notjson"), self.get_path("/batset.notjson")
@@ -197,5 +199,9 @@ class AdminPlugin(BasePlugin):
     async def global_before_message(self, msg, plugin):
         for n, s in (("admin", self.admins), ("moder", self.moders), ("banned", self.banset)):
             msg.data[f"is_{n}"] = msg.user_id in s
+
+        msg.data["admins"] = self.admins
+        msg.data["moders"] = self.moders
+        msg.data["banset"] = self.banset
 
         return not msg.data["is_banned"]
