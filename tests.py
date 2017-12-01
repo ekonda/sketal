@@ -6,7 +6,6 @@ from bot import Bot
 from constants import MAX_LENGHT
 from vk_plus import asyncio, Wait
 from vk_plus_data import Message
-from vk_plus_utils import MessageBuilder
 from vk_special_methods import upload_doc, upload_photo
 
 try:
@@ -204,70 +203,6 @@ class TestVkUtils(unittest.TestCase):
 
         self.assertEqual(len(result), 2)
         self.assertEqual(len(result[-1]), 4)
-
-    def test_message_builder(self):
-        mb = MessageBuilder()
-
-        for _ in range(10):
-            mb.append("Test1 ")
-
-        text = list(mb.result())[0]
-        self.assertEqual(text, "Test1 " * 10)
-
-        mb = MessageBuilder()
-
-        for _ in range(MAX_LENGHT * 2):
-            mb.append("a")
-
-        size = 0
-        for _ in mb.result():
-            size += 1
-
-        self.assertEqual(size, 1)
-
-    def test_message_builder_divider(self):
-        mb = MessageBuilder()
-
-        for _ in range(int(MAX_LENGHT * 0.8)):
-            mb.append("a")
-
-        mb.append_divider()
-
-        for _ in range(MAX_LENGHT - int(MAX_LENGHT * 0.8)):
-            mb.append("b")
-
-        mb.append_divider()
-
-        mb.append("kek")
-
-        size = 0
-        for _ in mb.result():
-            size += 1
-
-        self.assertEqual(size, 2)
-
-        mb = MessageBuilder()
-
-        for _ in range(int(MAX_LENGHT * 0.8)):
-            mb.append("a")
-
-        mb.append_divider()
-
-        for _ in range(MAX_LENGHT - int(MAX_LENGHT * 0.4)):
-            mb.append("b")
-
-        mb.append_divider()
-
-        for _ in range(int(MAX_LENGHT * 0.9)):
-            mb.append("c")
-
-        mb.append_divider()
-
-        size = 0
-        for _ in mb.result():
-            size += 1
-
-        self.assertEqual(size, 3)
 
 
 if __name__ == '__main__':

@@ -114,42 +114,6 @@ class Sender:
         self.target = target
 
 
-class MessageBuilder:
-    __slots__ = ("messages", "messages_lengths", "texts", "texts_lengths")
-
-    def __init__(self):
-        self.messages = [""]
-        self.messages_lengths = [0]
-
-        self.texts = []
-        self.texts_lengths = []
-
-    def append(self, text):
-        self.texts.append(text)
-        self.texts_lengths.append(len(text))
-
-    def append_divider(self):
-        current_length = sum(self.texts_lengths)
-
-        if self.messages[-1] and current_length + self.messages_lengths[-1] > MAX_LENGHT:
-            self.messages_lengths.append(current_length)
-            self.messages.append("".join(self.texts))
-
-        else:
-            self.messages_lengths[-1] += current_length
-            self.messages[-1] += "".join(self.texts)
-
-        self.texts = []
-        self.texts_lengths = []
-
-    def result(self):
-        if self.texts:
-            self.append_divider()
-
-        for m in self.messages:
-            yield m
-
-
 class Attachment(object):
     __slots__ = ('type', 'owner_id', 'id', 'access_key', 'url')
 
@@ -201,9 +165,9 @@ class Attachment(object):
 
 
 class MessageEventData(object):
-    __slots__ = ('is_multichat', 'user_id', 'full_text', "full_message_data",
-                 'time', "msg_id", "attaches", "is_out", "forwarded", "chat_id",
-                 'true_user_id', "is_forwarded")
+    __slots__ = ("is_multichat", "user_id", "full_text", "full_message_data",
+                 "time", "msg_id", "attaches", "is_out", "forwarded", "chat_id",
+                 "true_user_id", "is_forwarded", "true_msg_id")
 
     @staticmethod
     def from_message_body(obj):
@@ -231,6 +195,7 @@ class MessageEventData(object):
 
         if "id" in obj:
             data.msg_id = obj["id"]
+            data.true_msg_id = obj["id"]
 
         data.user_id = int(obj['user_id'])
         data.true_user_id = int(obj['user_id'])
@@ -316,6 +281,7 @@ class MessageEventData(object):
         self.full_text = ""
         self.time = ""
         self.msg_id = 0
+        self.true_msg_id = 0
         self.attaches = None
         self.forwarded = None
         self.full_message_data = None

@@ -26,7 +26,6 @@ class ResendCheckerPlugin(BasePlugin):
             if msg.user_id == nid:
                 return False
 
-
         return not msg.is_out
 
     async def process_message(self, msg):
