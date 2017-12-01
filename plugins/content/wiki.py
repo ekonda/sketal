@@ -13,6 +13,7 @@ class WikiPlugin(CommandPlugin):
 
     async def process_message(self, msg):
         command, text = self.parse_message(msg, full_text=True)
+        text = text.replace(" ", "+")
 
         url = f"https://ru.wikipedia.org/w/api.php?action=opensearch&search={text}&limit=1&format=json" \
               f"&prop=info&redirects=resolve"
@@ -38,9 +39,12 @@ class WikiPlugin(CommandPlugin):
                             answer += "Подробнее: " + result[3][i] + "\n"
 
                             answer += "\n"
-                            
+
                     except Exception as e:
                         if self.bot.settings.DEBUG:
                             self.bot.logger.warning("WikiPlugin error: " + str(e))
+
+                if not answer:
+                    return await msg.answer("Ничего не найдено!")
 
                 return await msg.answer(answer)

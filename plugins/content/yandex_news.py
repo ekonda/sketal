@@ -45,11 +45,12 @@ class YandexNewsPlugin(CommandPlugin):
         self.set_description()
 
     def set_description(self):
+        p = self.prefixes[-1] if self.prefixes else ""
         self.description = [f"Новости",
                             f"Показать новости.",
-                            f"{self.main_commands[0]} - показать новость.",
-                            f"{self.main_commands[0]} [тема] - показать случайную новость.",
-                            f"{self.main_commands[0]} {self.help_words[0]} - показать доступные темы."]
+                            f"{p}{self.main_commands[0]} - показать новость.",
+                            f"{p}{self.main_commands[0]} [тема] - показать случайную новость.",
+                            f"{p}{self.main_commands[0]} {self.help_words[0]} - показать доступные темы."]
 
     async def process_message(self, msg: Message):
         command, text = self.parse_message(msg)

@@ -397,7 +397,7 @@ class RequestsQueue:
             execute.append("({")
 
             for k, v in task.data.items():
-                v = re.sub(r'((?<=\\\\)|(?<!\\))"', r'\"', str(v))
+                v = str(v).replace('\\', '\\\\').replace('"', '\\"')
                 execute.append(str(k) + ': "' + v + '", ')
 
             execute.append('}),')
