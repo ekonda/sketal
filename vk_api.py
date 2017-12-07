@@ -100,7 +100,7 @@ class VkClient:
         """Execute a `code` from vk's "execute" method"""
 
         if reties > 4:
-            self.logger.warning("Can't login to VK!")
+            self.logger.warning("Can't execute code: \"" + str(code) + "\"")
             return False
 
         if additional_values.get("_replace_nl", True):
@@ -154,10 +154,6 @@ class VkClient:
 
                 if INTERNAL_ERROR in errors_codes:
                     await asyncio.sleep(1)
-
-                    if self.app_id:
-                        await self.user(self.username, self.password, self.app_id, self.scope)
-
                     return await self.execute(code, reties + 1)
 
                 if AUTHORIZATION_FAILED in errors_codes:

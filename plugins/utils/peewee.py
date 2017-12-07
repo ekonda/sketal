@@ -12,15 +12,17 @@ Docs: http://docs.peewee-orm.com/en/latest/
 
 
 class PeeweePlugin(BasePlugin):
-    __slots__ = ("database", "manager", "models")
+    __slots__ = ("database", "manager", "set_manager")
 
-    def __init__(self, dbname, dbuser, dbpassword, dbhost, custom_driver=None, **kwargs):
+    def __init__(self, dbhost, dbname, dbuser, dbpassword, dbport, custom_driver=None, set_manager=False, **kwargs):
         """Adds self to messages and event's `data` field.
         Through this instance you can access peewee_async.Manager instance (data["peewee_async"].manager).
         This plugin should be included first!
         """
 
         super().__init__()
+
+        self.set_manager = set_manager
 
         # You can replace PostgresqlDatabase with MysqlDatabase or pass driver you want tot use in custom_driver argument
 
@@ -29,29 +31,21 @@ class PeeweePlugin(BasePlugin):
         else:
             driver = custom_driver
 
-        self.database = driver(dbname, user=dbuser, password=dbpassword, host=dbhost, **kwagrs)
+        if isinstance(dbport, str):
+            try:
+                dbport = int(dbport)
+            except ValueError:
+                raise ValueError("Port is wrong!")
 
-        self.models = []
-
-        self.create_models()
-
+        self.database = driver(dbname, user=dbuser, password=dbpassword, host=dbhost, port=dbport, **kwargs)
         self.manager = peewee_async.Manager(self.database)
+        self.database.set_allow_sync(False)
 
-        database.set_allow_sync(False)
-
-    def create_models(self):
-        class TestModel(peewee.Model):
-            text = peewee.CharField()
-
-            class Meta:
-                database = self.database
-
-        TestModel.create_table(True)
-        TestModel.create(text="Yo, I can do it sync!")
-
-        self.models.append(TestModel)
-
-        self.database.close()
+    def initiate(self):
+        if self.set_manager:
+            for plugin in self.handler.plugins:
+                if hasattr(plugin, "pwmanager"):
+                    plugin.pwmanager = self.manager
 
     async def global_before_message_checks(self, msg):
         msg.data["peewee_async"] = self

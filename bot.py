@@ -385,8 +385,12 @@ if __name__ == "__main__":
 
         from settings_real import BotSettings
 
-    except ImportError:
+    except ModuleNotFoundError:
         from settings import BotSettings
+
+    except ImportError:
+        import traceback
+        traceback.print_exc()
 
     bot = Bot(BotSettings)
     bot.longpoll_run()
