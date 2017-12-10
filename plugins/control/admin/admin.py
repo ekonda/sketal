@@ -1,6 +1,7 @@
 from handler.base_plugin import BasePlugin
 
 from utils import traverse
+from vk_special_methods import parse_user_id
 
 
 class AdminPlugin(BasePlugin):
@@ -78,6 +79,7 @@ class AdminPlugin(BasePlugin):
 
     async def process_message(self, msg):
         text = msg.text
+
         for p in self.prefixes:
             if msg.text.startswith(p):
                 text = text.replace(p, "", 1)
@@ -124,20 +126,7 @@ class AdminPlugin(BasePlugin):
         if not msg.data["is_admin"]:
             return await msg.answer("Вы не администратор!")
 
-        puid = ""
-
-        for m in traverse(await msg.get_full_forwarded()):
-            if m.user_id and m.true_user_id != msg.user_id:
-                puid = m.true_user_id
-                break
-
-        if not puid:
-            puid = text.split(" ")[-1]
-
-            if puid.isdigit():
-                puid = int(puid)
-            else:
-                puid = ""
+        puid = await parse_user_id(msg)
 
         if not puid:
             return await msg.answer(f"Ошибка при определении id пользователя!")

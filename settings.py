@@ -64,6 +64,9 @@ class BotSettings(BaseSettings):
     PLUGINS = (
         AdminPlugin(prefixes=prefixes, admins=admins, setadmins=True),
 
+        RememberPlugin("напомни",prefixes=prefixes),
+        # WeatherPlugin("погода", token="token for api", prefixes=prefixes),
+        QuotePlugin("цитатка"),
         WikiPlugin("что такое", prefixes=prefixes),
         AnagramsPlugin(["анаграмма", "анаграммы"], prefixes=prefixes),
         HangmanPlugin(["виселица"], prefixes=prefixes),

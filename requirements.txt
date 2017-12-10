@@ -1,21 +1,28 @@
+# Utils
 requests
 aiohttp
 captcha_solver
 python-dateutil
 
+# Geo stuff
+geopy
+
+# XML parsing
 xmltodict
 
+# Drawing
 Pillow
 
+# QR code
 qrcode
 
+# Data and bases
 peewee
 peewee_async
 aiomysql
 aiopg
-
 tinydb
 
+# Language pluings
 gTTS
 langdetect
-

@@ -4,6 +4,7 @@ import aiohttp
 import json
 
 from vk_plus_utils import Attachment
+from utils import traverse
 
 
 async def upload_audio_message(api, multipart_data, peer_id) -> Optional[Attachment]:
@@ -109,3 +110,30 @@ async def upload_photo(api, multipart_data, peer_id=None):
         return None
 
     return Attachment.from_upload_result(result[0])
+
+async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=None):
+    for m in traverse(await msg.get_full_forwarded()):
+        if m.user_id and m.true_user_id != msg.user_id:
+            return m.true_user_id
+            break
+
+    if not can_be_argument:
+        return None
+
+    if custom_text is None:
+        text = msg.text.split(" ")[argument_ind]
+    else:
+        text = custom_text.split(" ")[argument_ind]
+
+    if text.isdigit():
+        tuid = int(text)
+    else:
+        if text.startswith("https://vk.com/"):
+            text = text[15:]
+
+        tuid = await msg.api.utils.resolveScreenName(screen_name=text)
+
+    if not tuid:
+        return None
+
+    return tuid.get("object_id")

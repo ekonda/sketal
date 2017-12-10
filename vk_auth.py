@@ -1,9 +1,32 @@
-import re
-
 import aiohttp
-import logging
+
+import json, re
+import requests, logging
 
 from urllib.parse import urlparse, parse_qsl
+
+
+class AuthFallback:
+    __slots__ = ("logger", "cli")
+
+    def __init__(self, cli, logger=None):
+        self.logger = logger
+        self.cli = cli
+
+    async def get_token(self, username, password, appid, scope):
+        url = "https://oauth.vk.com/token?grant_type=password&client_id=2274003&client_secret=hHbZxrka2uZ6jB1inYsH&username={username}&password={password}"
+        res = json.loads(requests.get(url.format(username=username, password=password)).text)
+
+        token = res.get("access_token")
+
+        if not token:
+            return None
+
+        if "user_id" in res:
+            if hasattr(self.cli, "user_id"):
+                self.cli.user_id = res["user_id"]
+
+        return token
 
 
 class Auth:
@@ -146,7 +169,9 @@ class Auth:
                     elif 'access_token' in response_url_query2:
                         return response_url_query2['access_token']
 
-            return None
+            fallback = AuthFallback(self.obj, self.logger)
+
+            return await fallback.get_token(username, password, appid, scope)
 
     async def login(self, username, password, session):
         captcha_url = 'https://m.vk.com/captcha.php'

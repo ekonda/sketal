@@ -1,5 +1,6 @@
 from handler.base_plugin_command import CommandPlugin
 from vk_plus_utils import EventType
+from vk_special_methods import parse_user_id
 from utils import traverse
 
 import time
@@ -43,10 +44,7 @@ class ChatKickerPlugin(CommandPlugin):
         kick_time = 300
         puid = None
 
-        for m in traverse(await msg.get_full_forwarded()):
-            if m.user_id and m.true_user_id != msg.user_id:
-                puid = m.true_user_id
-                break
+        puid = await parse_user_id(msg)
 
         if len(parts) > 0 and parts[0].isdigit():
             if puid is not None:
