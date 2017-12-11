@@ -1,20 +1,23 @@
 from handler.base_plugin_command import CommandPlugin
 
+import peewee_async, peewee
+
 import asyncio, uuid, time, re
 
 
 class RememberPlugin(CommandPlugin):
     __slots__ = ("after_pa", "after_re", "remember_list", "help", "pwmanager",
                  "add_entity", "sub_entity", "clear_peer", "iterate_entities",
-                 "get_size_of_list", "place_data")
+                 "get_size_of_list", "place_data", "use_db")
 
-    def __init__(self, *commands, prefixes=None, strict=False):
+    def __init__(self, *commands, prefixes=None, strict=False, use_db=False):
         """Creates notification poping up after specified time"""
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
-        self.remember_list = []  # (uniq_id, peer_id, firetime, text, atta)
+        self.remember_list = []  # (uniq_id, peer_id, firetime, text, atta, user_id)
         self.pwmanager = None
+        self.use_db = use_db
 
         self.add_entity = None
         self.sub_entity = None
@@ -33,7 +36,7 @@ class RememberPlugin(CommandPlugin):
         self.help = "\n".join(self.description)
 
     def initiate(self):
-        if self.pwmanager is None or True:
+        if not self.use_db or self.pwmanager is None:
             async def add_entity(ne):
                 for i, e in enumerate(self.remember_list):
                     if ne[2] > e[2]:
@@ -59,17 +62,28 @@ class RememberPlugin(CommandPlugin):
 
             self.clear_peer = clear_peer
 
-            self.place_data = lambda e: e
+            async def place_data(e):
+                return e
 
-            self.get_size_of_list = lambda: len(self.remember_list)
-            self.iterate_entities = lambda: list(e for e in self.remember_list if e[2] <= time.time())
+            self.place_data = place_data
+
+            async def get_size_of_list():
+                return len(self.remember_list)
+
+            self.get_size_of_list = get_size_of_list
+
+            async def iterate_entities():
+                return list(e for e in self.remember_list if e[2] <= time.time())
+
+            self.iterate_entities = iterate_entities
 
         else:
             class Entity(peewee.Model):
                 firetime = peewee.TimestampField()
 
+                user_id = peewee.BigIntegerField()
                 peer_id = peewee.BigIntegerField()
-                uniq_id = peewee.TextField(primary_key=True, unique=True)
+                uniq_id = peewee.CharField(primary_key=True, unique=True, max_length=64)
 
                 text = peewee.TextField()
                 atta = peewee.TextField()
@@ -81,21 +95,21 @@ class RememberPlugin(CommandPlugin):
                 Entity.create_table(True)
 
             async def add_entity(ne):
-                await self.pwmanager.get_or_create(Entity, firetime=ne[2], uniq_id=ne[0], peer_id=ne[1], text=ne[3], atta=ne[4])
+                await self.pwmanager.get_or_create(Entity, firetime=ne[2], uniq_id=ne[0], peer_id=ne[1], text=ne[3], atta=ne[4], user_id=ne[5])
 
             self.add_entity = add_entity
 
             async def sub_entity(e_id):
-                return await self.pwmanager.execute(Entity.delete().where(uniq_id=e_id)) > 0
+                return await self.pwmanager.execute(Entity.delete().where(Entity.uniq_id == e_id)) > 0
 
             self.sub_entity = sub_entity
 
             async def clear_peer(peer_id):
-                return await self.pwmanager.execute(Entity.delete().where(peer_id=peer_id)) > 0
+                return await self.pwmanager.execute(Entity.delete().where(Entity.peer_id == peer_id)) > 0
 
             self.clear_peer = clear_peer
 
-            self.place_data = lambda e: (e.uniq_id, e.peer_id, e.firetime, e.text, e.atta)
+            self.place_data = lambda e: (e.uniq_id, e.peer_id, e.firetime, e.text, e.atta, e.user_id)
 
             async def get_size_of_list():
                 return await self.pwmanager.count(Entity.select()) > 0
@@ -111,10 +125,10 @@ class RememberPlugin(CommandPlugin):
 
     async def sender(self):
         while True:
-            for e in self.iterate_entities():
-                unid, peer_id, _, message, attachment = self.place_data(e)
+            for e in await self.iterate_entities():
+                unid, peer_id, _, message, attachment, user_id = self.place_data(e)
 
-                await self.api.messages.send(peer_id=peer_id, message="✉ > " + message, attachment=attachment)
+                await self.api.messages.send(peer_id=peer_id, message=f"[id{user_id}|✉] > " + message, attachment=attachment)
                 await self.sub_entity(unid)
 
             await asyncio.sleep(1)
@@ -164,7 +178,7 @@ class RememberPlugin(CommandPlugin):
 
         uid = uuid.uuid4()
 
-        await self.add_entity((uid, msg.peer_id, time.time() + wait_time, full_text, ",".join(str(a) for a in await msg.get_full_attaches())))
+        await self.add_entity((uid, msg.peer_id, time.time() + wait_time, full_text, ",".join(str(a) for a in await msg.get_full_attaches()), msg.user_id))
 
         if msg.peer_id != msg.user_id:
             await msg.answer("💬 Напоминание успешно добавлено!")

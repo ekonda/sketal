@@ -64,7 +64,7 @@ class BotSettings(BaseSettings):
     PLUGINS = (
         AdminPlugin(prefixes=prefixes, admins=admins, setadmins=True),
 
-        RememberPlugin("напомни",prefixes=prefixes),
+        RememberPlugin("напомни",prefixes=prefixes),  # use_db=True, if you want to use PeeweePlugin
         # WeatherPlugin("погода", token="token for api", prefixes=prefixes),
         QuotePlugin("цитатка"),
         WikiPlugin("что такое", prefixes=prefixes),
