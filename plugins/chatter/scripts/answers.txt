@@ -1,1 +1,0 @@
-cw"бот иди нахуй", cw"пошел нахуй [бот]" -> a"Sam idi, chto hochu, to i vorochu [бот]";

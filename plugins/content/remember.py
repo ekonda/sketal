@@ -127,7 +127,6 @@ class RememberPlugin(CommandPlugin):
         while True:
             for e in await self.iterate_entities():
                 unid, peer_id, _, message, attachment, user_id = self.place_data(e)
-
                 await self.api.messages.send(peer_id=peer_id, message=f"[id{user_id}|✉] > " + message, attachment=attachment)
                 await self.sub_entity(unid)
 

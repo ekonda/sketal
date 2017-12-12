@@ -283,13 +283,13 @@ class ChatterPlugin(BasePlugin):
         token = ""
         inside = False
         comment = False
+        escaped = False
 
         def add_node(type=Type.Non):
             plugin.append(Node(type))
 
         with open(path) as cont:
             for no, li in enumerate(cont):
-                pr_ch = None
                 for cno, ch in enumerate(li):
                     node = plugin[-1]
 
@@ -304,17 +304,26 @@ class ChatterPlugin(BasePlugin):
                             comment = True
                             continue
 
-                    if ch == ";" and not inside:
+                    if inside:
+                        if escaped or ch not in ("\\", '"'):
+                            node.value += ch
+                            node.type = Type.Text
+                            escaped = False
+
+                        elif ch == '"':
+                            add_node()
+                            inside = False
+
+                        elif ch == '\\':
+                            escaped = True
+
+                    elif ch == ";":
                         node.type = Type.Eoe
                         add_node()
 
-                    elif ch == '"' and pr_ch != '\\':
+                    elif ch == '"':
                         add_node()
-                        inside = not inside
-
-                    elif inside:
-                        node.value += ch
-                        node.type = Type.Text
+                        inside = True
 
                     elif node.value == "->":
                         add_node()
@@ -322,8 +331,6 @@ class ChatterPlugin(BasePlugin):
                     elif ch not in (" ", "\n", ","):
                         node.value += ch
                         node.type = Type.Inst
-
-                    pr_ch = ch
 
         if plugin[-1].type == Type.Non and not inside and not comment:
             plugin[-1].type = Type.Eoe
