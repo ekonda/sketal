@@ -11,6 +11,8 @@ class WikiPlugin(CommandPlugin):
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
+        self.description = ["Википедия", f"{self.command_example()} [что-то] - получить информацию о чём-то"]
+
     async def process_message(self, msg):
         command, text = self.parse_message(msg, full_text=True)
         text = text.replace(" ", "+")
