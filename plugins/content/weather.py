@@ -16,7 +16,7 @@ class WeatherPlugin(CommandPlugin):
         """Answers with a weather in user's city or on specified addres."""
 
         if not token:
-            raise ValueError("Token is not specified!")
+            raise ValueError("Token is not specified! Get it from: https://darksky.net")
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 

@@ -63,10 +63,7 @@ class RememberPlugin(CommandPlugin):
 
             self.clear_peer = clear_peer
 
-            async def place_data(e):
-                return e
-
-            self.place_data = place_data
+            self.place_data = lambda e: e
 
             async def get_size_of_list():
                 return len(self.remember_list)
