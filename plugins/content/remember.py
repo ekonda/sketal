@@ -165,9 +165,9 @@ class RememberPlugin(CommandPlugin):
         elif step.startswith("минут"):
             step = 60
         elif step.startswith("час"):
-            step = 360
+            step = 3600
         elif step in ("день", "дня", "дней"):
-            step = 8640
+            step = 86400
         else:
             step = 1
 
