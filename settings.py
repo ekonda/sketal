@@ -66,6 +66,8 @@ class BotSettings(BaseSettings):
 
         RememberPlugin("напомни",prefixes=prefixes),  # use_db=True, if you want to use PeeweePlugin
         # WeatherPlugin("погода", token="token for api", prefixes=prefixes),
+        SmileWritePlugin(prefixes=prefixes),
+        JokePlugin(prefixes=prefixes),
         QuotePlugin("цитатка"),
         WikiPlugin("что такое", prefixes=prefixes),
         AnagramsPlugin(["анаграмма", "анаграммы"], prefixes=prefixes),

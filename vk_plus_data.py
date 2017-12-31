@@ -135,7 +135,7 @@ class Message(object):
             current_message = ""
 
             sep_length = len(sep)
-
+            c = 0
             parts = message.split(sep)
             length = len(parts)
 
@@ -194,6 +194,11 @@ class Message(object):
 
         for k, v in additional_values.items():
             if k == "attachment":
+                if isinstance(v, (list, tuple)):
+                    v = ",".join(str(sv) for sv in v)
+                elif not isinstance(v, str):
+                    v = str(v)
+
                 for sv in v.split(","):
                     if sv.startswith("sticker_"):
                         values = {"sticker_id": int(sv.replace("sticker_", "", 1)),

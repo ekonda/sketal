@@ -25,4 +25,5 @@ tinydb
 
 # Language pluings
 gTTS
+transliterate
 langdetect

@@ -34,7 +34,7 @@ class SayerPlugin(CommandPlugin):
 
         example = self.command_example()
         self.description = [f"Текст в речь",
-                            f"{example} [тест] - произнести текст (+ значит ударение перед ударной гласной)."]
+                            f"{example} [текст] - произнести текст (+ значит ударение перед ударной гласной)."]
 
     def initiate(self):
         if self.key == "e02d4514-b2a7-4edb-8ee8-825f854ef890":

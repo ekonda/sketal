@@ -60,7 +60,7 @@ class CommandPlugin(BasePlugin):
 
                 text = text.replace(v, "", 1)
 
-                if text[0] == " ": text = text[1:]
+                if text and text[0] == " ": text = text[1:]
 
                 break
 

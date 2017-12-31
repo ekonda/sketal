@@ -76,7 +76,7 @@ class VkClient:
 
         if data.get("_replace_nl", True):
             for k, v in data.items():
-                data[k] = v.replace("\n", "<br>")
+                data[k] = v.replace("\r\n", "<br>").replace("\n", "<br>")
 
             if "_replace_nl" in data:
                 del data["_replace_nl"]

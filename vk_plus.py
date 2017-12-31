@@ -11,13 +11,15 @@ from vk_plus_utils import *
 class VkController(object):
     __slots__ = ("logger", "vk_users", "vk_groups", "scope", "group", "app_id",
                  "current_user", "current_token", "hold", "proxies", "users_data",
-                 "solver", "target_client")
+                 "solver", "target_client", "settings")
 
     def __init__(self, settings, logger=None):
         if logger:
             self.logger = logger
         else:
             self.logger = logging.Logger("vk_controller")
+
+        self.settings = settings
 
         self.vk_users = []
         self.vk_groups = []
