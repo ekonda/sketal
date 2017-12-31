@@ -135,7 +135,6 @@ class Message(object):
             current_message = ""
 
             sep_length = len(sep)
-            c = 0
             parts = message.split(sep)
             length = len(parts)
 
