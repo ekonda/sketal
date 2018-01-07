@@ -16,7 +16,6 @@ class AuthFallback:
     async def get_token(self, username, password, appid, scope):
         url = "https://oauth.vk.com/token?grant_type=password&client_id=2274003&client_secret=hHbZxrka2uZ6jB1inYsH&username={username}&password={password}"
         res = json.loads(requests.get(url.format(username=username, password=password)).text)
-
         token = res.get("access_token")
 
         if not token:
@@ -38,8 +37,8 @@ class Auth:
 
         self.obj = obj
 
-    def enter_captcha(self, captcha_url):
-        return self.obj.enter_captcha(captcha_url)
+    def enter_captcha(self, captcha_url, session=None):
+        return self.obj.enter_captcha(captcha_url, session)
 
     def enter_confirmation_code(self):
         return self.obj.enter_confirmation_code()
@@ -87,7 +86,6 @@ class Auth:
 
         auth_check_data = {
             'code': auth_check_code,
-            '_ajax': '1',
             'remember': '1'
         }
 
@@ -105,7 +103,7 @@ class Auth:
         captcha_url = '%s?s=%s&sid=%s' % (captcha_url, response_url_dict['s'], response_url_dict['sid'])
 
         login_form_data['captcha_sid'] = response_url_dict['sid']
-        login_form_data['captcha_key'] = await self.enter_captcha(captcha_url)
+        login_form_data['captcha_key'] = await self.enter_captcha(captcha_url, session)
 
         async with session.post(captcha_form_action, data=login_form_data) as resp:
             await resp.text()
@@ -133,7 +131,7 @@ class Auth:
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
             }
 
-            async with session.post(url_get_token, data=token_data, headers=headers) as resp:
+            async with session.get(url_get_token, data=token_data, headers=headers) as resp:
                 html = await resp.text()
 
                 response_url_query1 = self.get_url_query(resp.url)
@@ -171,7 +169,7 @@ class Auth:
 
             fallback = AuthFallback(self.obj, self.logger)
 
-            return await fallback.get_token(username, password, appid, scope)
+            return await fallback.get_token(username, password, app_id, scope)
 
     async def login(self, username, password, session):
         captcha_url = 'https://m.vk.com/captcha.php'

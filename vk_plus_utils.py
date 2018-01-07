@@ -115,44 +115,46 @@ class Sender:
 
 
 class Attachment(object):
-    __slots__ = ('type', 'owner_id', 'id', 'access_key', 'url')
+    __slots__ = ('type', 'owner_id', 'id', 'access_key', 'url', 'ext')
 
-    def __init__(self, attach_type, owner_id, aid, access_key, url):
+    def __init__(self, attach_type, owner_id, aid, access_key=None, url=None, ext=None):
         self.type = attach_type
         self.owner_id = owner_id
         self.id = aid
         self.access_key = access_key
         self.url = url
+        self.ext = ext
 
     @staticmethod
     def from_upload_result(result, attach_type="photo"):
-        url = ""
+        url = None
 
         for k in result:
             if "photo_" in k:
                 url = result[k]
-
             elif "link_" in k:
                 url = result[k]
-
-            elif "url" in k:
+            elif "url" == k:
                 url = result[k]
 
-        return Attachment(attach_type, result["owner_id"], result["id"], "", url)
+        return Attachment(attach_type, result["owner_id"], result["id"], url=url, ext=result.get("ext"))
 
     @staticmethod
     def from_raw(raw_attach):
-        a_type = raw_attach['type']  # Тип аттача
-        attach = raw_attach[a_type]  # Получаем сам аттач
+        a_type = raw_attach['type']
+        attach = raw_attach[a_type]
 
-        url = ""
-        for k, v in attach.items():  # Ищём ссылку на фото
+        url = None
+
+        for k, v in attach.items():
             if "photo_" in k:
                 url = v
+            elif "link_" in k:
+                url = v
+            elif "url" == k:
+                url = v
 
-        key = attach.get('access_key')  # Получаем access_key для аттача
-
-        return Attachment(a_type, attach.get('owner_id', ''), attach.get('id', ''), key, url)
+        return Attachment(a_type, attach.get('owner_id', ''), attach.get('id', ''), attach.get('access_key'), url, ext=attach.get("ext"))
 
     def value(self):
         if self.access_key:

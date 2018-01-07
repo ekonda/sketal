@@ -67,7 +67,7 @@ class VkController(object):
 
                 await client.group(user[1])
 
-                if self.target_client is None: self.target_client = Sender(group=True, target=0)
+                if self.target_client is None: self.target_client = Sender(group=True, target=i)
 
                 self.vk_groups.append(client)
                 self.group = True
@@ -81,12 +81,19 @@ class VkController(object):
                 else:
                     await client.user(user[1], user[2], self.app_id, self.scope)
 
-                if self.target_client is None: self.target_client = Sender(user=True, target=0)
+                if self.target_client is None: self.target_client = Sender(user=True, target=i)
 
                 self.vk_users.append(client)
 
-    def get_bot_main(self):
-        return
+    def get_current_id(self):
+        if self.target_client is None:
+            return None
+
+        if self.target_client.user:
+            return self.vk_users[self.target_client.target].user_id
+
+        if self.target_client.group:
+            return self.vk_groups[self.target_client.target].group_id
 
     def create_proxy(self, outer_name, sender=None, wait=Wait.YES):
         """Create Proxy for nice looking mthod calls"""

@@ -70,7 +70,7 @@ class CommandPlugin(BasePlugin):
         for command in self.commands:
             if text.startswith(command + " ") or text.startswith(command + "\n") or text == command:
                 msg.data["__command__"] = command
-
+                
                 return True
 
         return False

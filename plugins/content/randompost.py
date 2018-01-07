@@ -10,7 +10,7 @@ class RandomPostPlugin(CommandPlugin):
 
         self.commgroups = commgroups
 
-        super().__init__(*self.commgroups.keys(), prefixes=prefixes, strict=strict)
+        super().__init__(*list(self.commgroups), prefixes=prefixes, strict=strict)
 
         self.description = ["Случайные посты из групп", "Доступные команды:"]
         for k, v in self.commgroups.items():
@@ -20,7 +20,7 @@ class RandomPostPlugin(CommandPlugin):
         command, text = self.parse_message(msg)
 
         post = None
-        safe = 5
+        safe = 10
 
         group_id = self.commgroups[command]
 
@@ -30,6 +30,9 @@ class RandomPostPlugin(CommandPlugin):
             values = {'owner_id': group_id, 'offset': random.randint(1, 500), 'count': 100}
 
             posts = await self.api.wall.get(**values)
+
+            if not posts:
+                continue
 
             if int(posts.get("count", 0)) < 1 and posts.get("items", []):
                 return await msg.answer("Не найдено ни одного поста!")
