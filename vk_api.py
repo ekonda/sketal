@@ -79,8 +79,8 @@ class VkClient:
                 if isinstance(v, str):
                      data[k] = v.replace("\r\n", "<br>").replace("\n", "<br>")
 
-            if "_replace_nl" in data:
-                del data["_replace_nl"]
+        if "_replace_nl" in data:
+            del data["_replace_nl"]
 
         async with self.session.post(url, data=data, **self.req_kwargs) as resp:
             try:

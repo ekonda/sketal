@@ -45,6 +45,7 @@ class DuelerPlugin(BasePlugin):
             last_payout = peewee.BigIntegerField(default=0)
 
             lastmsg = peewee.BigIntegerField(default=0)
+            lastreq = peewee.BigIntegerField(default=0)
 
             state = peewee.IntegerField(default=0)
             money = peewee.IntegerField(default=0)
@@ -399,7 +400,6 @@ class DuelerPlugin(BasePlugin):
             except Duel.DoesNotExist:
                 return await msg.answer("Никто не вызывал вас на дуэль!")
 
-
             player1 = await self.get_or_create_player(msg.chat_id, duel.userid1)
             player2 = player
 
@@ -471,12 +471,17 @@ class DuelerPlugin(BasePlugin):
             return await msg.answer(text)
 
         if msg.data["__pltext"].lower().startswith(self.commands[3]):
+            if time.time() - player.lastreq < 60 * 3:
+                 return await msg.answer(f"Вы можете бросать не более 1 вызова в 3 минуты. Осталось: {60 * 3 - round(time.time() - player.lastreq)} сек.")
+
             target_id = await parse_user_id(msg)
 
             if not target_id or target_id < 0:
                 return await msg.answer("Укажите вашу цель или перешлите её сообщение.")
 
             await peewee_async.create_object(Duel, chat_id=msg.chat_id, userid1=msg.user_id, userid2=target_id)
+
+            player.lastreq = time.time()
 
             await self.pwmanager.update(player)
 

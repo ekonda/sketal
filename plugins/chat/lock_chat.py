@@ -108,7 +108,7 @@ class LockChatPlugin(CommandPlugin):
                     continue
 
                 if took:
-                    return await msg.answer("Флаг не удалось опознать.")
+                    return await msg.answer(f"Флаг не удалось опознать: \"{uf}\".")
                 took = True
 
                 if i == 0:
