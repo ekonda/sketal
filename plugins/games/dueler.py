@@ -298,6 +298,7 @@ class DuelerPlugin(BasePlugin):
             if obuyer != 0:
                 prbuyer = await self.get_or_create_player(msg.chat_id, obuyer)
                 prbuyer.money += obet
+                await self.pwmanager.update(prbuyer)
 
             player.money -= bet
 

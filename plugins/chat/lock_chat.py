@@ -119,7 +119,7 @@ class LockChatPlugin(CommandPlugin):
                     en = True
 
             if not took:
-                return await msg.answer("Флаг не удалось опознать.")
+                return await msg.answer(f"Флаг не удалось опознать: \"{uf}\".")
 
         if pi:
             chat = await self.api.messages.getChat(chat_id=msg.chat_id)
