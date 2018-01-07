@@ -76,7 +76,8 @@ class VkClient:
 
         if data.get("_replace_nl", True):
             for k, v in data.items():
-                data[k] = v.replace("\r\n", "<br>").replace("\n", "<br>")
+                if isinstance(v, str):
+                     data[k] = v.replace("\r\n", "<br>").replace("\n", "<br>")
 
             if "_replace_nl" in data:
                 del data["_replace_nl"]
@@ -106,12 +107,12 @@ class VkClient:
         if additional_values.get("_replace_nl", True):
             code = code.replace("\n", "<br>")
 
-            if "_replace_nl" in additional_values:
-                del additional_values["_replace_nl"]
+        if "_replace_nl" in additional_values:
+            del additional_values["_replace_nl"]
 
-        url = f"https://api.vk.com/method/execute?access_token={self.token}&v={VERSION}"
+        url = f"https://api.vk.com/method/execute"
 
-        async with self.session.post(url, data={"code": code, **additional_values}, **self.req_kwargs) as resp:
+        async with self.session.post(url, data={"code": code, "access_token": self.token, "v": VERSION, **additional_values}, **self.req_kwargs) as resp:
             errors = []
             errors_codes = []
 
@@ -240,21 +241,28 @@ class VkClient:
 
         self.logger.info(f"Logged in as: {self_data['name']} ({address})")
 
-    async def enter_captcha(self, url):
+    async def enter_captcha(self, url, session=None):
         """Process captcha image on `url`"""
 
-        if not self.solver:
-            return self.logger.warning("Enter information for captcha solving in settings.py")
+        if session is None:
+            session = self.session
 
-        with aiohttp.ClientSession() as session:
-            try:
-                with session as ses:
-                    async with ses.get(url) as resp:
-                        img_data = await resp.read()
-                        data = self.solver.solve_captcha(img_data)
-                        return data
-            except Exception as e:
-                self.logger.error(e)
+        if not self.solver:
+            self.logger.warning("Enter information for captcha solving in settings.py")
+
+            async with session.get(url) as resp:
+                with open("tempcaptcha.png", "wb") as o:
+                    o.write(await resp.read())
+
+            return input("Enter captcha from file `tempcaptcha.png`: ")
+
+        try:
+            async with session.get(url) as resp:
+                img_data = await resp.read()
+                data = self.solver.solve_captcha(img_data)
+                return data
+        except Exception as e:
+            self.logger.error(e)
 
     @staticmethod
     async def enter_confirmation_code():
@@ -380,32 +388,46 @@ class RequestsQueue:
         tasks = []
         result = []
 
-        execute = ["return [",]
+        execute = "return ["
 
         for i in range(25):
             task = self.queue.get_nowait()
 
+            if task.key in ("photos.saveWallPhoto", "messages.setChatPhoto", ):
+                for i in range(2):
+                    self._requests_done += 1
+
+                    try:
+                        result = await asyncio.shield(self.vk_client.method(task.key, **task.data))
+                        break
+                    except:
+                        pass
+
+                if not task.done() and not task.cancelled():
+                    task.set_result(result)
+
+                return
+
             if task.data is None:
                 task.data = {}
 
-            execute.append("API.")
-            execute.append(task.key)
-            execute.append("({")
+            execute += "API." + task.key + "({ "
 
             for k, v in task.data.items():
-                v = str(v).replace('\\', '\\\\').replace('"', '\\"')
-                execute.append(str(k) + ': "' + v + '", ')
+                if isinstance(v, (int, float)):
+                    execute += '"' + str(k) + '":' + str(v) + ','
+                else:
+                    v = str(v).replace('\\', '\\\\').replace('"', '\\"')
+                    execute += '"' + str(k) + '":"' + v + '",'
 
-            execute.append('}),')
+            execute = execute[:-1] + '}),'
 
             tasks.append(task)
 
             if self.queue.empty():
                 break
 
-        execute.append("];")
-
-        execute = "".join(execute)
+        execute = execute[:-1] + "];"
 
         for i in range(2):
             self._requests_done += 1
@@ -426,9 +448,7 @@ class RequestsQueue:
                 await asyncio.sleep(1)
 
             except json.decoder.JSONDecodeError:
-                self._requests_done += 1
-
-            result = await asyncio.shield(self.vk_client.execute(execute))
+                pass
 
         for task in tasks:
             if task.done() or task.cancelled():

@@ -10,11 +10,13 @@ peewee
 Docs: http://docs.peewee-orm.com/en/latest/
 """
 
+"""Possible `custom_driver` values is any peewee_async.* driver or "PostgreSQL" or "MySQL"
+"""
 
 class PeeweePlugin(BasePlugin):
     __slots__ = ("database", "manager", "set_manager")
 
-    def __init__(self, dbhost, dbname, dbuser, dbpassword, dbport, custom_driver=None, set_manager=False, **kwargs):
+    def __init__(self, dbhost, dbname, dbuser, dbpassword, dbport=None, custom_driver=None, set_manager=True, **kwargs):
         """Adds self to messages and event's `data` field.
         Through this instance you can access peewee_async.Manager instance (data["peewee_async"].manager).
         This plugin should be included first!
@@ -26,8 +28,14 @@ class PeeweePlugin(BasePlugin):
 
         # You can replace PostgresqlDatabase with MysqlDatabase or pass driver you want tot use in custom_driver argument
 
-        if custom_driver is None:
+        if custom_driver is None or custom_driver == "PostgreSQL":
             driver = peewee_async.PostgresqlDatabase
+            if dbport is None: dbport = 5432
+
+        elif custom_driver == "MySQL":
+            driver = peewee_async.MysqlDatabase
+            if dbport is None: dbport = 13306
+
         else:
             driver = custom_driver
 

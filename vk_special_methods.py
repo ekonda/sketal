@@ -40,8 +40,10 @@ async def upload_audio_message(api, multipart_data, peer_id) -> Optional[Attachm
 
     return Attachment.from_upload_result(result, "doc")
 
+async def upload_graffiti(api, multipart_data, filename) -> Optional[Attachment]:
+    return await upload_doc(api, multipart_data, filename, {"type": "graffiti"})
 
-async def upload_doc(api, multipart_data, filename="image.png") -> Optional[Attachment]:
+async def upload_doc(api, multipart_data, filename="image.png", additional_params={}) -> Optional[Attachment]:
     """Upload file `multipart_data` and return Attachment for sending to user"""
 
     sender = api.get_default_sender("docs.getWallUploadServer")
@@ -51,6 +53,7 @@ async def upload_doc(api, multipart_data, filename="image.png") -> Optional[Atta
     data.add_field('file', multipart_data, filename=filename, content_type='multipart/form-data')
 
     values = {}
+    values.update(additional_params)
 
     if client.group_id:
         values['group_id'] = client.group_id
@@ -66,7 +69,7 @@ async def upload_doc(api, multipart_data, filename="image.png") -> Optional[Atta
         async with sess.post(upload_url, data=data) as resp:
             result = json.loads(await resp.text())
 
-    if not result:
+    if not result or not result.get("file"):
         return None
 
     data = dict(file=result['file'])
@@ -126,14 +129,14 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
         text = custom_text.split(" ")[argument_ind]
 
     if text.isdigit():
-        tuid = int(text)
+        return int(text)
     else:
         if text.startswith("https://vk.com/"):
             text = text[15:]
 
         tuid = await msg.api.utils.resolveScreenName(screen_name=text)
 
-    if not tuid:
-        return None
+        if tuid:
+            return tuid.get("object_id")
 
-    return tuid.get("object_id")
+    return None

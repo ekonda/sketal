@@ -1,6 +1,8 @@
 .idea
 __pycache__
 
+tempcaptcha.png
+
 logs.txt
 log.txt
 

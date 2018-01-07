@@ -62,12 +62,18 @@ class BotSettings(BaseSettings):
     hp = HelpPlugin("помощь", "команды", "?", prefixes=prefixes)
 
     PLUGINS = (
+        # PeeweePlugin("host", "database's name", "user", "password", port, "PostgreSQL" or "MySQL"),
         AdminPlugin(prefixes=prefixes, admins=admins, setadmins=True),
 
-        RememberPlugin("напомни",prefixes=prefixes),  # use_db=True, if you want to use PeeweePlugin
+        # DuelerPlugin(prefixes=prefixes),
+        # AzinoPlugin("азино", prefixes=prefixes),
+        # LockChatPlugin("сохранять", prefixes=prefixes),
+        RememberPlugin("напомни",prefixes=prefixes),  # use_db=True, if you can use PeeweePlugin
+
         # WeatherPlugin("погода", token="token for api", prefixes=prefixes),
-        SmileWritePlugin(prefixes=prefixes),
-        JokePlugin(prefixes=prefixes),
+        SmileWritePlugin("смайлами", prefixes=prefixes),
+        JokePlugin("а", "анекдот", prefixes=prefixes),
+        GraffitiPlugin("граффити", prefixes=prefixes),
         QuotePlugin("цитатка"),
         WikiPlugin("что такое", prefixes=prefixes),
         AnagramsPlugin(["анаграмма", "анаграммы"], prefixes=prefixes),

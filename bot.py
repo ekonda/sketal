@@ -380,8 +380,8 @@ if __name__ == "__main__":
     try:
         import sys
 
-        if "-defs" in sys.argv:
-            raise ImportError
+        if "-d" in sys.argv:
+            raise ModuleNotFoundError
 
         from settings_real import BotSettings
 
@@ -391,6 +391,7 @@ if __name__ == "__main__":
     except ImportError:
         import traceback
         traceback.print_exc()
+        exit(1)
 
     bot = Bot(BotSettings)
     bot.longpoll_run()

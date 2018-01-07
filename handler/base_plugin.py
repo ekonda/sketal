@@ -39,10 +39,6 @@ class BasePlugin:
         pass
 
     # # # # # # # # # # # # # # # # # # # # # # # # #
-    async def attach_child_bot(self, bot):
-        pass
-
-    # # # # # # # # # # # # # # # # # # # # # # # # #
     async def check_message(self, msg):
         """ Returns `True` if message `msg` should be processed by this plugin
         """

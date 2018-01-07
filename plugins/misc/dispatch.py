@@ -18,8 +18,8 @@ class DispatchPlugin(CommandPlugin):
         self.admins = admins
 
     async def process_message(self, msg):
-        if msg.user_id not in self.admins:
-            return
+        if msg.user_id not in self.admins and not msg.data.get("is_moder"):
+            return await msg.answer("Вы не администратор.")
 
         cmd_len = len(msg.data.get("__prefix__", "")) + len(msg.data.get("__command__", ""))
 
@@ -35,7 +35,7 @@ class DispatchPlugin(CommandPlugin):
                     async with sess.get(a.url) as resp:
                         group_id = self.bot.api.vk_groups[0].group_id
 
-                        new_a = await upload_photo(self.bot.api, io.BytesIO(await resp.read()))
+                        new_a = await upload_photo(self.api, io.BytesIO(await resp.read()))
 
                         if not new_a:
                             continue
