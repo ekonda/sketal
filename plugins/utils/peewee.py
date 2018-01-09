@@ -26,14 +26,12 @@ class PeeweePlugin(BasePlugin):
 
         self.set_manager = set_manager
 
-        # You can replace PostgresqlDatabase with MysqlDatabase or pass driver you want tot use in custom_driver argument
-
         if custom_driver is None or custom_driver == "PostgreSQL":
             driver = peewee_async.PostgresqlDatabase
             if dbport is None: dbport = 5432
 
         elif custom_driver == "MySQL":
-            driver = peewee_async.MysqlDatabase
+            driver = peewee_async.MySQLDatabase
             if dbport is None: dbport = 13306
 
         else:
