@@ -64,12 +64,14 @@ class BotSettings(BaseSettings):
     PLUGINS = (
         # PeeweePlugin("host", "database's name", "user", "password", port, "PostgreSQL" or "MySQL"),
         AdminPlugin(prefixes=prefixes, admins=admins, setadmins=True),
+        ChatMetaPlugin(),
 
         # DuelerPlugin(prefixes=prefixes),
         # AzinoPlugin("азино", prefixes=prefixes),
         # LockChatPlugin("сохранять", prefixes=prefixes),
         RememberPlugin("напомни",prefixes=prefixes),  # use_db=True, if you can use PeeweePlugin
 
+        VoterPlugin(prefixes=prefixes),
         # WeatherPlugin("погода", token="token for api", prefixes=prefixes),
         SmileWritePlugin("смайлами", prefixes=prefixes),
         JokePlugin("а", "анекдот", prefixes=prefixes),
