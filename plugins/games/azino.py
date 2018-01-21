@@ -4,6 +4,10 @@ import peewee_async, peewee
 import datetime, random
 from decimal import *
 
+# Requirements:
+#
+# PeeweePlugin
+#
 
 class AzinoPlugin(BasePlugin):
     __slots__ = ("prefixes", "commands", "manager", "player", "player_log",
@@ -77,7 +81,7 @@ class AzinoPlugin(BasePlugin):
 
         for command in self.commands:
             if text.startswith(command):
-                msg.data["__azino_subcommand"] = text[len(command):].strip()
+                msg.meta["__azino_subcommand"] = text[len(command):].strip()
                 return True
 
         return False
@@ -96,7 +100,7 @@ class AzinoPlugin(BasePlugin):
         assert False, "Getting tile failed"
 
     async def process_message(self, msg):
-        cmd = msg.data["__azino_subcommand"]
+        cmd = msg.meta["__azino_subcommand"]
         try:
             cmd_num = float(cmd)
         except:

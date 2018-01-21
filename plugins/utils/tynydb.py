@@ -48,7 +48,7 @@ class TinyDBPlugin(BasePlugin):
         self.tinydb.remove(User.user_id == user_id)
 
     async def global_before_message_checks(self, msg):
-        msg.data["tdb"] = self
+        msg.meta["tdb"] = self
 
     async def global_before_event_checks(self, evnt):
-        evnt.data["tdb"] = self
+        msg.meta["tdb"] = self

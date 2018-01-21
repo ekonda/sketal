@@ -68,18 +68,18 @@ class HangmanPlugin(BasePlugin):
                 break
 
         if any(check_text.startswith(v.lower()) for v in self.commands_start):
-            msg.data["_command"] = "start"
+            msg.meta["_command"] = "start"
             return True
 
         if self in msg.occupied_by and any(check_text.startswith(v.lower()) for v in self.commands_stop):
-            msg.data["_command"] = "stop"
+            msg.meta["_command"] = "stop"
             return True
 
         if self in msg.occupied_by:
             for v in self.commands_attempt:
                 if check_text.startswith(v + " "):
-                    msg.data["_command"] = "attempt"
-                    msg.data["_letter"] = check_text[len(v) + 1:]
+                    msg.meta["_command"] = "attempt"
+                    msg.meta["_letter"] = check_text[len(v) + 1:]
                     return True
 
         return False
@@ -117,7 +117,7 @@ class HangmanPlugin(BasePlugin):
 
     # word, opened, lives
     async def process_message(self, msg):
-        if msg.data["_command"] == "stop":
+        if msg.meta["_command"] == "stop":
             current = self.games.get(msg.peer_id, [])
 
             if current:
@@ -127,7 +127,7 @@ class HangmanPlugin(BasePlugin):
 
             return
 
-        if msg.data["_command"] == "start":
+        if msg.meta["_command"] == "start":
             current = self.games.get(msg.peer_id, [])
 
             if current:
@@ -148,13 +148,13 @@ class HangmanPlugin(BasePlugin):
 
             return await msg.answer(self.describe_game(self.games[msg.peer_id]) + tip)
 
-        if msg.data["_command"] == "attempt":
+        if msg.meta["_command"] == "attempt":
             current = self.games.get(msg.peer_id, [])
 
             if not current:
                 return
 
-            letter = msg.data.get("_letter", "")
+            letter = msg.meta.get("_letter", "")
 
             if len(letter) != 1 or not letter.isalpha():
                 return await msg.answer("Введите только одну букву!")

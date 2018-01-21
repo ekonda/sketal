@@ -30,7 +30,7 @@ class ChatKickerPlugin(CommandPlugin):
         if not msg.is_multichat:
             return await msg.answer("Данную команду можно использовать только в беседах!")
 
-        if self.admins_only and msg.user_id not in self.admins and not msg.data.get("is_moder"):
+        if self.admins_only and msg.user_id not in self.admins and not msg.meta.get("is_moder"):
             return await msg.answer("Вы не являетесь администратором.")
 
         command, text = self.parse_message(msg)

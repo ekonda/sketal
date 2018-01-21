@@ -11,7 +11,7 @@ class Message(object):
     """Класс, объект которого передаётся в плагин для упрощённого ответа"""
 
     __slots__ = ('message_data', 'api', 'is_multichat', 'chat_id', 'user_id', 'is_out', 'true_user_id',
-                 'timestamp', 'answer_values', 'msg_id', 'text', 'full_text', 'data', 'is_event',
+                 'timestamp', 'answer_values', 'msg_id', 'text', 'full_text', 'meta', 'is_event',
                  'brief_attaches', 'brief_forwarded', '_full_attaches', '_full_forwarded',
                  'reserved_by', 'occupied_by', 'peer_id', "is_forwarded", 'true_msg_id')
 
@@ -21,7 +21,7 @@ class Message(object):
 
         self.reserved_by = []
         self.occupied_by = []
-        self.data = {}
+        self.meta = {}
 
         self.is_event = False
         self.is_multichat = message_data.is_multichat
@@ -292,13 +292,13 @@ class Chat:
 
 
 class Event:
-    __slots__ = ("api", "type", "reserved_by", "occupied_by", "data")
+    __slots__ = ("api", "type", "reserved_by", "occupied_by", "meta")
 
     def __init__(self, api, evnt_type):
         self.api = api
         self.type = evnt_type
 
-        self.data = {}
+        self.meta = {}
 
         self.reserved_by = []
         self.occupied_by = []

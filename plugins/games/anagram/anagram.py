@@ -68,18 +68,18 @@ class AnagramsPlugin(BasePlugin):
                 break
 
         if any(check_text.startswith(v.lower()) for v in self.commands_start):
-            msg.data["_command"] = "start"
+            msg.meta["_command"] = "start"
             return True
 
         if self in msg.occupied_by and any(check_text.startswith(v.lower()) for v in self.commands_stop):
-            msg.data["_command"] = "stop"
+            msg.meta["_command"] = "stop"
             return True
 
         if self in msg.occupied_by:
             for v in self.commands_attempt:
                 if check_text.startswith(v + " "):
-                    msg.data["_command"] = "attempt"
-                    msg.data["_word"] = check_text[len(v) + 1:]
+                    msg.meta["_command"] = "attempt"
+                    msg.meta["_word"] = check_text[len(v) + 1:]
                     return True
 
         return False
@@ -100,7 +100,7 @@ class AnagramsPlugin(BasePlugin):
 
     # word, anagram
     async def process_message(self, msg):
-        if msg.data["_command"] == "stop":
+        if msg.meta["_command"] == "stop":
             current = self.games.get(msg.peer_id, [])
             if current:
                 del self.games[msg.peer_id]
@@ -109,7 +109,7 @@ class AnagramsPlugin(BasePlugin):
 
             return
 
-        if msg.data["_command"] == "start":
+        if msg.meta["_command"] == "start":
             current = self.games.get(msg.peer_id, [])
 
             if current:
@@ -133,13 +133,13 @@ class AnagramsPlugin(BasePlugin):
 
             return await msg.answer(self.describe_game(self.games[msg.peer_id]))
 
-        if msg.data["_command"] == "attempt":
+        if msg.meta["_command"] == "attempt":
             current = self.games.get(msg.peer_id, [])
 
             if not current:
                 return
 
-            word = msg.data.get("_word", "")
+            word = msg.meta.get("_word", "")
 
             if not word:
                 return await msg.answer("Введите только одну букву!")

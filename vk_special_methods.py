@@ -124,19 +124,58 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
         return None
 
     if custom_text is None:
-        text = msg.text.split(" ")[argument_ind]
+        original_text = msg.text
     else:
-        text = custom_text.split(" ")[argument_ind]
+        original_text = custom_text
+
+    text = original_text.split(" ")[argument_ind]
 
     if text.isdigit():
         return int(text)
-    else:
-        if text.startswith("https://vk.com/"):
-            text = text[15:]
 
-        tuid = await msg.api.utils.resolveScreenName(screen_name=text)
+    if text.startswith("https://vk.com/"):
+        text = text[15:]
 
-        if tuid:
-            return tuid.get("object_id")
+    if text[:3] == "[id":
+        puid = text[3:].split("|")[0]
+
+        if puid.isdigit() and "]" in text[:3]:
+            return int(puid)
+
+    if "__chat_data" in msg.meta:
+        if argument_ind == -1:
+            targets = [original_text.split(" ")[-1].strip().lower()]
+        else:
+            targets = [i.strip().lower() for i in original_text.split(" ")[argument_ind: argument_ind + 2]]
+
+        max_match, user_id = 0, None
+        for u in msg.meta["__chat_data"].users:
+            if u["screen_name"] == text:
+                return u["id"]
+
+            matches = 0
+            if u["first_name"].strip().lower() in targets:
+                matches += 1
+            if u["last_name"].strip().lower() in targets:
+                matches += 1
+            if u["nickname"].strip().lower() in targets:
+                matches += 1
+
+            if matches > 0:
+                if matches > max_match:
+                    max_match = matches
+                    user_id = u["id"]
+
+                elif matches == max_match:
+                    user_id = None
+                    break
+
+        if user_id is not None:
+            return user_id
+
+    tuid = await msg.api.utils.resolveScreenName(screen_name=text)
+
+    if tuid and isinstance(tuid, dict):
+        return tuid.get("object_id")
 
     return None

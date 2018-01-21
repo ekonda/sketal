@@ -133,13 +133,13 @@ class AdminPlugin(BasePlugin):
                 a_users += u["first_name"] + " " + u["last_name"] + f" ({u['id']}), "
 
             m_users = ""
-            for u in (await self.api.users.get(user_ids=",".join(str(u) for u in msg.data["moders"])) or []):
+            for u in (await self.api.users.get(user_ids=",".join(str(u) for u in msg.meta["moders"])) or []):
                 m_users += u["first_name"] + " " + u["last_name"] + f" ({u['id']}), "
 
             return await msg.answer("Администраторы:\n" + (a_users[:-2] if a_users[:-2] else "Нет") + "\n"
                                     "Модераторы:\n" + (m_users[:-2] if m_users[:-2] else "Нет"))
 
-        if not msg.data["is_admin"] and not msg.data["is_moder"]:
+        if not msg.meta["is_admin"] and not msg.meta["is_moder"]:
             return await msg.answer("Вы не администратор!")
 
         puid = await parse_user_id(msg)
@@ -151,7 +151,7 @@ class AdminPlugin(BasePlugin):
             if puid in self.banset:
                 return await msg.answer("Уже забанен!")
 
-            if puid in self.admins or puid in msg.data["moders"]:
+            if puid in self.admins or puid in msg.meta["moders"]:
                 return await msg.answer("Нельзя забанить администратора!")
 
             self.banset.append(puid)
@@ -165,7 +165,7 @@ class AdminPlugin(BasePlugin):
                 return await msg.answer(f"Пользователь разбанен: {puid}!")
 
         if text.startswith(self.commands[2]):
-            if not msg.data["is_admin"]:
+            if not msg.meta["is_admin"]:
                 return await msg.answer(f"Вы не администратор!")
 
             if len(self.admins) > 99:
@@ -188,32 +188,32 @@ class AdminPlugin(BasePlugin):
                 return await msg.answer(f"Пользователь разжалован из администраторов: {puid}!")
 
         if text.startswith(self.commands[4]):
-            if len(msg.data["moders"]) > 50:
+            if len(msg.meta["moders"]) > 50:
                 return await msg.answer(f"Уже максимум модераторов!")
 
-            if puid in msg.data["moders"]:
+            if puid in msg.meta["moders"]:
                 return await msg.answer("Уже модератор!")
 
-            msg.data["moders"].append(puid)
+            msg.meta["moders"].append(puid)
             return await msg.answer(f"Успешно сделан модератором: {puid}!")
 
         if text.startswith(self.commands[5]):
-            if puid not in msg.data["moders"]:
+            if puid not in msg.meta["moders"]:
                 return await msg.answer(f"Пользователь не модератор: {puid}!")
             else:
-                msg.data["moders"].remove(puid)
+                msg.meta["moders"].remove(puid)
                 return await msg.answer(f"Пользователь разжалован из модераторов: {puid}!")
 
     async def global_before_message(self, msg, plugin):
         for n, s in (("admin", self.admins), ("banned", self.banset)):
-            msg.data[f"is_{n}"] = msg.user_id in s
+            msg.meta[f"is_{n}"] = msg.user_id in s
 
         moders = self.moders.get(msg.chat_id, [])
-        msg.data[f"is_moder"] = msg.user_id in moders
+        msg.meta[f"is_moder"] = msg.user_id in moders
         self.moders[msg.chat_id] = moders
 
-        msg.data["admins"] = self.admins
-        msg.data["moders"] = self.moders[msg.chat_id]
-        msg.data["banset"] = self.banset
+        msg.meta["admins"] = self.admins
+        msg.meta["moders"] = self.moders[msg.chat_id]
+        msg.meta["banset"] = self.banset
 
-        return not msg.data["is_banned"]
+        return not msg.meta["is_banned"]

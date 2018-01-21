@@ -18,10 +18,10 @@ class DispatchPlugin(CommandPlugin):
         self.admins = admins
 
     async def process_message(self, msg):
-        if msg.user_id not in self.admins and not msg.data.get("is_moder"):
+        if msg.user_id not in self.admins and not msg.meta.get("is_moder"):
             return await msg.answer("Вы не администратор.")
 
-        cmd_len = len(msg.data.get("__prefix__", "")) + len(msg.data.get("__command__", ""))
+        cmd_len = len(msg.meta.get("__prefix", "")) + len(msg.meta.get("__command", ""))
 
         message = msg.full_text[cmd_len:].strip()
         attachment = ""

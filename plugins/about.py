@@ -5,7 +5,7 @@ from vk_plus_data import Message
 class AboutPlugin(CommandPlugin):
     __slots__ = ("version", )
 
-    def __init__(self, *commands, prefixes=None, strict=False, version=7.1):
+    def __init__(self, *commands, prefixes=None, strict=False, version=7.2):
         """Answers with information about bot."""
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
@@ -22,7 +22,7 @@ class AboutPlugin(CommandPlugin):
 
     async def process_message(self, msg: Message):
         message = "🌍 sketal 🌍\n" \
-                  "🌲 sketal - бот, способный выполнять очень сложные задачи, команды. На основе этого бота" \
+                  "🌲 sketal - бот, способный выполнять очень сложные задачи, команды. На основе этого бота " \
                   "можно строить очень сложные системы и сервисы. Этот бот очень надёжен и стабилен - обрабатывает " \
                   "очень многие ошибки и избегает их. Бот обновляется, обретает новые плагины и т.д.\n" \
                   "🌲 Версия: " + str(self.version) + "\n" \

@@ -3,6 +3,10 @@ from vk_special_methods import parse_user_id
 
 import peewee_async, peewee, asyncio, random, time
 
+# Requirements:
+#
+# PeeweePlugin
+#
 
 class DuelerPlugin(BasePlugin):
     __slots__ = ("commands", "prefixes", "models", "pwmanager", "active")
@@ -113,24 +117,24 @@ class DuelerPlugin(BasePlugin):
 
 
     async def global_before_message_checks(self, msg):
-        msg.data["__cplayer"] = await self.get_or_create_player(msg.chat_id, msg.user_id)
+        msg.meta["__cplayer"] = await self.get_or_create_player(msg.chat_id, msg.user_id)
 
-        if time.time() - msg.data["__cplayer"].lastmsg < 15:
+        if time.time() - msg.meta["__cplayer"].lastmsg < 15:
             return
 
-        if msg.data["__cplayer"].lastmsg == 0 or time.time() - msg.data["__cplayer"].lastmsg < 60 * 5:
-            msg.data["__cplayer"].state = min(100, msg.data["__cplayer"].state + 2)
+        if msg.meta["__cplayer"].lastmsg == 0 or time.time() - msg.meta["__cplayer"].lastmsg < 60 * 5:
+            msg.meta["__cplayer"].state = min(100, msg.meta["__cplayer"].state + 2)
 
-        elif time.time() - msg.data["__cplayer"].lastmsg < 60 * 10:
-            msg.data["__cplayer"].state = min(100, msg.data["__cplayer"].state + 1)
+        elif time.time() - msg.meta["__cplayer"].lastmsg < 60 * 10:
+            msg.meta["__cplayer"].state = min(100, msg.meta["__cplayer"].state + 1)
 
-        elif time.time() - msg.data["__cplayer"].lastmsg < 60 * 20:
-            msg.data["__cplayer"].state = max(0, msg.data["__cplayer"].state - 10)
+        elif time.time() - msg.meta["__cplayer"].lastmsg < 60 * 20:
+            msg.meta["__cplayer"].state = max(0, msg.meta["__cplayer"].state - 10)
 
-        elif time.time() - msg.data["__cplayer"].lastmsg >= 60 * 20:
-            msg.data["__cplayer"].state = max(0, msg.data["__cplayer"].state - 50)
+        elif time.time() - msg.meta["__cplayer"].lastmsg >= 60 * 20:
+            msg.meta["__cplayer"].state = max(0, msg.meta["__cplayer"].state - 50)
 
-        msg.data["__cplayer"].lastmsg = time.time()
+        msg.meta["__cplayer"].lastmsg = time.time()
 
     async def check_message(self, msg):
         prefix = None
@@ -151,8 +155,8 @@ class DuelerPlugin(BasePlugin):
         else:
             return False
 
-        msg.data["__prefix"] = prefix
-        msg.data["__pltext"] = pltext
+        msg.meta["__prefix"] = prefix
+        msg.meta["__pltext"] = pltext
 
         return True
 
@@ -202,7 +206,7 @@ class DuelerPlugin(BasePlugin):
         return auct
 
     async def process_message(self, msg):
-        if msg.data["__pltext"].lower() == self.commands[1]:
+        if msg.meta["__pltext"].lower() == self.commands[1]:
             me, help, pay, duel, accept, auct, bet, add, remove = self.commands
             p = self.prefixes[0]
 
@@ -227,14 +231,14 @@ class DuelerPlugin(BasePlugin):
 
         Auct, Duel, Player, Equipment = self.models
 
-        player = msg.data["__cplayer"] or await self.get_or_create_player(msg.chat_id, msg.user_id)
+        player = msg.meta["__cplayer"] or await self.get_or_create_player(msg.chat_id, msg.user_id)
 
-        if msg.data["__pltext"].lower().startswith(self.commands[8]):
-            if not msg.data.get("is_admin") and not msg.data.get("is_moder"):
+        if msg.meta["__pltext"].lower().startswith(self.commands[8]):
+            if not msg.meta.get("is_admin") and not msg.meta.get("is_moder"):
                 return msg.answer("Недостаточно прав.")
 
             try:
-                name = " ".join(msg.data["__pltext"][len(self.commands[8]):].strip().split(" "))
+                name = " ".join(msg.meta["__pltext"][len(self.commands[8]):].strip().split(" "))
 
                 if not name:
                     raise ValueError()
@@ -246,12 +250,12 @@ class DuelerPlugin(BasePlugin):
 
             return await msg.answer("Готово!")
 
-        if msg.data["__pltext"].lower().startswith(self.commands[7]):
-            if not msg.data.get("is_admin") and not msg.data.get("is_moder"):
+        if msg.meta["__pltext"].lower().startswith(self.commands[7]):
+            if not msg.meta.get("is_admin") and not msg.meta.get("is_moder"):
                 return await msg.answer("Недостаточно прав.")
 
             try:
-                power, slot, *names = msg.data["__pltext"][len(self.commands[7]):].strip().split(" ")
+                power, slot, *names = msg.meta["__pltext"][len(self.commands[7]):].strip().split(" ")
 
                 name = " ".join(names)
 
@@ -273,14 +277,14 @@ class DuelerPlugin(BasePlugin):
 
             return await msg.answer("Готово!")
 
-        if msg.data["__pltext"].lower().startswith(self.commands[6]):
+        if msg.meta["__pltext"].lower().startswith(self.commands[6]):
             auct = await self.get_or_create_auct(msg.chat_id)
 
             if time.time() - auct.endt >= 0:
                 return await msg.answer("Аукцион закончен")
 
             try:
-                _, lot, bet = msg.data["__pltext"].split(" ")
+                _, lot, bet = msg.meta["__pltext"].split(" ")
                 bet = int(bet)
             except:
                 return await msg.answer("Как надо ставить: " + self.prefixes[0] + self.commands[6] + " [номер лота] [ставка]")
@@ -324,7 +328,7 @@ class DuelerPlugin(BasePlugin):
 
             return await msg.answer(text)
 
-        if msg.data["__pltext"].lower() == self.commands[5]:
+        if msg.meta["__pltext"].lower() == self.commands[5]:
             auct = await self.get_or_create_auct(msg.chat_id)
 
             if time.time() - auct.endt < 60 * 66:
@@ -395,7 +399,7 @@ class DuelerPlugin(BasePlugin):
 
             return await msg.answer(text)
 
-        if msg.data["__pltext"].lower() == self.commands[4]:
+        if msg.meta["__pltext"].lower() == self.commands[4]:
             try:
                 duel = await self.pwmanager.get(Duel, chat_id=msg.chat_id, userid2=msg.user_id)
             except Duel.DoesNotExist:
@@ -471,7 +475,7 @@ class DuelerPlugin(BasePlugin):
 
             return await msg.answer(text)
 
-        if msg.data["__pltext"].lower().startswith(self.commands[3]):
+        if msg.meta["__pltext"].lower().startswith(self.commands[3]):
             if time.time() - player.lastreq < 60 * 3:
                  return await msg.answer(f"Вы можете бросать не более 1 вызова в 3 минуты. Осталось: {60 * 3 - round(time.time() - player.lastreq)} сек.")
 
@@ -488,7 +492,7 @@ class DuelerPlugin(BasePlugin):
 
             return await msg.answer(f"[id{target_id}|Вы готовы принять вызов?]\nНапишите \"{self.prefixes[0]}{self.commands[4]}\", чтобы принять.]")
 
-        if msg.data["__pltext"].lower() == self.commands[2]:
+        if msg.meta["__pltext"].lower() == self.commands[2]:
             if time.time() - player.last_payout >= 60 * 60:
                 gain = 50 + round((player.state / 100) * 200)
 
@@ -503,7 +507,7 @@ class DuelerPlugin(BasePlugin):
             return await msg.answer(f"💰 Вы сможете получить свою зп через {60 - round((time.time() - player.last_payout) / 60)} мин.")
 
 
-        elif msg.data["__pltext"].lower() == self.commands[0]:
+        elif msg.meta["__pltext"].lower() == self.commands[0]:
             users =await self.api.users.get(user_ids=msg.user_id)
             user = users[0]
 

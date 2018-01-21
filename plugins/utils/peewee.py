@@ -54,7 +54,7 @@ class PeeweePlugin(BasePlugin):
                     plugin.pwmanager = self.manager
 
     async def global_before_message_checks(self, msg):
-        msg.data["peewee_async"] = self
+        msg.meta["peewee_async"] = self
 
     async def global_before_event_checks(self, evnt):
-        evnt.data["peewee_async"] = self
+        evnt.meta["peewee_async"] = self
