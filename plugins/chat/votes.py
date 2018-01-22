@@ -5,13 +5,15 @@ from utils import plural_form
 import asyncio, re
 
 # Requirements:
-#
 # ChatMetaPlugin
+#
 
 class VoterPlugin(CommandPlugin):
     __slots__ = ("command_groups", "votes")
 
     def __init__(self, vote_commands=None,  vote_undo_commands=None, votekick_commands=None, prefixes=None, strict=False):
+        """This plugin allows users to do votes in chats with ability to kick someone with votekick"""
+
         if not vote_commands:
             vote_commands = ["vote", "+"]
 
@@ -26,8 +28,22 @@ class VoterPlugin(CommandPlugin):
         self.command_groups = vote_commands, vote_undo_commands, votekick_commands
         self.votes = {}
 
+        p = self.prefixes[-1]
+        self.description = [
+            f"Голосование",
+            f"Устраивайте голосование или выкидывайте людей из чата голосованием ;)",
+            f"{p}{vote_commands[0]} - голосовать за.",
+            f"{p}{vote_undo_commands[0]} - отменить свой голос.",
+            f"{p}{votekick_commands[0]} [кого кикать] - начать голосование за изгнание.",
+            f"{p}{vote_commands[0]} (нужно голосов, длительность голосования в секундах) тема голосования - начать голосование.",
+            f"Примеры:",
+            f"{p}{vote_commands[0]} (4, 30) Тут тема - начать голосование с темой \"Тут тема\", которое будет длиться 30 секунд и для положительного результата необходимо набрать 4 голоса.",
+            f"{p}{vote_commands[0]} Тут тема - начать голосование с темой \"Тут тема\", которое будет длиться 180 секунд и для положительного результата необходимо набрать 6, 8, 10 или все голоса (в зависимость от численности чата).",
+        ]
+
     async def do_vote(self, msg, title, maximum=None, votetime=180, kick=None):
-        maximum = min(len(msg.meta["__chat_data"].users), maximum if maximum else float("inf"))
+        maximum = min(len(msg.meta["__chat_data"].users) - 1, maximum if maximum else float("inf"))
+
         await msg.answer(
             f"Начало голосование с темой \"{title}\". Максимальное кол-во проголосовавших: {maximum}. "
             f"Время голосования: {round(votetime/60, 2)} мин. Голосовать - {self.prefixes[-1]}{self.command_groups[0][0]}"
@@ -144,4 +160,14 @@ class VoterPlugin(CommandPlugin):
 
             self.votes[msg.chat_id] = set()
 
-            return asyncio.ensure_future(self.do_vote(msg, f"Кик пользователя: {user['first_name']} {user['last_name']}", 10, kick=puid))
+            members = len(msg.meta["__chat_data"].users)
+            if members < 10:
+                maximum = members - 1
+            elif members < 16:
+                maximum = 6
+            elif members < 22:
+                maximum = 8
+            else:
+                maximum = 10
+
+            return asyncio.ensure_future(self.do_vote(msg, f"Кик пользователя: {user['first_name']} {user['last_name']}", maximum, kick=puid))

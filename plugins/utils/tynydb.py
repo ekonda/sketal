@@ -51,4 +51,4 @@ class TinyDBPlugin(BasePlugin):
         msg.meta["tdb"] = self
 
     async def global_before_event_checks(self, evnt):
-        msg.meta["tdb"] = self
+        evnt.meta["tdb"] = self

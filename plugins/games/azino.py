@@ -5,7 +5,6 @@ import datetime, random
 from decimal import *
 
 # Requirements:
-#
 # PeeweePlugin
 #
 

@@ -4,7 +4,6 @@ from vk_special_methods import parse_user_id
 import peewee_async, peewee, asyncio, random, time
 
 # Requirements:
-#
 # PeeweePlugin
 #
 
