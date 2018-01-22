@@ -16,6 +16,9 @@ endif
 all:
 	$(pythonrun) bot.py
 
+test:
+	$(pythonrun) tests.py
+
 clean:
 	find . -name "*.pyc" -type f -delete
 	find . -name "__pycache__" -type d -delete

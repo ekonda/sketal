@@ -42,7 +42,8 @@ class VoterPlugin(CommandPlugin):
         ]
 
     async def do_vote(self, msg, title, maximum=None, votetime=180, kick=None):
-        maximum = min(len(msg.meta["__chat_data"].users) - 1, maximum if maximum else float("inf"))
+        unvoters = 2 if kick else 1
+        maximum = min(len(msg.meta["__chat_data"].users) - unvoters, maximum if maximum else float("inf"))
 
         await msg.answer(
             f"Начало голосование с темой \"{title}\". Максимальное кол-во проголосовавших: {maximum}. "
