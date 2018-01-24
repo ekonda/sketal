@@ -43,8 +43,9 @@ USERS = (
 - Крайне рекомендуется использовать `AdminPlugin` (контроль привилегий).
 
 #### Участники проекта:
-- [Список участников (все молодцы!)](https://github.com/vk-brain/sketal/graphs/contributors)
-- [Плагинчик](https://github.com/TumkasCor)
+- [Список участников (все молодцы! большие!)](https://github.com/vk-brain/sketal/graphs/contributors)
+- [Плагинчик сделал](https://github.com/TumkasCor)
+- [Плагинчик сделал](https://github.com/Lis1us)
 
 #### Философия
 - Проект создан для тех, кто готов разобраться в том, что же тут происходит. Создание плагинов и их настройка - сложный процесс.

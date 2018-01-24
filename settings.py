@@ -96,7 +96,8 @@ class BotSettings(BaseSettings):
         SayerPlugin("скажи", prefixes=prefixes),
         hp,
 
-        ChatterPlugin(prefixes=prefixes),
+        # ChatterPlugin(prefixes=prefixes),  # plugin for custom dialogs
+        DialogflowPlugin(prefixes=prefixes),  # plugin for DialogflowPlugin (chatting, learning etc)
 
         ResendCommanderPlugin(), ResendCheckerPlugin(),
     )
