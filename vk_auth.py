@@ -38,6 +38,7 @@ class Auth:
         self.obj = obj
 
     def enter_captcha(self, captcha_url, session=None):
+        self.logger.warning('(this can be caused by wrong login/password!)')
         return self.obj.enter_captcha(captcha_url, session)
 
     def enter_confirmation_code(self):

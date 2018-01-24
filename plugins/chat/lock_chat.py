@@ -95,11 +95,7 @@ class LockChatPlugin(CommandPlugin):
         if msg.chat_id == 0:
             return
 
-<<<<<<< HEAD
         if "is_admin" in msg.meta and not msg.meta["is_admin"] and "is_moder" in msg.meta and not msg.meta["is_moder"]:
-=======
-        if "is_admin" in msg.meta and not msg.meta.get["is_admin"] and "is_moder" in msg.meta and not msg.meta["is_moder"]:
->>>>>>> b2f76c50b2e9bf5a798907d0e4cb8566781a5771
             return await msg.answer("Вы не имеете доступа к этой команде.")
 
         lock, _ = await self.pwmanager.get_or_create(self.ChatLock, chat_id=msg.chat_id)

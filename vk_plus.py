@@ -37,6 +37,13 @@ class VkController(object):
         if not self.proxies:
             self.proxies = []
 
+        if not isinstance(settings.USERS, (list, tuple)) or not settings.USERS:
+            raise ValueError("You have wrong `USERS` variable in settings. Please, check again.")
+
+        for PACK in settings.USERS:
+            if not isinstance(PACK, (list, tuple)) or len(PACK) < 2 or len(PACK) > 3 or PACK[0] not in ("group", "user"):
+                raise ValueError("You have wrong entity in `USERS` in settings: " + str(PACK))
+
         self.users_data = settings.USERS
         if not self.users_data:
             self.users_data = []
