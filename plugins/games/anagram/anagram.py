@@ -22,7 +22,7 @@ class AnagramsPlugin(BasePlugin):
         self.commands_stop = commands_stop if commands_stop else ["стоп"]
         self.games = {}
 
-        self.words = words if words else ("любовь", "ненавсить", "страсть", "жизнь", "счастье", "крот", "бегемот")
+        self.words = words if words else ("любовь", "ненависть", "страсть", "жизнь", "счастье", "крот", "бегемот")
 
         games_file = self.get_path("games.json")
 
