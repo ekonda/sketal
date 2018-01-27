@@ -1,4 +1,10 @@
-#### sketal v7.2 `funny dog`
+#### sketal v7.3.0 `funny dog`
+##### update v7.3
+- Many `Code style` fixes
+- Fixed couple of bugs in dueler
+- Fixed user parsing
+- Revomed `ChatterPlugin`
+
 ##### patch #1
 - Added `DialogflowPlugin`
 - Moved `BirthdayPlugin`

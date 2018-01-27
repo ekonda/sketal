@@ -271,8 +271,9 @@ class DuelerPlugin(BasePlugin):
 
                 try:
                     await peewee_async.create_object(Equipment, name=name, slot=slot, power=tpower)
-                except:
-                    pass
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
 
             return await msg.answer("Готово!")
 
@@ -285,7 +286,7 @@ class DuelerPlugin(BasePlugin):
             try:
                 _, lot, bet = msg.meta["__pltext"][len(self.commands[6]):].split(" ")
                 bet = int(bet)
-            except (KeyError, ValueError) as e:
+            except (KeyError, ValueError):
                 return await msg.answer("Как надо ставить: " + self.prefixes[0] + self.commands[6] + " [номер лота] [ставка]")
 
             olot = getattr(auct, f"lot{lot}")
@@ -375,7 +376,6 @@ class DuelerPlugin(BasePlugin):
 
                 for i in range(1, 6):
                     olot = getattr(auct, f"lot{i}")
-                    obet = getattr(auct, f"bet{i}")
                     obuyer = getattr(auct, f"buyer{i}")
 
                     if obuyer == 0:

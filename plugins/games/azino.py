@@ -201,7 +201,7 @@ class AzinoPlugin(BasePlugin):
 
                 return await msg.answer("💬 добавить [user_id] [amount] - добавить пользователю user_id amount\n"
                                         "💬 отнять [user_id] [amount] - отнять у пользователя user_id amount ")
-            except:
+            except Exception:
                 import traceback
                 traceback.print_exc()
 

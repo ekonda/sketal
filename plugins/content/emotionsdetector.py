@@ -64,18 +64,18 @@ class EmotionsDetectorPlugin(CommandPlugin):
 
                     answer = ""
 
-                    for i in range(len(parsed)):
-                        age = parsed[i]["faceAttributes"]["age"]
-                        sex = "женский" if parsed[i]["faceAttributes"]['gender'] == "female" else "мужской"
+                    for i, e in enumerate(parsed):
+                        age = e["faceAttributes"]["age"]
+                        sex = "женский" if e["faceAttributes"]['gender'] == "female" else "мужской"
 
-                        fear = parsed[i]["faceAttributes"]["emotion"]["fear"]
-                        anger = parsed[i]["faceAttributes"]["emotion"]["anger"]
-                        contempt = parsed[i]["faceAttributes"]["emotion"]["contempt"]
-                        disgust = parsed[i]["faceAttributes"]["emotion"]["disgust"]
-                        happiness = parsed[i]["faceAttributes"]["emotion"]["happiness"]
-                        neutral = parsed[i]["faceAttributes"]["emotion"]["neutral"]
-                        sadness = parsed[i]["faceAttributes"]["emotion"]["sadness"]
-                        surprise = parsed[i]["faceAttributes"]["emotion"]["surprise"]
+                        fear = e["faceAttributes"]["emotion"]["fear"]
+                        anger = e["faceAttributes"]["emotion"]["anger"]
+                        contempt = e["faceAttributes"]["emotion"]["contempt"]
+                        disgust = e["faceAttributes"]["emotion"]["disgust"]
+                        happiness = e["faceAttributes"]["emotion"]["happiness"]
+                        neutral = e["faceAttributes"]["emotion"]["neutral"]
+                        sadness = e["faceAttributes"]["emotion"]["sadness"]
+                        surprise = e["faceAttributes"]["emotion"]["surprise"]
 
                         answer += f"Анализ фотографии (лицо #{i + 1})\n💁‍♂️Возраст: {age}\n👫Пол: {sex}\n😵Страх: {fear}\n😤Злость: {anger}\n" \
                                   f"😐Презрение: {contempt}\n🤢Отвращение: {disgust}\n🙂Счастье: {happiness}\n" \

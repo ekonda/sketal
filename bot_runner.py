@@ -24,7 +24,7 @@ if __name__ == "__main__":
             try:
                 os.killpg(os.getpgid(p.pid), signal.SIGTERM)
 
-            except:
+            except Exception:
                 import traceback
                 traceback.print_exc()
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         try:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)
 
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
 

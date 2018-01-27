@@ -20,7 +20,8 @@ class CommandPlugin(BasePlugin):
     def command_example(self, command_index=0):
         return f"{self.prefixes[-1] if self.prefixes else ''}{self.commands[command_index]}"
 
-    def parse_message(self, msg, full_text=None):
+    @staticmethod
+    def parse_message(msg, full_text=None):
         """ Returns message without command from Message object"""
 
         return msg.meta["__command"], msg.meta["__arguments_full"] if full_text else msg.meta["__arguments"]

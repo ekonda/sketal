@@ -13,7 +13,7 @@ class RandomPostPlugin(CommandPlugin):
         super().__init__(*list(self.commgroups), prefixes=prefixes, strict=strict)
 
         self.description = ["Случайные посты из групп", "Доступные команды:"]
-        for k, v in self.commgroups.items():
+        for k in self.commgroups.keys():
             self.description.append(prefixes[0] + str(k))
 
     async def process_message(self, msg):

@@ -338,7 +338,7 @@ class RequestsQueue:
     async def queue_processor(self):
         try:
             await self._queue_processor()
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
 
@@ -393,14 +393,15 @@ class RequestsQueue:
             task = self.queue.get_nowait()
 
             if task.key in ("photos.saveWallPhoto", "messages.setChatPhoto", ):
-                for i in range(2):
+                for _ in range(2):
                     self._requests_done += 1
 
                     try:
                         result = await asyncio.shield(self.vk_client.method(task.key, **task.data))
                         break
-                    except:
-                        pass
+                    except Exception:
+                        import traceback
+                        traceback.print_exc()
 
                 if not task.done() and not task.cancelled():
                     task.set_result(result)
@@ -428,7 +429,7 @@ class RequestsQueue:
 
         execute = execute[:-1] + "];"
 
-        for i in range(2):
+        for _ in range(2):
             self._requests_done += 1
 
             try:
@@ -438,7 +439,7 @@ class RequestsQueue:
             except aiohttp.ClientOSError:
                 try:
                     await self.session.close()
-                except:
+                except Exception:
                     pass
 
                 self.vk_client.session = aiohttp.ClientSession()

@@ -363,8 +363,8 @@ class Bot:
     def silent(func):
         try:
             func()
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
     def stop(self):
         self.handler.stop()

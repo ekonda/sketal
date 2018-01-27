@@ -39,7 +39,7 @@ class HangmanPlugin(BasePlugin):
             pass
 
         for c in (self.commands_start, self.commands_attempt, self.commands_stop):
-            c = sorted(c, key=lambda x: len(x), reverse=True)
+            c = sorted(c, key=len, reverse=True)
 
         self.description = [f"Виселица",
                             f"Игра \"Виселица\" - игроки вводят по букве и стараются угадать слово."

@@ -87,7 +87,7 @@ class WeatherPlugin(CommandPlugin):
         if text in self.coords_cache:
             return self.coords_cache[text]
 
-        for i, coder in enumerate(list(self.geocoders)):
+        for i in range(len(list(self.geocoders))):
             result = self.geocoders[-1].geocode(text)
 
             if not result: continue

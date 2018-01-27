@@ -135,7 +135,7 @@ class yTTS(object):
         try:
             return await self._write_to_fp(f)
 
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
 

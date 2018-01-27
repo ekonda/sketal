@@ -1,7 +1,7 @@
 from handler.base_plugin_command import CommandPlugin
 from vk_plus_utils import EventType
 
-import peewee_async, peewee, aiohttp, json, io
+import peewee, aiohttp, json, io
 
 
 class LockChatPlugin(CommandPlugin):
