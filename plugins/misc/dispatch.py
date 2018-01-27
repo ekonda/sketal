@@ -33,8 +33,6 @@ class DispatchPlugin(CommandPlugin):
             if a.type == "photo" and a.url:
                 async with aiohttp.ClientSession() as sess:
                     async with sess.get(a.url) as resp:
-                        group_id = self.bot.api.vk_groups[0].group_id
-
                         new_a = await upload_photo(self.api, io.BytesIO(await resp.read()))
 
                         if not new_a:

@@ -1,8 +1,6 @@
 from enum import Enum
 import asyncio
 
-from constants import MAX_LENGHT
-
 
 class Wait(Enum):
     NO = 0

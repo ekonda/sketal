@@ -73,7 +73,7 @@ class WeatherPlugin(CommandPlugin):
                                            longitude=result.longitude)) as resp:
                 try:
                     w = json.loads(await resp.text())
-                except:
+                except json.decoder.JSONDecodeError:
                     return None
 
         if len(self.weather_cache) > 400 and self.api_lim_count < self.api_lim:
@@ -101,8 +101,8 @@ class WeatherPlugin(CommandPlugin):
             self.coords_cache[text] = result
 
             return result
-        else:
-            return None
+
+        return None
 
     async def process_message(self, msg):
         command, text = self.parse_message(msg)
@@ -115,12 +115,12 @@ class WeatherPlugin(CommandPlugin):
 
             try:
                 city = user["city"]["title"]
-            except:
+            except KeyError:
                 city = ""
 
             try:
                 country = user["country"]["title"]
-            except:
+            except KeyError:
                 country = ""
 
             text = (country + " " + city).strip()

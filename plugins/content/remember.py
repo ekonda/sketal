@@ -1,6 +1,6 @@
 from handler.base_plugin_command import CommandPlugin
 
-import peewee_async, peewee
+import peewee
 
 import asyncio, uuid, time, re
 

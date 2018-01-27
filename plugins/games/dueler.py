@@ -10,13 +10,13 @@ import peewee_async, peewee, asyncio, random, time
 class DuelerPlugin(BasePlugin):
     __slots__ = ("commands", "prefixes", "models", "pwmanager", "active")
 
-    def __init__(self, prefixes=("",), help="помощь", me="я", pay="зп", duel="вызов",
+    def __init__(self, prefixes=("",), _help="помощь", me="я", pay="зп", duel="вызов",
                  accept="принять", auct="аукцион", bet="ставка", add="добавить", remove="удалить", postprefix="дуэли"):
         """Nice game "Dueler"."""
 
         super().__init__()
 
-        self.commands = [(postprefix + " " if postprefix else "") + c.lower() for c in (me, help, pay, duel, accept, auct, bet, add, remove)]  # [-1] == [8]
+        self.commands = [(postprefix + " " if postprefix else "") + c.lower() for c in (me, _help, pay, duel, accept, auct, bet, add, remove)]  # [-1] == [8]
         self.prefixes = prefixes
 
         self.pwmanager = None
@@ -206,7 +206,7 @@ class DuelerPlugin(BasePlugin):
 
     async def process_message(self, msg):
         if msg.meta["__pltext"].lower() == self.commands[1]:
-            me, help, pay, duel, accept, auct, bet, add, remove = self.commands
+            me, _help, pay, duel, accept, auct, bet, add, remove = self.commands
             p = self.prefixes[0]
 
             return await msg.answer(f'''У каждoго учаcтникa чата есть свой игровой пeрсoнаж, имеющий:
@@ -226,7 +226,7 @@ class DuelerPlugin(BasePlugin):
 {p}{duel} -вызвать на дуэль.
 {p}{accept} -принять вызов.
 {p}{auct} - начать аукцион.
-{p}{help} - помощь''')
+{p}{_help} - помощь''')
 
         Auct, Duel, Player, Equipment = self.models
 
@@ -241,7 +241,7 @@ class DuelerPlugin(BasePlugin):
 
                 if not name:
                     raise ValueError()
-            except:
+            except (ValueError, KeyError, IndexError):
                 return await msg.answer("Как надо: " + self.prefixes[0] + self.commands[8] + " [название предмета]")
 
 
@@ -260,7 +260,7 @@ class DuelerPlugin(BasePlugin):
 
                 if not name:
                     raise ValueError()
-            except:
+            except (ValueError, KeyError, IndexError):
                 return await msg.answer("Как надо: " + self.prefixes[0] + self.commands[7] + " [сила] [слот (helm, weapon или chest)] [название предмета]")
 
             if slot not in ("helm", "weapon", "chest"):
@@ -283,9 +283,9 @@ class DuelerPlugin(BasePlugin):
                 return await msg.answer("Аукцион закончен")
 
             try:
-                _, lot, bet = msg.meta["__pltext"].split(" ")
+                _, lot, bet = msg.meta["__pltext"][len(self.commands[6]):].split(" ")
                 bet = int(bet)
-            except:
+            except (KeyError, ValueError) as e:
                 return await msg.answer("Как надо ставить: " + self.prefixes[0] + self.commands[6] + " [номер лота] [ставка]")
 
             olot = getattr(auct, f"lot{lot}")
@@ -482,6 +482,9 @@ class DuelerPlugin(BasePlugin):
 
             if not target_id or target_id < 0:
                 return await msg.answer("Укажите вашу цель или перешлите её сообщение.")
+
+            if msg.user_id == target_id:
+                return await msg.answer("Вы не можете вызвать на дуэль себя.")
 
             await peewee_async.create_object(Duel, chat_id=msg.chat_id, userid1=msg.user_id, userid2=target_id)
 

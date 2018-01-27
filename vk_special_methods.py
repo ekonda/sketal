@@ -1,5 +1,3 @@
-from typing import Optional, BinaryIO
-
 import aiohttp
 import json
 
@@ -7,7 +5,7 @@ from vk_plus_utils import Attachment
 from utils import traverse
 
 
-async def upload_audio_message(api, multipart_data, peer_id) -> Optional[Attachment]:
+async def upload_audio_message(api, multipart_data, peer_id):
     """Upload audio file `multipart_data` and return Attachment for sending to user with id `peer_id`(possibly)"""
 
     sender = api.get_default_sender("docs.getMessagesUploadServer")
@@ -40,11 +38,14 @@ async def upload_audio_message(api, multipart_data, peer_id) -> Optional[Attachm
 
     return Attachment.from_upload_result(result, "doc")
 
-async def upload_graffiti(api, multipart_data, filename) -> Optional[Attachment]:
+async def upload_graffiti(api, multipart_data, filename):
     return await upload_doc(api, multipart_data, filename, {"type": "graffiti"})
 
-async def upload_doc(api, multipart_data, filename="image.png", additional_params={}) -> Optional[Attachment]:
+async def upload_doc(api, multipart_data, filename="image.png", additional_params=None):
     """Upload file `multipart_data` and return Attachment for sending to user"""
+
+    if additional_params is None:
+        additional_params = {}
 
     sender = api.get_default_sender("docs.getWallUploadServer")
     client = api.get_current_sender("docs.getWallUploadServer", sender=sender)
@@ -118,7 +119,6 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
     for m in traverse(await msg.get_full_forwarded()):
         if m.user_id and m.true_user_id != msg.user_id:
             return m.true_user_id
-            break
 
     if not can_be_argument:
         return None
@@ -150,15 +150,15 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
 
         max_match, user_id = 0, None
         for u in msg.meta["__chat_data"].users:
-            if u["screen_name"] == text:
+            if u.get("screen_name") == text:
                 return u["id"]
 
             matches = 0
-            if u["first_name"].strip().lower() in targets:
+            if u.get("first_name", "").strip().lower() in targets:
                 matches += 1
-            if u["last_name"].strip().lower() in targets:
+            if u.get("last_name", "").strip().lower() in targets:
                 matches += 1
-            if u["nickname"].strip().lower() in targets:
+            if u.get("nickname", "").strip().lower() in targets:
                 matches += 1
 
             if matches > 0:

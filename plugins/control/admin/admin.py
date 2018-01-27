@@ -1,6 +1,5 @@
 from handler.base_plugin import BasePlugin
 
-from utils import traverse
 from vk_special_methods import parse_user_id
 
 

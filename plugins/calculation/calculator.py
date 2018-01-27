@@ -1,7 +1,7 @@
-def pr_iterator(iter):
+def pr_iterator(array):
     pr = None
 
-    for i in iter:
+    for i in array:
         yield i, pr
         pr = i
 

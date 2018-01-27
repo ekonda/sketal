@@ -40,7 +40,7 @@ class AnagramsPlugin(BasePlugin):
             pass
 
         for c in (self.commands_start, self.commands_attempt, self.commands_stop):
-            c = sorted(c, key=lambda x: len(x), reverse=True)
+            c = sorted(c, key=len, reverse=True)
 
         self.description = [f"Анаграммы",
                             f"Игра \"Анаграммы\" - игроки вводят слова и стараются угадать слово.",

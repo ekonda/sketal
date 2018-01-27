@@ -2,8 +2,8 @@ import unittest
 
 try:
     import calculator
-except (ModuleNotFoundError,):
-    import plugins.calculation.calculator
+except ModuleNotFoundError:
+    import plugins.calculation.calculator as calculator
 
 class TestCalculator(unittest.TestCase):
     def setUp(self):

@@ -1,6 +1,6 @@
 from handler.base_plugin import BasePlugin
 
-import peewee_async, peewee
+import peewee
 import datetime, random
 from decimal import *
 
@@ -85,7 +85,10 @@ class AzinoPlugin(BasePlugin):
 
         return False
 
-    def get_tile(self, add={}):
+    def get_tile(self, add=None):
+        if add is None:
+            add = {}
+
         total = sum(float(w) for w, _ in self.tiles.values())
         total += sum(float(w) for w in add.values())
 
@@ -102,7 +105,7 @@ class AzinoPlugin(BasePlugin):
         cmd = msg.meta["__azino_subcommand"]
         try:
             cmd_num = float(cmd)
-        except:
+        except ValueError:
             cmd_num = False
 
         if msg.user_id in self.current:

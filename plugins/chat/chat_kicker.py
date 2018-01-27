@@ -1,7 +1,6 @@
 from handler.base_plugin_command import CommandPlugin
 from vk_plus_utils import EventType
-from vk_special_methods import parse_user_id, upload_doc
-from utils import traverse
+from vk_special_methods import parse_user_id
 
 import time
 

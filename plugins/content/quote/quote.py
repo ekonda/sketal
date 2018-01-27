@@ -7,7 +7,7 @@ from PIL import ImageDraw
 from PIL import ImageFont
 
 import aiohttp
-import datetime, math, io
+import datetime, io
 
 
 class QuotePlugin(CommandPlugin):

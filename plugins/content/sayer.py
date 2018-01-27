@@ -40,7 +40,8 @@ class SayerPlugin(CommandPlugin):
         if self.key == "e02d4514-b2a7-4edb-8ee8-825f854ef890":
             self.bot.logger.warning("You are using public key for Speechkit Cloud! Get your own: https://tech.yandex.ru/speechkit/cloud/")
 
-    def get_lang(self, text):
+    @staticmethod
+    def get_lang(text):
         resu = None
 
         try:

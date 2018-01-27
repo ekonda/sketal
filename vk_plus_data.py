@@ -1,5 +1,3 @@
-from typing import Optional, List, Dict, Tuple
-
 from math import ceil
 
 from constants import MAX_LENGHT

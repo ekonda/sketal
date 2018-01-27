@@ -9,5 +9,3 @@ class xPlugin(CommandPlugin):
 
     async def process_message(self, msg):
         command, text = self.parse_message(msg)
-
-        pass  # code

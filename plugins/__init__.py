@@ -18,6 +18,9 @@ def load_plugins(path):
 
             module = join(p, f).replace(os.sep, ".")[:-3]
 
+            if " " in module or "\"" in module or "\'" in module:
+                continue
+
             try:
                 exec(f"global m; import {module} as m")
 
@@ -26,7 +29,7 @@ def load_plugins(path):
                 continue
 
             for en in dir(m):
-                if en in __all__:
+                if en in __all__ or " " in en or "\"" in en or "\'" in en:
                     continue
 
                 e = m.__getattribute__(en)

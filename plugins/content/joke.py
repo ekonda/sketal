@@ -1,7 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
 
-from vk_special_methods import upload_photo
-
 import aiohttp, time, json, re
 #AMAZING SITE: http://nextjoke.net
 
@@ -23,7 +21,7 @@ class JokePlugin(CommandPlugin):
                 html = await resp.text()
                 try:
                     html = json.loads(html.replace("window.JokeWidget.parseResponse(", "", 1)[:-2])["text"]
-                except:
+                except (KeyError, json.decoder.JSONDecodeError):
                     return await msg.answer("Сегодня без шуток ;(")
 
                 html = re.sub("(\n|^| )-([A-Za-zА-Яа-я])", "- \\2", html)

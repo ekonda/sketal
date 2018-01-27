@@ -1,4 +1,4 @@
-from typing import Union
+from contextlib import contextmanager
 
 from captcha_solver import CaptchaSolver
 

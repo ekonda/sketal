@@ -46,7 +46,7 @@ class VoterPlugin(CommandPlugin):
         maximum = min(len(msg.meta["__chat_data"].users) - unvoters, maximum if maximum else float("inf"))
 
         await msg.answer(
-            f"Начало голосование с темой \"{title}\". Максимальное кол-во проголосовавших: {maximum}. "
+            f"Начало голосования с темой \"{title}\". Максимальное кол-во проголосовавших: {maximum}. "
             f"Время голосования: {round(votetime/60, 2)} мин. Голосовать - {self.prefixes[-1]}{self.command_groups[0][0]}"
         )
 
@@ -115,7 +115,7 @@ class VoterPlugin(CommandPlugin):
 
                     return asyncio.ensure_future(self.do_vote(msg, title, maximum=maximum, votetime=votetime))
 
-                return await msg.answer("Голосованй не идёт в данный момент.")
+                return await msg.answer("Голосований не идёт в данный момент.")
 
             if text:
                 return await msg.answer("Голосование уже идёт. Подождите его завершения.")
@@ -129,7 +129,7 @@ class VoterPlugin(CommandPlugin):
 
         if command in self.command_groups[1]:
             if msg.chat_id not in self.votes:
-                return await msg.answer("Голосованй не идёт в данный момент.")
+                return await msg.answer("Голосований не идёт в данный момент.")
 
             if msg.user_id not in self.votes[msg.chat_id]:
                 return await msg.answer("Вы не голосовали.")

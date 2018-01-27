@@ -1,13 +1,12 @@
-from copy import copy
-from random import choice
+from handler.base_plugin_command import CommandPlugin
 
 import aiohttp
 
-from handler.base_plugin import BasePlugin
-import xmltodict
+from random import choice
 
-from handler.base_plugin_command import CommandPlugin
 from vk_plus_data import Message
+
+import xmltodict
 
 
 class YandexNewsPlugin(CommandPlugin):

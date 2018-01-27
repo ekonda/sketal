@@ -4,11 +4,10 @@ import json
 import aiohttp
 import logging
 import time
-import re
 
 from utils import json_iter_parse
 from vk_auth import Auth
-from vk_plus_utils import Request, RequestAccumulative
+from vk_plus_utils import RequestAccumulative
 
 AUTHORIZATION_FAILED = 5
 CAPTCHA_IS_NEEDED = 14
@@ -206,7 +205,7 @@ class VkClient:
         self.scope = scope
 
         retries = 5
-        for i in range(retries):
+        for _ in range(retries):
             self.token = await self.auth.get_token(username, password, app_id, scope)
 
             if self.token:
@@ -390,7 +389,7 @@ class RequestsQueue:
 
         execute = "return ["
 
-        for i in range(25):
+        for _ in range(25):
             task = self.queue.get_nowait()
 
             if task.key in ("photos.saveWallPhoto", "messages.setChatPhoto", ):
@@ -442,7 +441,7 @@ class RequestsQueue:
                 except:
                     pass
 
-                self.session = aiohttp.ClientSession()
+                self.vk_client.session = aiohttp.ClientSession()
 
             except asyncio.TimeoutError:
                 await asyncio.sleep(1)

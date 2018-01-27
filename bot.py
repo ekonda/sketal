@@ -78,7 +78,7 @@ class Bot:
     async def init_long_polling(self, update=0):
         result = None
         retries = 10
-        for x in range(retries):
+        for _ in range(retries):
             result = await self.api(sender=self.api.target_client).messages.getLongPollServer(use_ssl=1, lp_version=2)
 
             if result:
@@ -263,7 +263,7 @@ class Bot:
             pass
 
     def callback_run(self, custom_process=False):
-        host = getenv('IP', '0.0.0.0')
+        host = getenv('IP', '127.0.0.1')
         port = int(getenv('PORT', 8000))
 
         self.logger.info("Started to process messages")
@@ -323,9 +323,9 @@ class Bot:
     def stop_bot(self, full=False):
         try:
             self.main_task.cancel()
-
-        except:
-            pass
+        except Exception:
+            import traceback
+            traceback.print_exc()
 
         if full:
             self.stop()

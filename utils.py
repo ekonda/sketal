@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import html
-from contextlib import contextmanager
 
 import json
 from dateutil.relativedelta import relativedelta
@@ -73,7 +72,7 @@ def parse_msg_flags(bitmask, keys=('unread', 'outbox', 'replied', 'important', '
 
     start = 1
     values = []
-    for x in range(1, 12):
+    for _ in range(1, 12):
         result = bitmask & start
         start *= 2
         values.append(bool(result))
@@ -97,8 +96,8 @@ def unquote(data: (str, dict, list)):
             temp[k] = unquote(v)
 
     if issubclass(temp.__class__, list):
-        for i in range(len(temp)):
-            temp[i] = unquote(temp[i])
+        for i, e in enumerate(len(temp)):
+            temp[i] = unquote(e)
 
     return temp
 

@@ -1,6 +1,6 @@
 from handler.base_plugin_command import CommandPlugin
 
-import aiohttp, json, time, io
+import aiohttp, json, time
 
 
 class EmotionsDetectorPlugin(CommandPlugin):
@@ -86,7 +86,7 @@ class EmotionsDetectorPlugin(CommandPlugin):
 
                     return await msg.answer(answer)
 
-        except ValueError as e:
+        except ValueError:
             pass
 
         except Exception as e:

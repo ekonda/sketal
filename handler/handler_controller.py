@@ -1,6 +1,3 @@
-import asyncio
-
-
 class MessageHandler:
     def __init__(self, bot, api, initiate_plugins=True):
         self.bot = bot

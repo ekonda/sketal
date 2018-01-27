@@ -1,7 +1,7 @@
 from handler.base_plugin import BasePlugin
 
-import peewee
 import peewee_async
+
 
 """ peewee_async
 Docs: https://peewee-async.readthedocs.io/en/latest/
@@ -12,6 +12,7 @@ Docs: http://docs.peewee-orm.com/en/latest/
 
 """Possible `custom_driver` values is any peewee_async.* driver or "PostgreSQL" or "MySQL"
 """
+
 
 class PeeweePlugin(BasePlugin):
     __slots__ = ("database", "manager", "set_manager")
@@ -32,7 +33,7 @@ class PeeweePlugin(BasePlugin):
 
         elif custom_driver == "MySQL":
             driver = peewee_async.MySQLDatabase
-            if dbport is None: dbport = 13306
+            if dbport is None: dbport = 3306
 
         else:
             driver = custom_driver

@@ -1,10 +1,6 @@
 from handler.base_plugin import BasePlugin
 
 
-from tinydb import TinyDB, Query
-from tinydb.storages import JSONStorage
-from tinydb.middlewares import CachingMiddleware
-
 class ChatData:
     __slots__ = ("admin_id", "users", "id", "previous_users")
 

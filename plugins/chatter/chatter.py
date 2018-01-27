@@ -2,7 +2,6 @@ from handler.base_plugin import BasePlugin
 from plugins.calculation.calculator import Calculator
 
 from enum import Enum
-import itertools
 import random
 import copy
 import os
@@ -133,7 +132,6 @@ class ChatterPlugin(BasePlugin):
 
             result = ""
             token = ""
-            ch_pr = None
 
             i = 0
             while i < len(value):
@@ -280,7 +278,6 @@ class ChatterPlugin(BasePlugin):
 
     def read_plugin(self, path):
         plugin = [Node(Type.Name, path.split(os.sep)[-1]), Node()]
-        token = ""
         inside = False
         comment = False
         escaped = False

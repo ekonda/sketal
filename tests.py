@@ -1,7 +1,5 @@
 import unittest
 
-import peewee
-
 from bot import Bot
 from constants import MAX_LENGHT
 from vk_plus import asyncio, Wait
@@ -102,7 +100,7 @@ class TestBot(unittest.TestCase):
             with self.bot.api.mass_request():
                 tasks = []
 
-                for i in range(70):
+                for _ in range(70):
                     tasks.append(await self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
 
                 while tasks:
