@@ -1,4 +1,9 @@
-#### sketal v7.3.0 `funny dog`
+#### sketal v7.3.1 `funny dog`
+##### update v7.3.1
+- Still `Code style` fixes and optimizations
+- Got rid of `exec` in plugins' `__init__.py`
+- Moved `calculation` plugin in `content`
+
 ##### update v7.3
 - Many `Code style` fixes
 - Fixed couple of bugs in dueler

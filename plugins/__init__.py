@@ -10,32 +10,29 @@ __all__ = []
 def join(*es):
     return os.sep.join(es)
 
-def load_plugins(path):
-    for p, ds, fs in os.walk(path):
-        for f in fs:
-            if not f.endswith(".py") or f.startswith("_"):
+def import_plugins(package):
+    if isinstance(package, str):
+        package = importlib.import_module(package)
+
+    for loader, name, is_pkg in pkgutil.walk_packages(package.__path__):
+        full_name = package.__name__ + '.' + name
+
+        module = importlib.import_module(full_name)
+
+        for name in dir(module):
+            if name[0] == "_":
                 continue
 
-            module = join(p, f).replace(os.sep, ".")[:-3]
+            e = module.__getattribute__(name)
 
-            if " " in module or "\"" in module or "\'" in module:
+            if e in __all__:
                 continue
 
-            try:
-                exec(f"global m; import {module} as m")
+            if isinstance(e, type) and issubclass(e, BasePlugin) and e.__module__ == module.__name__:
+                __all__.append(e.__name__)
+                globals()[e.__name__] = e
 
-            except AttributeError:
-                print("Strange module: " + str(module))
-                continue
+        if is_pkg:
+            import_plugins(full_name)
 
-            for en in dir(m):
-                if en in __all__ or " " in en or "\"" in en or "\'" in en:
-                    continue
-
-                e = m.__getattribute__(en)
-
-                if isinstance(e, type) and issubclass(e, BasePlugin) and e.__module__ == m.__name__:
-                    exec(f"global {en}; from {module} import {en}")
-                    __all__.append(en)
-
-load_plugins("plugins")
+import_plugins(__name__)

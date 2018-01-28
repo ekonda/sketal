@@ -2,12 +2,14 @@ from handler.base_plugin_command import CommandPlugin
 
 
 class HelpPlugin(CommandPlugin):
-    __slots__ = ("plugins", )
+    __slots__ = ("plugins", "short")
 
-    def __init__(self, *commands, plugins=None, prefixes=None, strict=False):
+    def __init__(self, *commands, plugins=None, short=True, prefixes=None, strict=False):
         """Answers with a user a list with plugins's descriptions from `plugins`."""
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
+
+        self.short = short
 
         if not isinstance(plugins, list):
             self.plugins = []
@@ -39,6 +41,10 @@ class HelpPlugin(CommandPlugin):
 
         for plugin in self.plugins:
             if not hasattr(plugin, "description") or not plugin.description:
+                continue
+
+            if self.short:
+                result += "🔶 " + plugin.description[0] + ". " + " // ".join(plugin.description[1:]) + "\n"
                 continue
 
             result += "🔷" + plugin.description[0] + ":🔷" + "\n"

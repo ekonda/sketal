@@ -3,7 +3,7 @@ import unittest
 try:
     import calculator
 except ModuleNotFoundError:
-    import plugins.calculation.calculator as calculator
+    import plugins.content.calculation.calculator as calculator
 
 class TestCalculator(unittest.TestCase):
     def setUp(self):
@@ -40,6 +40,7 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(self.calculator.calculate("- 2 - 2"), -4)
         self.assertEqual(self.calculator.calculate("(- 2) - 2"), -4)
         self.assertEqual(self.calculator.calculate("sqrt (4) - 2"), 0)
+        self.assertEqual(self.calculator.calculate("fact 4"), 2*3*4)
 
     def test_functions(self):
         self.assertEqual(self.calculator.calculate("pow(- 5 * 4, 1)"), -20)
