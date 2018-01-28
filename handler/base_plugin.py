@@ -9,8 +9,11 @@ class BasePlugin:
         self.api = None
         self.handler = None
 
-        self.name = self.__class__.__name__
-        self.description = ""
+        if not hasattr(self, "name"):
+            self.name = self.__class__.__name__
+
+        if not hasattr(self, "description"):
+            self.description = ""
 
     def get_path(self, path):
         """You can use this method to load files from your plugin's folder"""

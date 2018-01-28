@@ -13,4 +13,4 @@ class EchoPlugin(BasePlugin):
         return True
 
     async def process_message(self, msg):
-        await msg.answer(msg.full_text, attachment=",".join(str(a) for a in await msg.get_full_attaches()))
+        await msg.answer(msg.full_text, attachment=await msg.get_full_attaches())
