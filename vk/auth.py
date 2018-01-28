@@ -33,7 +33,7 @@ class Auth:
         if logger:
             self.logger = logger
         else:
-            self.logger = logging.Logger("vk_auth")
+            self.logger = logging.Logger("vk.auth")
 
         self.obj = obj
 

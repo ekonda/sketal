@@ -1,5 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-from plugins.calculation.calculator import Calculator
+from plugins.content.calculation.calculator import Calculator
 
 class CalculatorPlugin(CommandPlugin):
     __slots__ = ("calculator", )

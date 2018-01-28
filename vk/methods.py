@@ -15,6 +15,7 @@ ALLOWED_METHODS = {
     'photos': ('getMessagesUploadServer',
                'saveMessagesPhoto')
 }
+
 # Словарь, ключ - раздел API методов, значение - список запрещённых методов
 DISALLOWED_MESSAGES = ('addChatUser',
                        'allowMessagesFromGroup',
@@ -32,7 +33,7 @@ DISALLOWED_MESSAGES = ('addChatUser',
                        'setChatPhoto')
 
 
-def is_available_from_group(key: str) -> bool:
+def is_available_from_group(key):
     if key == 'execute':
         return True
 
@@ -41,18 +42,13 @@ def is_available_from_group(key: str) -> bool:
     except ValueError:
         return False
 
-    # Если раздел - messages, проверяем, нельзя ли выполнить этот метод
     if topic == 'messages':
         return method not in DISALLOWED_MESSAGES
 
-    # Получаем список разрешённых методов для данного раздела
-    methods_allowed = ALLOWED_METHODS.get(topic, None)
-
-    if not methods_allowed:
-        return False
-
-    if method in methods_allowed:
+    if method in  ALLOWED_METHODS.get(topic, ()):
         return True
+
+    return False
 
 
 # Методы, которые можно выполнять без авторизации API
@@ -92,12 +88,13 @@ ALLOWED_PUBLIC = {
 }
 
 
-def is_available_from_public(key: str) -> bool:
+def is_available_from_public(key):
     try:
         topic, method = key.split('.')
     except ValueError:
         return False
 
-    methods = ALLOWED_PUBLIC.get(topic, ())
-    if method in methods:
+    if method in ALLOWED_PUBLIC.get(topic, ()):
         return True
+
+    return False

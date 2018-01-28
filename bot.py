@@ -12,10 +12,10 @@ from os import getenv
 
 from handler.handler_controller import MessageHandler
 from utils import parse_msg_flags
-from vk_plus import VkController
+from vk.plus import VkController
 
-from vk_plus_data import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
-from vk_plus_utils import MessageEventData
+from vk.data import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
+from vk.utils import MessageEventData
 
 
 class Bot:

@@ -1,5 +1,5 @@
 from handler.base_plugin import BasePlugin
-from vk_special_methods import parse_user_id
+from vk.helpers import parse_user_id
 
 import peewee_async, peewee, asyncio, random, time
 

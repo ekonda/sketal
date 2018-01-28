@@ -1,5 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-from vk_special_methods import upload_photo
+from vk.helpers import upload_photo
 
 from PIL import Image
 from PIL import ImageDraw

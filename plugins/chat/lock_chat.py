@@ -1,5 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-from vk_plus_utils import EventType
+from vk.utils import EventType
 
 import peewee, aiohttp, json, io
 
@@ -21,7 +21,7 @@ class LockChatPlugin(CommandPlugin):
         self.ChatLock = None
 
         self.description = ["Оборона беседы",
-                            f"{self.prefixes[0]}{self.commands[0]} [флаги через пробелы] - установить настройки защиты беседы. Если флаг присутствует, "
+                            f"{self.prefixes[-1]}{self.commands[0]} [флаги через пробелы] - установить настройки защиты беседы. Если флаг присутствует, "
                             "то изменение соответствующего атрибута запрещено.",
                             f"Флаги: {picture_flag} (обложка не будет меняться), {title_flag} (название не будет меняться), "
                             "{invite_flag} (нельзя покидать или вступать в беседу)",

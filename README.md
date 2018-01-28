@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/vk-brain/sketal/blob/master/nothing/title.png?raw=true" alt="vk-sketal logo"/>
+    <img src="https://github.com/vk-brain/sketal/blob/master/docs/title.png?raw=true" alt="vk-sketal logo"/>
 </p>
 
 ## sketal
@@ -50,7 +50,7 @@ USERS = (
 #### Философия
 - Проект создан для тех, кто готов разобраться в том, что же тут происходит. Создание плагинов и их настройка - сложный процесс.
 - Никакие плагины не должны менять код основных частей бота, чтобы было легко обновляться и менять какие-то базовые вещи (переписывать плагины легче, чем восстанавливать функционал после обновлений).
-- Многие функции, примеры, возможности можно найти, изучая исходный код плагинов и файлы бота. Например: `tests.py`, `vk_special_methods.py`, `handler/base_plugin.py` и т.д.
+- Многие функции, примеры, возможности можно найти, изучая исходный код плагинов и файлы бота. Например: `tests.py`, `vk/helpers.py`, `handler/base_plugin.py` и т.д.
 - Тесты - это важно, интересно и полезно!
 
 @michaelkrukov http://michaelkrukov.ru/

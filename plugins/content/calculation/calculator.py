@@ -28,7 +28,7 @@ class Calculator():
         "unary sqrt": (9, lambda x: x ** 0.5 if x >= 0 else ex(ValueError("Square root of a negative number."))),
 
         "unary pow": (9, lambda x: x[0]**x[1]),
-        "unary fact": (9, lambda x: math.factorial(x)),
+        "unary fact": (9, math.factorial),
         "unary log": (9, lambda x: (math.log(x) if x > 0 else ex(ValueError("Value x can't be zero for log!")))
                                     if len(x) == 1 or isinstance(x, (int, float))
                                     else math.log(x[0], x[1]) if x[0] > 0 and x[1] > 0 and x[1] != 1 else

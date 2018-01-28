@@ -1,5 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-from vk_special_methods import upload_graffiti
+from vk.helpers import upload_graffiti
 
 import aiohttp, io
 

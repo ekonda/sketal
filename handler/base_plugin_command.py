@@ -10,7 +10,7 @@ class CommandPlugin(BasePlugin):
         super().__init__()
 
         self.commands = commands if strict else [command.strip().lower() for command in commands]
-        self.commands = sorted(self.commands, key=lambda x: len(x), reverse=True)  # или x.count(" ")?
+        self.commands = sorted(self.commands, key=len, reverse=True)  # или x.count(" ")?
 
         self.prefixes = prefixes if prefixes else ("!", )
         self.prefixes = sorted(self.prefixes, reverse=True)

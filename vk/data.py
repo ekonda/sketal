@@ -1,8 +1,9 @@
 from math import ceil
 
-from constants import MAX_LENGHT
-from vk_plus_utils import Wait, EventType
-from vk_plus_utils import MessageEventData, Attachment
+from vk.utils import MessageEventData, Attachment, EventType, Wait
+
+
+MAX_LENGHT = 4000
 
 
 class Message(object):

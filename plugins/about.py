@@ -1,5 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-from vk_plus_data import Message
+from vk.data import Message
 
 
 class AboutPlugin(CommandPlugin):

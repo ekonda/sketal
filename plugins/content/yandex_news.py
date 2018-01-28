@@ -4,7 +4,7 @@ import aiohttp
 
 from random import choice
 
-from vk_plus_data import Message
+from vk.data import Message
 
 import xmltodict
 

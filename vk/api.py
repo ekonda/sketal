@@ -6,8 +6,8 @@ import logging
 import time
 
 from utils import json_iter_parse
-from vk_auth import Auth
-from vk_plus_utils import RequestAccumulative
+from vk.auth import Auth
+from vk.utils import RequestAccumulative
 
 AUTHORIZATION_FAILED = 5
 CAPTCHA_IS_NEEDED = 14

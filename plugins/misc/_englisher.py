@@ -5,8 +5,8 @@ from transliterate import translit
 
 
 def main(save_commands):
-    import vk_plus_data, re
-    original_answer = vk_plus_data.Message.answer
+    import vk.data, re
+    original_answer = vk.data.Message.answer
 
     async def repl(self, message="", wait=None, **additional_values):
         newmessage = ""
@@ -33,7 +33,7 @@ def main(save_commands):
 
         return await original_answer(self, newmessage, wait, **additional_values)
 
-    vk_plus_data.Message.answer = repl
+    vk.data.Message.answer = repl
 
 if (__name__.split(".")[-1][0]) != "_":
     main(save_commands=True)

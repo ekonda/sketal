@@ -1,6 +1,6 @@
 from handler.base_plugin import BasePlugin
 
-from vk_special_methods import parse_user_id
+from vk.helpers import parse_user_id
 
 
 class AdminPlugin(BasePlugin):

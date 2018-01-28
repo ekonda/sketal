@@ -1,7 +1,7 @@
 import aiohttp
 import json
 
-from vk_plus_utils import Attachment
+from vk.utils import Attachment
 from utils import traverse
 
 

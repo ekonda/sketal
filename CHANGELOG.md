@@ -1,4 +1,17 @@
-#### sketal v7.3.0 `funny dog`
+#### sketal v7.3.1 `funny dog`
+##### update v7.3.1
+- Still `Code style` fixes and optimizations
+- Got rid of `exec` in plugins' `__init__.py`
+- Moved `calculation` plugin in `content`
+- Rearranged files:
+  - `methods.py` -> `vk/methods.py`
+  - `vk_auth.py` -> `vk/auth.py`
+  - `vk_data.py` -> `vk/data.py`
+  - `vk_api.py` -> `vk/api.py`
+  - `vk_special_methods.py` -> `vk/helpers.py`
+  - `vk_plus.py` -> `vk/plus.py`
+  - `vk_utils.py` -> `vk/utils.py`
+
 ##### update v7.3
 - Many `Code style` fixes
 - Fixed couple of bugs in dueler

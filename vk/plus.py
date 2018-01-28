@@ -2,10 +2,10 @@ from contextlib import contextmanager
 
 from captcha_solver import CaptchaSolver
 
-from methods import *
 from utils import *
-from vk_api import *
-from vk_plus_utils import *
+from vk.api import *
+from vk.utils import *
+from vk.methods import *
 
 
 class VkController(object):

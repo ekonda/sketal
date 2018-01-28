@@ -1,6 +1,6 @@
 from handler.base_plugin_command import CommandPlugin
-from vk_plus_utils import EventType
-from vk_special_methods import parse_user_id
+from vk.utils import EventType
+from vk.helpers import parse_user_id
 
 import time
 

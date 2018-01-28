@@ -59,7 +59,7 @@ class BotSettings(BaseSettings):
     prefixes = ("!", "бот ", "бот, ", "бот,")
     admins = (87641997, )
 
-    hp = HelpPlugin("помощь", "команды", "?", prefixes=prefixes)
+    hp = HelpPlugin("помощь", "команды", "?", short=False, prefixes=prefixes)
 
     PLUGINS = (
         # PeeweePlugin("host", "database's name", "user", "password", port, "PostgreSQL" or "MySQL"),
