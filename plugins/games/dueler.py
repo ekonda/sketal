@@ -271,9 +271,8 @@ class DuelerPlugin(BasePlugin):
 
                 try:
                     await peewee_async.create_object(Equipment, name=name, slot=slot, power=tpower)
-                except Exception:
-                    import traceback
-                    traceback.print_exc()
+                except peewee.IntegrityError:
+                    pass
 
             return await msg.answer("Готово!")
 

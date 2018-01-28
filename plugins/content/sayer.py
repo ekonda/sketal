@@ -134,11 +134,7 @@ class yTTS(object):
     async def write_to_fp(self, f):
         try:
             return await self._write_to_fp(f)
-
         except Exception:
-            import traceback
-            traceback.print_exc()
-
             return False
 
     async def _write_to_fp(self, f):
