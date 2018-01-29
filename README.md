@@ -4,7 +4,7 @@
 
 ## sketal
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1a5af7a2447a4f83838cb4ea9da0bb43)](https://www.codacy.com/app/m-krjukov/Sketal?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vk-brain/sketal&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1a5af7a2447a4f83838cb4ea9da0bb43)](https://www.codacy.com/app/m-krjukov/Sketal?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vk-brain/sketal&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.org/vk-brain/sketal.svg?branch=master)](https://travis-ci.org/vk-brain/sketal)
 
 #### Немного о боте
 - Бот работает на python3.6 и выше. Ниже не работает. Совсем. Это важно.
