@@ -1,0 +1,7 @@
+language: python
+python:
+  - "3.6"
+script:
+  - make test
+install:
+  - pip install -r requirements.txt

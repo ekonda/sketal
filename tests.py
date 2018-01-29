@@ -1,4 +1,4 @@
-import unittest
+import unittest, os
 
 from bot import Bot
 
@@ -8,10 +8,14 @@ from vk.helpers import upload_doc, upload_photo
 
 try:
     from settings_real import BotSettings
-
 except ImportError:
     from settings import BotSettings
 
+user_token = os.environ.get('SKETAL_USER_TOKEN', '')
+if user_token:
+    BotSettings.USERS = (
+        ("user", user_token,),
+    )
 
 class TestBot(unittest.TestCase):
     bot = Bot(BotSettings)
