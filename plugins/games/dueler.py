@@ -114,7 +114,8 @@ class DuelerPlugin(BasePlugin):
 
         self.models = Auct, Duel, Player, Equipment
 
-    def get_level(self, score):
+    @staticmethod
+    def get_level(score):
         e = 0
 
         for i in range(100):
@@ -436,10 +437,8 @@ class DuelerPlugin(BasePlugin):
 
             await peewee_async.delete_object(duel)
 
-            exp1 = player1.wins * 10 + player1.losses * 5
-            exp2 = player2.wins * 10 + player2.losses * 5
-            level1, exp1_to_level = self.get_level(exp1)
-            level2, exp2_to_level = self.get_level(exp2)
+            level1, _ = self.get_level(player1.wins * 10 + player1.losses * 5)
+            level2, _ = self.get_level(player2.wins * 10 + player2.losses * 5)
 
             epower1 = 9
             if player1.helm:
@@ -549,13 +548,13 @@ class DuelerPlugin(BasePlugin):
             users =await self.api.users.get(user_ids=msg.user_id)
             user = users[0]
 
-            level, exp = self.get_level(player.wins * 10 + player.losses * 5)
+            level, exp_left = self.get_level(player.wins * 10 + player.losses * 5)
 
             text = (
                 "💬 Информация о персонаже:\n"
                 f"🌳 {user['first_name']} {user['last_name']}\n"
                 f"🌳 Уровень: {level}\n"
-                f"🌳 Опыта до повышения уровня: {round(exp)}\n"
+                f"🌳 Опыта до повышения уровня: {round(exp_left)}\n"
                 f"🌳 Состояние: {player.state}%\n"
                 f"🌳 Богатства: {player.money}$\n"
                 f"🌳 Победы/поражения: {player.wins}/{player.losses}\n"
