@@ -10,13 +10,13 @@ import peewee_async, peewee, asyncio, random, time
 class DuelerPlugin(BasePlugin):
     __slots__ = ("commands", "prefixes", "models", "pwmanager", "active")
 
-    def __init__(self, prefixes=("",), _help="помощь", me="я", pay="зп", duel="вызов",
+    def __init__(self, prefixes=("",), _help="помощь", me="я", pay="зп", duel="вызов", top="топ",
                  accept="принять", auct="аукцион", bet="ставка", add="добавить", remove="удалить", postprefix="дуэли"):
         """Nice game "Dueler"."""
 
         super().__init__()
 
-        self.commands = [(postprefix + " " if postprefix else "") + c.lower() for c in (me, _help, pay, duel, accept, auct, bet, add, remove)]  # [-1] == [8]
+        self.commands = [(postprefix + " " if postprefix else "") + c.lower() for c in (me, _help, pay, duel, accept, auct, bet, add, remove, top)]  # [-1] == [9]
         self.prefixes = prefixes
 
         self.pwmanager = None
@@ -114,6 +114,16 @@ class DuelerPlugin(BasePlugin):
 
         self.models = Auct, Duel, Player, Equipment
 
+    def get_level(self, score):
+        e = 0
+
+        for i in range(100):
+            score -= e * 1.2 + 50
+
+            if score <= 0:
+                return i, -score
+
+        return 100, -1
 
     async def global_before_message_checks(self, msg):
         msg.meta["__cplayer"] = await self.get_or_create_player(msg.chat_id, msg.user_id)
@@ -231,6 +241,24 @@ class DuelerPlugin(BasePlugin):
         Auct, Duel, Player, Equipment = self.models
 
         player = msg.meta["__cplayer"] or await self.get_or_create_player(msg.chat_id, msg.user_id)
+
+        if msg.meta["__pltext"].lower().startswith(self.commands[9]):
+            top = await self.pwmanager.execute(Player.select().where(Player.chat_id == msg.chat_id).order_by(Player.wins.desc()).limit(10))
+
+            text = "👑 Самые мощные игроки:\n"
+
+            users = {}
+            if "__chat_data" in msg.meta:
+                for u in msg.meta["__chat_data"].users:
+                    users[u["id"]] = u["first_name"] + " " + u["last_name"]
+
+            for i, player in enumerate(top):
+                text += (
+                    str(i + 1) + ". 😎 " + users.get(player.user_id, "Пользователь \"{player.user_id}\"") +
+                    "\nПобед: " + str(player.wins)  + " // Поражений: " + str(player.losses)  + "\n"
+                )
+
+            return await msg.answer(text)
 
         if msg.meta["__pltext"].lower().startswith(self.commands[8]):
             if not msg.meta.get("is_admin") and not msg.meta.get("is_moder"):
@@ -408,6 +436,11 @@ class DuelerPlugin(BasePlugin):
 
             await peewee_async.delete_object(duel)
 
+            exp1 = player1.wins * 10 + player1.losses * 5
+            exp2 = player2.wins * 10 + player2.losses * 5
+            level1, exp1_to_level = self.get_level(exp1)
+            level2, exp2_to_level = self.get_level(exp2)
+
             epower1 = 9
             if player1.helm:
                 epower1 += player1.helm.power
@@ -416,7 +449,8 @@ class DuelerPlugin(BasePlugin):
             if player1.weapon:
                 epower1 += player1.weapon.power
             apower1 = epower1 + round(epower1 * (player1.state / 100), 2)
-            power1 = apower1 + round(apower1 * 0.15 * random.random(), 2)
+            lpower1 = apower1 + round(apower1 * level1 / 100, 2)
+            power1 = lpower1 + round(lpower1 * 0.15 * random.random(), 2)
 
             epower2 = 9
             if player2.helm:
@@ -426,7 +460,8 @@ class DuelerPlugin(BasePlugin):
             if player2.weapon:
                 epower2 += player2.weapon.power
             apower2 = epower2 + round(epower2 * (player2.state / 100), 2)
-            power2 = apower2 + round(apower2 * 0.15 * random.random(), 2)
+            lpower2 = apower2 + round(apower2 * level2 / 100, 2)
+            power2 = lpower2 + round(lpower2 * 0.15 * random.random(), 2)
 
             player1win = random.random() * (power1 + power2) < power1
 
@@ -437,10 +472,12 @@ class DuelerPlugin(BasePlugin):
             text = (
                 "Битва персонажей 🤺\"" + users[0]["first_name"] + " " + users[0]["last_name"]  + "\" и "
                 "🤺\"" + users[1]["first_name"] + " " + users[1]["last_name"]  + "\"\n"
+                "💪 Уровни: " + str(level1) + " / " + str(level2) + "\n"
                 "💪 Cостояния: " + str(player1.state) + "% / " + str(player2.state) + "%\n"
                 "💪 Экипировка: " + str(epower1) + " / " + str(epower2) + "\n"
                 "💪 Актив сила: " + str(round(apower1 - epower1, 2))  + " / " + str(round(apower2 - epower2, 2)) + "\n"
-                "💪 Сила удачи: " + str(round(power1 - apower1, 2))  + " / " + str(round(power2 - apower2, 2)) + "\n\n"
+                "💪 Сила опыта: " + str(round(lpower1 - apower1, 2))  + " / " + str(round(lpower2 - apower2, 2)) + "\n\n"
+                "💪 Сила удачи: " + str(round(power1 - lpower1, 2))  + " / " + str(round(power2 - lpower2, 2)) + "\n\n"
                 "💪 СИЛА: " + str(round(power1, 2))  + " / " + str(round(power2, 2)) + "\n\n"
             )
 
@@ -474,8 +511,8 @@ class DuelerPlugin(BasePlugin):
             return await msg.answer(text)
 
         if msg.meta["__pltext"].lower().startswith(self.commands[3]):
-            if time.time() - player.lastreq < 60 * 3:
-                 return await msg.answer(f"Вы можете бросать не более 1 вызова в 3 минуты. Осталось: {60 * 3 - round(time.time() - player.lastreq)} сек.")
+            #if time.time() - player.lastreq < 60 * 3:
+            #     return await msg.answer(f"Вы можете бросать не более 1 вызова в 3 минуты. Осталось: {60 * 3 - round(time.time() - player.lastreq)} сек.")
 
             target_id = await parse_user_id(msg)
 
@@ -512,9 +549,13 @@ class DuelerPlugin(BasePlugin):
             users =await self.api.users.get(user_ids=msg.user_id)
             user = users[0]
 
+            level, exp = self.get_level(player.wins * 10 + player.losses * 5)
+
             text = (
                 "💬 Информация о персонаже:\n"
                 f"🌳 {user['first_name']} {user['last_name']}\n"
+                f"🌳 Уровень: {level}\n"
+                f"🌳 Опыта до повышения уровня: {round(exp)}\n"
                 f"🌳 Состояние: {player.state}%\n"
                 f"🌳 Богатства: {player.money}$\n"
                 f"🌳 Победы/поражения: {player.wins}/{player.losses}\n"
