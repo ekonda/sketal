@@ -17,7 +17,7 @@ Pillow
 qrcode
 
 # Data and bases
-peewee
+peewee==2.10.2
 peewee_async
 aiomysql
 aiopg
