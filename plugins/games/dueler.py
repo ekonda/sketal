@@ -217,7 +217,7 @@ class DuelerPlugin(BasePlugin):
 
     async def process_message(self, msg):
         if msg.meta["__pltext"].lower() == self.commands[1]:
-            me, _help, pay, duel, accept, auct, bet, add, remove = self.commands
+            me, _help, pay, duel, accept, auct, bet, add, remove, top = self.commands
             p = self.prefixes[0]
 
             return await msg.answer(f'''У каждoго учаcтникa чата есть свой игровой пeрсoнаж, имеющий:
@@ -237,6 +237,7 @@ class DuelerPlugin(BasePlugin):
 {p}{duel} -вызвать на дуэль.
 {p}{accept} -принять вызов.
 {p}{auct} - начать аукцион.
+{p}{top} - показать лучших бойцов.
 {p}{_help} - помощь''')
 
         Auct, Duel, Player, Equipment = self.models
@@ -255,7 +256,7 @@ class DuelerPlugin(BasePlugin):
 
             for i, player in enumerate(top):
                 text += (
-                    str(i + 1) + ". 😎 " + users.get(player.user_id, "Пользователь \"{player.user_id}\"") +
+                    str(i + 1) + ". 😎 " + users.get(player.user_id, f"Пользователь \"{player.user_id}\"") +
                     "\nПобед: " + str(player.wins)  + " // Поражений: " + str(player.losses)  + "\n"
                 )
 
