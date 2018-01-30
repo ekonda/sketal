@@ -1,1 +1,1 @@
-"""Pack with plugin for chats."""
+"""Pack with plugins for chats."""

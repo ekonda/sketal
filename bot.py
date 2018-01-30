@@ -51,7 +51,7 @@ class Bot:
 
         signal.signal(signal.SIGINT, lambda x, y: self.stop_bot(True))
 
-        self.logger.info("Bot succesfully initialized")
+        self.logger.info("Bot successfully initialized")
 
     def init_logger(self, logger):
         if not logger:
