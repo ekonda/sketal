@@ -139,7 +139,7 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
     if text[:3] == "[id":
         puid = text[3:].split("|")[0]
 
-        if puid.isdigit() and "]" in text[:3]:
+        if puid.isdigit() and "]" in text[3:]:
             return int(puid)
 
     if "__chat_data" in msg.meta:

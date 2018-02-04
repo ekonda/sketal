@@ -13,7 +13,7 @@ class GraffitiPlugin(CommandPlugin):
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
-        self.description = ["Граффити.", f"{self.prefixes[0]}{self.commands[0]} - превращает прикреплённый документ или изображение в граффити."]
+        self.description = ["Граффити.", f"{self.prefixes[-1]}{self.commands[0]} - превращает прикреплённый документ или изображение в граффити."]
 
     async def process_message(self, msg):
         fgra = None
