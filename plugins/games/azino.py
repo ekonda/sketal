@@ -190,9 +190,9 @@ class AzinoPlugin(BasePlugin):
 
             return await msg.answer(text)
 
-        admin = msg.is_out or msg.user_id in self.admins
+        admin = msg.user_id in self.admins
 
-        if admin and cmd.lower().startswith("добавить ") or cmd.lower().startswith("отнять "):
+        if admin and (cmd.lower().startswith("добавить ") or cmd.lower().startswith("отнять ")):
             try:
                 c, i, a = cmd.lower().split(" ")
                 i = int(i)
