@@ -1,4 +1,4 @@
-import os
+import sys, os
 
 
 class BasePlugin:
@@ -21,7 +21,7 @@ class BasePlugin:
         if path.startswith("/"):
             path = path[1:]
 
-        return "/".join(self.__module__.split(".")[:-1]) + os.sep + path
+        return os.path.join(os.path.dirname(sys.modules[self.__module__].__file__), path)
 
     def set_up(self, bot, api, handler):
         """Here plugin gets his bot and vk instances to work with"""

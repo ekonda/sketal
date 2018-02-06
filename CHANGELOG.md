@@ -2,7 +2,9 @@
 ##### update v7.3.2
 - Extended README.md
 - Fixed `DuelerPlugin`
-- Added isMember method to ALLOWED_METHODS.
+- Fixed BasePlugin's `get_path`.
+- Added `groups.isMember` to ALLOWED_METHODS.
+- Moved tests.
 
 ##### update v7.3.1
 - Still `Code style` fixes and optimizations

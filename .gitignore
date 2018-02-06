@@ -1,5 +1,6 @@
 .idea
 __pycache__
+_build
 
 tempcaptcha.png
 

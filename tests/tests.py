@@ -1,4 +1,7 @@
-import unittest, os
+import sys, os
+sys.path.append(os.path.abspath("."))
+
+import unittest
 
 from bot import Bot
 
@@ -84,7 +87,7 @@ class TestBot(unittest.TestCase):
         self.assertIn(r"ERROR:sketal:Errors while executing vk method: {'code': 100, 'method': 'messages.send', 'error_msg': 'One of the parameters specified was missing or invalid: you should specify peer_id, user_id, domain, chat_id or user_ids param'}, {'code': 100, 'method': 'execute', 'error_msg': 'One of the parameters specified was missing or invalid: you should specify peer_id, user_id, domain, chat_id or user_ids param'}", cm.output)
 
     def test_upload(self):
-        with open("docs/image_for_tests.png", "rb") as f:
+        with open("tests/simple_image.png", "rb") as f:
             result = self.bot.do(upload_photo(self.bot.api, f.read()))
 
         self.assertIsNotNone(result)
@@ -92,7 +95,7 @@ class TestBot(unittest.TestCase):
 
         self.bot.do(self.bot.api.photos.delete(owner_id=result.owner_id, photo_id=result.id))
 
-        with open("docs/image_for_tests.png", "rb") as f:
+        with open("tests/simple_image.png", "rb") as f:
             result = self.bot.do(upload_doc(self.bot.api, f.read(), "image.png"))
 
         self.assertIsNotNone(result)

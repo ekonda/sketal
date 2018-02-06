@@ -17,11 +17,11 @@ all:
 	$(pythonrun) bot.py
 
 test:
-	$(pythonrun) tests.py
+	$(pythonrun) tests/tests.py
 
 clean:
 	find . -name "*.pyc" -type f -delete
 	find . -name "__pycache__" -type d -delete
-	rm "tempcaptcha.png"
-	rm "logs.txt"
-	rm "log.txt"
+	-rm "tempcaptcha.png"
+	-rm "logs.txt"
+	-rm "log.txt"
