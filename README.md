@@ -1,4 +1,4 @@
-<p align="center">![Title](title.png)</p>
+<p align="center">![Title](./title.png)</p>
 
 ## sketal
 
