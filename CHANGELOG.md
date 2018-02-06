@@ -1,4 +1,9 @@
-#### sketal v7.3.1 `funny dog`
+#### sketal v7.3.2 `funny dog`
+##### update v7.3.2
+- Extended README.md
+- Fixed `DuelerPlugin`
+- Added isMember method to ALLOWED_METHODS.
+
 ##### update v7.3.1
 - Still `Code style` fixes and optimizations
 - Got rid of `exec` in plugins' `__init__.py`

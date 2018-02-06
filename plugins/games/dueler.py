@@ -511,8 +511,8 @@ class DuelerPlugin(BasePlugin):
             return await msg.answer(text)
 
         if msg.meta["__pltext"].lower().startswith(self.commands[3]):
-            #if time.time() - player.lastreq < 60 * 3:
-            #     return await msg.answer(f"Вы можете бросать не более 1 вызова в 3 минуты. Осталось: {60 * 3 - round(time.time() - player.lastreq)} сек.")
+            if time.time() - player.lastreq < 60 * 3:
+                 return await msg.answer(f"Вы можете бросать не более 1 вызова в 3 минуты. Осталось: {60 * 3 - round(time.time() - player.lastreq)} сек.")
 
             target_id = await parse_user_id(msg)
 
@@ -522,7 +522,10 @@ class DuelerPlugin(BasePlugin):
             if msg.user_id == target_id:
                 return await msg.answer("Вы не можете вызвать на дуэль себя.")
 
-            await peewee_async.create_object(Duel, chat_id=msg.chat_id, userid1=msg.user_id, userid2=target_id)
+            try:
+                await peewee_async.create_object(Duel, chat_id=msg.chat_id, userid1=msg.user_id, userid2=target_id)
+            except peewee.IntegrityError:
+                return await msg.answer(f"[id{target_id}|Вы готовы принять вызов?]\nНапишите \"{self.prefixes[0]}{self.commands[4]}\", чтобы принять.")
 
             player.lastreq = time.time()
 

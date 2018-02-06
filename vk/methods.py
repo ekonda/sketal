@@ -5,6 +5,8 @@ ALLOWED_METHODS = {
                'getCallbackServer',
                'getCallbackSettings',
                'getMembers',
+               'isMember',
+               'getOnlineStatus',
                'setCallbackServer',
                'setCallbackServerSettings',
                'setCallbackSettings'),
@@ -45,7 +47,7 @@ def is_available_from_group(key):
     if topic == 'messages':
         return method not in DISALLOWED_MESSAGES
 
-    if method in  ALLOWED_METHODS.get(topic, ()):
+    if method in ALLOWED_METHODS.get(topic, ()):
         return True
 
     return False
