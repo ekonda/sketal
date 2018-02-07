@@ -8,7 +8,13 @@ class RandomPostPlugin(CommandPlugin):
     def __init__(self, commgroups, prefixes=None, strict=False):
         """Answers with random post from group specified in commgroups"""
 
-        self.commgroups = commgroups
+        if not strict:
+            self.commgroups = {}
+
+            for k, v in commgroups.items():
+                self.commgroups[k.lower()] = v
+        else:
+            self.commgroups = commgroups
 
         super().__init__(*list(self.commgroups), prefixes=prefixes, strict=strict)
 
@@ -17,47 +23,51 @@ class RandomPostPlugin(CommandPlugin):
             self.description.append(prefixes[0] + str(k))
 
     async def process_message(self, msg):
-        command, text = self.parse_message(msg)
-
-        post = None
-        safe = 10
-
+        command, text = self.parse_message(msg, full_text=self.strict)
         group_id = self.commgroups[command]
 
-        while not post and safe > 0:
-            safe -= 1
+        message, attachments = "", ""
 
-            values = {'owner_id': group_id, 'offset': random.randint(1, 500), 'count': 100}
+        data = await self.api.wall.get(owner_id=group_id, count=100)
 
-            posts = await self.api.wall.get(**values)
+        if not data:
+            return await msg.answer("Я не умею получить посты!")
 
-            if not posts:
-                continue
+        posts = data["items"]
+        count = data["count"]
 
-            if int(posts.get("count", 0)) < 1 and posts.get("items", []):
-                return await msg.answer("Не найдено ни одного поста!")
-
-            posts = posts["items"]
-
-            while posts:
-                post = posts.pop(random.randint(1, len(posts)))
-
-                text = post.get("text", "")
-                if any(t in text for t in ("http://", "https://", "www.", ".ru", "vk.com/")):
-                    continue
-
-                atta = ""
-
-                for a in post.get("attachments", []):
-                    if a["type"] in ("photo", "video", "music"):
-                        atta += a["type"] + str(a[a["type"]]["owner_id"]) + "_" + str(a[a["type"]]["id"]) + \
-                                ("_" + a[a["type"]]["access_key"]if "access_key" in a[a["type"]] else "") + ","
-
-                if text or atta:
-                    post = text, atta
-                    break
-
-        if post is None:
+        if count < 1 or len(posts) < 1:
             return await msg.answer("Не найдено ни одного поста!")
 
-        return await msg.answer(message=post[0], attachment=post[1])
+        for _ in range(10):
+            if count > 100:
+                data = await self.api.wall.get(owner_id=group_id, offset=int(random.random() * (count - 90)), count=100)
+                posts = data["items"]
+
+            random.shuffle(posts)
+
+            for i in posts:
+                if i.get("marked_as_ads") or i.get("post_type") == "copy":
+                    continue
+
+                if i.get("text"):
+                    if any(bad in i["text"] for bad in ("vk.com/", "vk.cc/", " подпишись ", "www.", "http://", "https://")):
+                        continue
+
+                    message = i["text"]
+
+                for a in i.get("attachments", []):
+                    if a["type"] in ("photo", "video", "audio", "doc"):
+                        atta = a[a["type"]]
+
+                        attachments += a["type"] + str(atta["owner_id"]) + "_" + str(atta["id"])
+
+                        if "access_key" in atta:
+                            attachments += "_" + atta["access_key"]
+
+                        attachments += ","
+
+                if message or attachments:
+                    return await msg.answer(message=message, attachment=attachments)
+
+        return await msg.answer("Не найдено ни одного поста!")
