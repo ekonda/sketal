@@ -132,7 +132,7 @@ class Auth:
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
             }
 
-            async with session.get(url_get_token, data=token_data, headers=headers) as resp:
+            async with session.post(url_get_token, data=token_data, headers=headers) as resp:
                 html = await resp.text()
 
                 response_url_query1 = self.get_url_query(resp.url)
