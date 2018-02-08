@@ -16,7 +16,7 @@ class ChatKickerPlugin(CommandPlugin):
             free_commands = ["освободить", "анкик", "приг"]
 
         if not commands:
-            free_commands = ["кик", "удалить"]
+            commands = ["кик", "удалить"]
 
         super().__init__(*(commands + free_commands), prefixes=prefixes, strict=strict)
 
