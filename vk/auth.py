@@ -83,7 +83,7 @@ class Auth:
     ############################################################################
     async def auth_check_is_needed(self, html, session):
         auth_check_form_action = self.get_form_action(html)
-        auth_check_code = await self.enter_confirmation_сode()
+        auth_check_code = await self.enter_confirmation_code()
 
         auth_check_data = {
             'code': auth_check_code,
