@@ -71,7 +71,7 @@ class LockChatPlugin(CommandPlugin):
             if lock.hold_ti:
                 return await self.api.messages.editChat(chat_id=evnt.chat_id, title=evnt.old_title)
 
-        elif evnt.source_act == "chat_photo_update":
+        elif evnt.source_act == "chat_photo_update" or evnt.source_act == "chat_photo_remove":
             if lock.hold_pi:
                 sender = self.api.get_default_sender("photos.getChatUploadServer")
 
