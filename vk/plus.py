@@ -26,8 +26,6 @@ class VkController(object):
         self.scope = settings.SCOPE
         self.group = False
         self.app_id = settings.APP_ID
-        self.current_user = 0
-        self.current_token = 0
 
         self.target_client = None
 
@@ -237,13 +235,10 @@ class VkController(object):
             sender = self.get_default_sender(key)
 
         if self.vk_users and sender.user:
-            self.current_user += 1
-            return self.vk_users[(self.current_user if sender.target is None else sender.target) % len(self.vk_users)]
+            return self.vk_users[0 if sender.target is None else sender.target]
 
         elif self.vk_groups and sender.group:
-            self.current_token += 1
-            return self.vk_groups[(self.current_token if sender.target is None else sender.target) %
-                                  len(self.vk_groups)]
+            return self.vk_groups[0 if sender.target is None else sender.target]
 
         return None
 
@@ -251,13 +246,13 @@ class VkController(object):
         """Get sender settings for method `key`"""
 
         if self.group and is_available_from_group(key):
-            sender = Sender(group=True, target=self.current_token)
+            sender = Sender(group=True, target=0)
 
         elif is_available_from_public(key):
-            sender = Sender(user=True, target=self.current_user)
+            sender = Sender(user=True, target=0)
 
         else:
-            sender = Sender(user=True, target=self.current_user)
+            sender = Sender(user=True, target=0)
 
         return sender
 

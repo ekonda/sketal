@@ -322,7 +322,8 @@ class Bot:
 
     def stop_bot(self, full=False):
         try:
-            self.main_task.cancel()
+            if self.main_task:
+                self.main_task.cancel()
         except Exception:
             import traceback
             traceback.print_exc()

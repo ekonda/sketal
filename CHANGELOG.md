@@ -1,4 +1,7 @@
-#### sketal v7.3.2 `funny dog`
+#### sketal v7.3.3 `funny dog`
+##### update v7.3.3
+- Now bot only working from it's first user or group
+
 ##### update v7.3.2
 - Extended README.md
 - Fixed `DuelerPlugin`
