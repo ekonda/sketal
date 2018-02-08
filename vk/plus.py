@@ -10,8 +10,8 @@ from vk.methods import *
 
 class VkController(object):
     __slots__ = ("logger", "vk_users", "vk_groups", "scope", "group", "app_id",
-                 "current_user", "current_token", "hold", "proxies", "users_data",
-                 "solver", "target_client", "settings")
+                 "hold", "proxies", "users_data", "solver", "target_client", 
+                 "settings")
 
     def __init__(self, settings, logger=None):
         if logger:
