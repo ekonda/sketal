@@ -13,7 +13,7 @@ class VideoPlugin(CommandPlugin):
 
     async def process_message(self, msg):
         command, text = self.parse_message(msg, full_text=True)
-        data = await self.api.video.search(q=text,sort=2,count=10,adult=1)
+        data = await self.api.video.search(q=text, sort=2, count=10, adult=0)
 
         if not data:
             return await msg.answer("Я не могу получить видео!")
@@ -23,6 +23,6 @@ class VideoPlugin(CommandPlugin):
         resp = ','.join(f"video{vid['owner_id']}_{vid['id']}" for vid in vids)
     
         if not resp:
-            return await msg.answer(f"По запросу {text} ничего не найдено!")
+            return await msg.answer("Ничего не найдено!")
 
         await msg.answer('Приятного просмотра!', attachment=resp)
