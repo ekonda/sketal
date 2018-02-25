@@ -1,7 +1,6 @@
 from handler.base_plugin_command import CommandPlugin
 
 import aiohttp
-import random
 
 class VideoPlugin(CommandPlugin):
     __slots__ = ()
