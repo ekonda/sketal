@@ -31,7 +31,7 @@ class RandomPostPlugin(CommandPlugin):
         data = await self.api.wall.get(owner_id=group_id, count=100)
 
         if not data:
-            return await msg.answer("Я не умею получить посты!")
+            return await msg.answer("Я не могу получить посты!")
 
         posts = data["items"]
         count = data["count"]
