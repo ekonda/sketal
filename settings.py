@@ -98,6 +98,7 @@ class BotSettings(BaseSettings):
         ChatKickerPlugin(["кик"], ["фри", "анкик"], prefixes=prefixes, admins=admins, admins_only=True),
         RandomPostPlugin({"random": "-111759315", "memes": "-77127883", "мемы": "-77127883"}, prefixes=prefixes),
         CalculatorPlugin("посчитай", "посч", prefixes=prefixes),
+        VideoPlugin("видео", prefixes=prefixes),
         DispatchPlugin("рассылка", prefixes=prefixes, admins=admins),
         hp,
 
