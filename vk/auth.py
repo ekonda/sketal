@@ -113,7 +113,7 @@ class Auth:
     async def get_token(self, username, password, app_id, scope):
         url_get_token = "https://oauth.vk.com/authorize"
 
-        with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession() as session:
             await self.login(username, password, session)
 
             token_data = {
