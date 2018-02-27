@@ -55,7 +55,7 @@ class LockChatPlugin(CommandPlugin):
 
     async def process_event(self, evnt):
         if evnt.user_id == self.api.get_current_id():
-            return
+            return False
 
         lock, _ = await self.pwmanager.get_or_create(self.ChatLock, chat_id=evnt.chat_id)
 
@@ -91,6 +91,8 @@ class LockChatPlugin(CommandPlugin):
 
                 return await self.api(sender).messages.setChatPhoto(file=result["response"])
 
+        return False
+            
     async def process_message(self, msg):
         if msg.chat_id == 0:
             return
