@@ -60,3 +60,5 @@ class ChatMetaPlugin(BasePlugin):
     async def process_event(self, evnt):
         if evnt.source_act in "chat_invite_user":
             await evnt.meta["__refresh_chat_data"]()
+            
+        return False
