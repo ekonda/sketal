@@ -92,7 +92,7 @@ class LockChatPlugin(CommandPlugin):
                 return await self.api(sender).messages.setChatPhoto(file=result["response"])
 
         return False
-            
+
     async def process_message(self, msg):
         if msg.chat_id == 0:
             return

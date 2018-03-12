@@ -85,7 +85,7 @@ class FacePlugin(CommandPlugin):
             async with sess.post(BASE_API_URL, headers=headers, data={'file': image}) as resp:
                 try:
                     response = await resp.json()
-                except:
+                except ValueError:
                     response = None
 
                 code = response.get('code')
