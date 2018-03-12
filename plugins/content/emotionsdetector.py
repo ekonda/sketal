@@ -86,6 +86,9 @@ class EmotionsDetectorPlugin(CommandPlugin):
 
                     return await msg.answer(answer)
 
+        except TypeError:
+            return await msg.answer(chat_id=msg.chat_id, message="Ошибочка! Наверное, мой ключ доступа перестал работать.")
+
         except ValueError:
             pass
 

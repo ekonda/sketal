@@ -79,6 +79,7 @@ class BotSettings(BaseSettings):
 
         # Plugins:
         VoterPlugin(prefixes=prefixes),
+        FacePlugin("сделай", prefixes=prefixes),
         SmileWritePlugin("смайлами", prefixes=prefixes),
         JokePlugin("а", "анекдот", prefixes=prefixes),
         GraffitiPlugin("граффити", prefixes=prefixes),
