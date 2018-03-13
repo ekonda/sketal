@@ -1,4 +1,8 @@
-#### sketal v7.3.3 `funny dog`
+#### sketal v7.3.4 `funny dog`
+##### update v7.3.4
+- Minor bug fixes
+- Added some plugins: `audio2text`...
+
 ##### update v7.3.3
 - Now bot only working from it's first user or group
 

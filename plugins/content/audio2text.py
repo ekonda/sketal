@@ -71,6 +71,9 @@ class Audio2TextPlugin(CommandPlugin):
         sound, exten = None, None
 
         async def check(ats):
+            if not ats:
+                return None, None
+
             for at in ats:
                 if at.type == "doc" and at.ext in SUPPORTED:
                     async with aiohttp.ClientSession() as sess:
@@ -98,7 +101,7 @@ class Audio2TextPlugin(CommandPlugin):
 
         if sound is None:
             if msg.is_out or self.configurations.get(msg.peer_id, 0) == 1:
-                return
+                return False
 
             return await msg.answer("Мне нечего перевести в текст :(")
 
