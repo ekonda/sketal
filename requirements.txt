@@ -9,6 +9,7 @@ geopy
 
 # XML parsing
 xmltodict
+defusedxml
 
 # Drawing
 Pillow
@@ -20,6 +21,7 @@ qrcode
 peewee==2.10.2
 peewee_async
 aiomysql
+psycopg2-binary
 aiopg
 tinydb
 

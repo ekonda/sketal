@@ -1,7 +1,7 @@
 from handler.base_plugin_command import CommandPlugin
 from utils import traverse
 
-import uuid, xml.etree.ElementTree as ET
+import uuid, defusedxml.ElementTree as ET
 import aiohttp
 
 SUPPORTED = {
