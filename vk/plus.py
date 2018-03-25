@@ -10,7 +10,7 @@ from vk.methods import *
 
 class VkController(object):
     __slots__ = ("logger", "vk_users", "vk_groups", "scope", "group", "app_id",
-                 "hold", "proxies", "users_data", "solver", "target_client", 
+                 "hold", "proxies", "users_data", "solver", "target_client",
                  "settings")
 
     def __init__(self, settings, logger=None):
@@ -135,9 +135,9 @@ class VkController(object):
         return self.create_proxy(outer_name)
 
     async def method(self, key, data=None, sender=None, wait=Wait.YES):
-        """ Execute vk method `key` with parameters `data` with sender settings `sender` with waiting settings `wait`
-        and return results. False or None if something failed.
-        """
+        "Execute vk method `key` with parameters `data` with sender settings \
+        `sender` with waiting settings `wait` and return results. False or \
+        None if something failed."
 
         client = self.get_current_sender(key, sender)
 
@@ -165,9 +165,10 @@ class VkController(object):
 
     async def method_accumulative(self, key, stable_data=None, data=None, join_func=None,
                                   sender=None, wait=Wait.YES):
-        """ Execute vk method `key` with static data `stable_data` and accumulative data `data` (data appends to
-        already set data with function `join_func`) with sender settings `sender`, with waiting settings `wait`
-        """
+        "Execute vk method `key` with static data `stable_data` and \
+        accumulative data `data` (data appends to already set data with \
+        function `join_func`) with sender settings `sender`, with waiting \
+        settings `wait`"
 
         client = self.get_current_sender(key, sender)
 
@@ -229,7 +230,8 @@ class VkController(object):
             return task
 
     def get_current_sender(self, key, sender=None):
-        """Get group or user for executing method `key` with sender settings `sender`"""
+        "Get group or user for executing method `key` with \
+        sender settings `sender`"
 
         if sender is None:
             sender = self.get_default_sender(key)

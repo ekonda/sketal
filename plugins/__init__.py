@@ -6,6 +6,22 @@ import sys, os
 
 __all__ = []
 
+def save_doc(e, full_name, file_name=None):
+    with open(file_name, "a") as o:
+        if o.tell() == 0:
+            print("## Sketal's plugins", file=o)
+
+        print("[**" + e.__name__ + "**" + " `[" +
+            ".".join(full_name.split(".")[:-1]) + "]`](" +
+                "/" + full_name.replace(".", "/") + ".py)", file=o)
+        print("\n", file=o)
+
+        desc = []
+        for l in e.__init__.__doc__.splitlines():
+            if l.strip():
+                desc += [l.strip()]
+        print("\n".join(desc), file=o)
+        print("\n---", file=o)
 
 def join(*es):
     return os.sep.join(es)
@@ -29,6 +45,7 @@ def import_plugins(package):
                 continue
 
             if isinstance(e, type) and issubclass(e, BasePlugin) and e.__module__ == module.__name__:
+                # save_doc(e, full_name, "PLUGINS.md")
                 __all__.append(e.__name__)
                 globals()[e.__name__] = e
 

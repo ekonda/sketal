@@ -62,11 +62,8 @@ class VkClient:
         return f"Group ({self.group_id})" if self.group_id else f"User ({self.user_id})"
 
     async def method(self, key, **data):
-        """ Return a result of executing vk's method `method`
-
-        Function for special cases only!
-        This method doesn't process nor errors nor captcha.
-        """
+        " Return a result of executing vk's method `method`. Function for \
+        special cases only! This method doesn't process nor errors nor captcha."
 
         url = f"https://api.vk.com/method/{key}?access_token={self.token}&v={VERSION}"
 
@@ -97,7 +94,7 @@ class VkClient:
         return False
 
     async def execute(self, code, reties=0, **additional_values):
-        """Execute a `code` from vk's "execute" method"""
+        """Execute a `code` from vk's `execute` method"""
 
         if reties > 4:
             self.logger.warning("Can't execute code: \"" + str(code) + "\"")

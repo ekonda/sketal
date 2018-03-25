@@ -75,7 +75,7 @@ class BotSettings(BaseSettings):
         # LockChatPlugin("сохранять", prefixes=prefixes),
 
         # Can use `PeeweePlugin`:
-        RememberPlugin("напомни",prefixes=prefixes),  # use_db=True, if you can use PeeweePlugin
+        NotifierPlugin("напомни",prefixes=prefixes),  # use_db=True, if you can use PeeweePlugin
 
         # Plugins:
         VoterPlugin(prefixes=prefixes),
@@ -83,7 +83,7 @@ class BotSettings(BaseSettings):
         SmileWritePlugin("смайлами", prefixes=prefixes),
         JokePlugin("а", "анекдот", prefixes=prefixes),
         GraffitiPlugin("граффити", prefixes=prefixes),
-        QuotePlugin("цитатка"),
+        QuoteDoerPlugin("цитатка"),
         WikiPlugin("что такое", prefixes=prefixes),
         AnagramsPlugin(["анаграмма", "анаграммы"], prefixes=prefixes),
         HangmanPlugin(["виселица"], prefixes=prefixes),
@@ -94,7 +94,7 @@ class BotSettings(BaseSettings):
         AboutPlugin("о боте", "инфа", prefixes=prefixes),
         BirthdayPlugin("дни рождения", "др", prefixes=prefixes),
         TimePlugin("время", prefixes=prefixes),
-        ToptextbottomtextPlugin("мем", "свой текст", prefixes=prefixes),
+        MemeDoerPlugin("мем", "свой текст", prefixes=prefixes),
         QRCodePlugin("qr", "кр", prefixes=prefixes),
         ChatKickerPlugin(["кик"], ["фри", "анкик"], prefixes=prefixes, admins=admins, admins_only=True),
         RandomPostPlugin({"random": "-111759315", "memes": "-77127883", "мемы": "-77127883"}, prefixes=prefixes),
@@ -113,7 +113,7 @@ class BotSettings(BaseSettings):
         # Plugins for bot's control
         AntifloodPlugin(),
         ResendCommanderPlugin(),
-        # ResendCheckerPlugin(),
+        # ForwardedCheckerPlugin(),
     )
 
     hp.add_plugins(PLUGINS)

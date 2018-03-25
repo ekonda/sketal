@@ -1,1 +1,0 @@
-"""Pack with game plugins."""

@@ -1,4 +1,12 @@
+#### sketal v7.4 `happy pony`
+Version dedicated to performance updates, removing and unifying plugins.
+- Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`
+- Rearranged plugins
+- Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`)
+
 #### sketal v7.3.4 `funny dog`
+https://github.com/vk-brain/sketal/commit/e320bc87694a88ea0019cbd11f0a254cb2a55293
+
 ##### update v7.3.4
 - Minor bug fixes
 - Added some plugins: `audio2text`...

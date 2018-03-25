@@ -7,7 +7,7 @@ MAX_LENGHT = 4000
 
 
 class Message(object):
-    """Класс, объект которого передаётся в плагин для упрощённого ответа"""
+    "Класс, объект которого передаётся в плагин для упрощённого ответа"
 
     __slots__ = ('message_data', 'api', 'is_multichat', 'chat_id', 'user_id', 'is_out', 'true_user_id',
                  'timestamp', 'answer_values', 'msg_id', 'text', 'full_text', 'meta', 'is_event',
@@ -181,9 +181,9 @@ class Message(object):
         return result
 
     async def answer(self, message="", wait=Wait.NO, **additional_values):
-        """ Send message to this message's sender (chat or user) with wait settings `wait` and additional_values
-        `additional_values` for `messages.send`
-        """
+        "Send message to this message's sender (chat or user) with wait \
+        settings `wait` and additional_values`additional_values` for \
+        `messages.send`"
 
         if additional_values is None:
             additional_values = dict()

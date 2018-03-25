@@ -22,7 +22,7 @@ class CommandPlugin(BasePlugin):
 
     @staticmethod
     def parse_message(msg, full_text=None):
-        """ Returns message without command from Message object"""
+        "Returns message without command from Message object"
 
         return msg.meta["__command"], msg.meta["__arguments_full"] if full_text else msg.meta["__arguments"]
 

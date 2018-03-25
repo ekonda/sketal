@@ -80,9 +80,8 @@ async def upload_doc(api, multipart_data, filename="image.png", additional_param
 
 
 async def upload_photo(api, multipart_data, peer_id=None):
-    """ Upload photo file `multipart_data` and return Attachment for sending to
-    user with id `peer_id`(optional but recommended)
-    """
+    " Upload photo file `multipart_data` and return Attachment for sending to \
+    user with id `peer_id`(optional but recommended)"
 
     sender = api.get_default_sender('photos.getMessagesUploadServer')
 

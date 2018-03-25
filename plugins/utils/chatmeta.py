@@ -16,9 +16,7 @@ class ChatMetaPlugin(BasePlugin):
     __slots__ = ("chats")
 
     def __init__(self):
-        """Adds self to messages and chat's data if available.
-        """
-
+        """Adds self to messages and chat's data if available."""
         super().__init__()
 
         self.chats = {}
@@ -60,5 +58,5 @@ class ChatMetaPlugin(BasePlugin):
     async def process_event(self, evnt):
         if evnt.source_act in "chat_invite_user":
             await evnt.meta["__refresh_chat_data"]()
-            
+
         return False
