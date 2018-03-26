@@ -17,7 +17,7 @@ General sample usage:
 
 
 class TinyDBPlugin(BasePlugin):
-    __slots__ = ("tinydb")
+    __slots__ = ("tinydb", )
 
     def __init__(self):
         """Adds self to messages and event's `data` field.

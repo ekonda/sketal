@@ -3,9 +3,9 @@ from contextlib import contextmanager
 from captcha_solver import CaptchaSolver
 
 from utils import *
-from vk.api import *
-from vk.utils import *
-from vk.methods import *
+from .api import *
+from .utils import *
+from .methods import *
 
 
 class VkController(object):

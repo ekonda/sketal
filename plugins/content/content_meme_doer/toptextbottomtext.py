@@ -1,12 +1,9 @@
 from handler.base_plugin_command import CommandPlugin
-from vk.helpers import upload_photo
+from skevk import upload_photo
 
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
-import aiohttp
-import io
+import aiohttp, io
 
 
 class MemeDoerPlugin(CommandPlugin):

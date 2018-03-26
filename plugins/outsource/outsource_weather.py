@@ -9,18 +9,18 @@ import json, time
 
 
 class WeatherPlugin(CommandPlugin):
-    __slots__ = ("geocoders", "icons", "token", "coords_cache", "weather_cache",
+    __slots__ = ("geocoders", "icons", "key", "coords_cache", "weather_cache",
                  "weather_clear", "api_lim", "api_lim_clear", "api_lim_count")
 
-    def __init__(self, *commands, token=None, prefixes=None, strict=False):
+    def __init__(self, *commands, key=None, prefixes=None, strict=False):
         """Answers with a weather in user's city or on specified addres."""
 
-        if not token:
+        if not key:
             raise ValueError("Token is not specified! Get it from: https://darksky.net")
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
-        self.token = token
+        self.key = key
 
         self.icons = {
         	"clear-day": "☀️",
@@ -56,7 +56,7 @@ class WeatherPlugin(CommandPlugin):
         if f"{result.latitude}_{result.longitude}" in self.weather_cache:
             return self.weather_cache[f"{result.latitude}_{result.longitude}"]
 
-        url = "https://api.darksky.net/forecast/{token}/{latitude},{longitude}?lang=ru&units=si&exclude=minutely,currently,alerts,flags"
+        url = "https://api.darksky.net/forecast/{key}/{latitude},{longitude}?lang=ru&units=si&exclude=minutely,currently,alerts,flags"
 
         if self.api_lim_clear - time.time() <= 0:
             self.api_lim_clear = time.time() + 24 * 60 * 60
@@ -68,7 +68,7 @@ class WeatherPlugin(CommandPlugin):
         self.api_lim_count += 1
 
         async with aiohttp.ClientSession() as sess:
-            async with sess.get(url.format(token=self.token,
+            async with sess.get(url.format(key=self.key,
                                            latitude=result.latitude,
                                            longitude=result.longitude)) as resp:
                 try:

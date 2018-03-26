@@ -1,6 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-from vk.utils import EventType
-from vk.helpers import parse_user_id
+from skevk import EventType, parse_user_id
 
 import time
 

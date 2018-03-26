@@ -1,11 +1,11 @@
 from handler.base_plugin_command import CommandPlugin
-from vk.data import Message
+from skevk import Message
 
 
 class AboutPlugin(CommandPlugin):
     __slots__ = ("version", )
 
-    def __init__(self, *commands, prefixes=None, strict=False, version=7.3):
+    def __init__(self, *commands, prefixes=None, strict=False, version=7.4):
         """Answers with information about bot."""
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)

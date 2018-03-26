@@ -1,13 +1,14 @@
-.idea
 __pycache__
 _build
+.idea
+env
 
 tempcaptcha.png
 
 logs.txt
 log.txt
 
-settings_real.py
+settings_prod.py
 *private
 
 *.json

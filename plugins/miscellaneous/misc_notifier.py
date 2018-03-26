@@ -1,13 +1,11 @@
 from handler.base_plugin_command import CommandPlugin
 
-import peewee
-
 import asyncio, uuid, time, re
 
 
 class NotifierPlugin(CommandPlugin):
-    __slots__ = ("after_pa", "after_re", "remember_list", "help", "pwmanager",
-                 "add_entity", "sub_entity", "clear_peer", "iterate_entities",
+    __slots__ = ("after_pa", "after_re", "remember_list", "help", "add_entity",
+                 "sub_entity", "clear_peer", "iterate_entities",
                  "get_size_of_list", "place_data", "use_db")
 
     def __init__(self, *commands, prefixes=None, strict=False, use_db=False):
@@ -16,7 +14,6 @@ class NotifierPlugin(CommandPlugin):
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.remember_list = []  # (uniq_id, peer_id, firetime, text, atta, user_id)
-        self.pwmanager = None
         self.use_db = use_db
 
         self.add_entity = None
@@ -37,87 +34,42 @@ class NotifierPlugin(CommandPlugin):
         self.help = "\n".join(self.description)
 
     def initiate(self):
-        if not self.use_db or self.pwmanager is None:
-            async def add_entity(ne):
-                for i, e in enumerate(self.remember_list):
-                    if ne[2] > e[2]:
-                        self.remember_list.insert(i, ne)
-                        return
+        async def add_entity(ne):
+            for i, e in enumerate(self.remember_list):
+                if ne[2] > e[2]:
+                    self.remember_list.insert(i, ne)
+                    return
 
-                self.remember_list.append(ne)
+            self.remember_list.append(ne)
 
-            self.add_entity = add_entity
+        self.add_entity = add_entity
 
-            async def sub_entity(e_id):
-                for i, e in enumerate(self.remember_list):
-                    if str(e_id) == str(e[0]):
-                        self.remember_list.pop(i)
-                        return True
+        async def sub_entity(e_id):
+            for i, e in enumerate(self.remember_list):
+                if str(e_id) == str(e[0]):
+                    self.remember_list.pop(i)
+                    return True
 
-                return False
+            return False
 
-            self.sub_entity = sub_entity
+        self.sub_entity = sub_entity
 
-            async def clear_peer(peer_id):
-                self.remember_list = list(e for e in self.remember_list if e[1] != peer_id)
+        async def clear_peer(peer_id):
+            self.remember_list = list(e for e in self.remember_list if e[1] != peer_id)
 
-            self.clear_peer = clear_peer
+        self.clear_peer = clear_peer
 
-            self.place_data = lambda e: e
+        self.place_data = lambda e: e
 
-            async def get_size_of_list():
-                return len(self.remember_list)
+        async def get_size_of_list():
+            return len(self.remember_list)
 
-            self.get_size_of_list = get_size_of_list
+        self.get_size_of_list = get_size_of_list
 
-            async def iterate_entities():
-                return list(e for e in self.remember_list if e[2] <= time.time())
+        async def iterate_entities():
+            return list(e for e in self.remember_list if e[2] <= time.time())
 
-            self.iterate_entities = iterate_entities
-
-        else:
-            class Entity(peewee.Model):
-                firetime = peewee.TimestampField()
-
-                user_id = peewee.BigIntegerField()
-                peer_id = peewee.BigIntegerField()
-                uniq_id = peewee.CharField(primary_key=True, unique=True, max_length=64)
-
-                text = peewee.TextField()
-                atta = peewee.TextField()
-
-                class Meta:
-                    database = self.pwmanager.database
-
-            with self.pwmanager.allow_sync():
-                Entity.create_table(True)
-
-            async def add_entity(ne):
-                await self.pwmanager.get_or_create(Entity, firetime=ne[2], uniq_id=ne[0], peer_id=ne[1], text=ne[3], atta=ne[4], user_id=ne[5])
-
-            self.add_entity = add_entity
-
-            async def sub_entity(e_id):
-                return await self.pwmanager.execute(Entity.delete().where(Entity.uniq_id == e_id)) > 0
-
-            self.sub_entity = sub_entity
-
-            async def clear_peer(peer_id):
-                return await self.pwmanager.execute(Entity.delete().where(Entity.peer_id == peer_id)) > 0
-
-            self.clear_peer = clear_peer
-
-            self.place_data = lambda e: (e.uniq_id, e.peer_id, e.firetime, e.text, e.atta, e.user_id)
-
-            async def get_size_of_list():
-                return await self.pwmanager.count(Entity.select()) > 0
-
-            self.get_size_of_list = get_size_of_list
-
-            async def iterate_entities():
-                return await self.pwmanager.execute(Entity.select().where(Entity.firetime <= time.time()))
-
-            self.iterate_entities = iterate_entities
+        self.iterate_entities = iterate_entities
 
         asyncio.ensure_future(self.sender())
 

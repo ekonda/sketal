@@ -23,5 +23,5 @@ class TimePlugin(CommandPlugin):
     async def process_message(self, msg):
         time = (datetime.datetime.now(datetime.timezone.utc) + self.delta)
         timestr = time.strftime('%d-%m-%Y %H:%M:%S')
-
-        await msg.answer(f'{self.message}\n{timestr}\nСегодня {self.days[time.weekday()]}')
+        
+        await msg.answer(f'{self.message}\n{timestr}\nСегодня {self.days[time.weekday()]}.')

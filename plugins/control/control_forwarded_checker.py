@@ -1,8 +1,6 @@
 from handler.base_plugin import BasePlugin
 from utils import traverse
 
-from asyncio import ensure_future
-
 
 class ForwardedCheckerPlugin(BasePlugin):
     __slots__ = ("allow_self", )

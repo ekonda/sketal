@@ -1,8 +1,16 @@
 #### sketal v7.4 `happy pony`
 Version dedicated to performance updates, removing and unifying plugins.
-- Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`
-- Rearranged plugins
-- Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`)
+- Added `misc_counter.py`
+- Added `order` field to plugins.
+- Added `storage.py`
+- Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`).
+- Added method `global_after_*_process` for plugins.
+- Changed `README.md` и `settings.py`.
+- Rearranged plugins.
+- Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
+- Removed peewee and peewee_async.
+- Renamed `bot_runner.py` -> `bot_keeper.py`
+- Renamed and rearranged `vk` folder. Renamed to package `skevk`.
 
 #### sketal v7.3.4 `funny dog`
 https://github.com/vk-brain/sketal/commit/e320bc87694a88ea0019cbd11f0a254cb2a55293

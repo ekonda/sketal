@@ -1,13 +1,10 @@
 from handler.base_plugin_command import CommandPlugin
-from vk.helpers import upload_photo
+from skevk import upload_photo
 from utils import traverse
 
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
-import aiohttp
-import datetime, io
+import aiohttp, datetime, io
 
 
 class QuoteDoerPlugin(CommandPlugin):

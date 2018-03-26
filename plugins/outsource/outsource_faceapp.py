@@ -1,6 +1,6 @@
 from handler.base_plugin_command import CommandPlugin
 
-from vk.helpers import upload_photo
+from skevk import upload_photo
 import aiohttp, random, string
 
 BASE_API_URL = 'https://node-01.faceapp.io/api/v2.3/photos'  # Ensure no slash at the end.

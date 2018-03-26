@@ -1,12 +1,9 @@
 from handler.base_plugin_command import CommandPlugin
-
-import aiohttp
+from skevk import Message
 
 from random import choice
 
-from vk.data import Message
-
-import xmltodict
+import aiohttp, xmltodict
 
 
 class YandexNewsPlugin(CommandPlugin):

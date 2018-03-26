@@ -1,5 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-from vk.helpers import upload_audio_message
+from skevk import upload_audio_message
 
 from gtts import gTTS
 import langdetect

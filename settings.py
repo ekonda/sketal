@@ -60,24 +60,14 @@ class BotSettings(BaseSettings):
     prefixes = ("!", "бот ", "бот, ", "бот,")
     admins = (87641997, )
 
-    hp = HelpPlugin("помощь", "команды", "?", short=False, prefixes=prefixes)
+    help_plugin = HelpPlugin("помощь", "команды", "?", short=False, prefixes=prefixes)
 
+    # All available plugins can be found in folder `plugins` or in file `PLUGINS.md`
+    # All currently active plugins:
     PLUGINS = (
-        # Leave only "PostgreSQL" or "MySQL", host is adress of your database, port is a number
-        # PeeweePlugin("host", "database's name", "user", "password", port, "PostgreSQL" or "MySQL"),
         AdminPlugin(prefixes=prefixes, admins=admins, setadmins=True),
         ChatMetaPlugin(),
 
-        # Requires `PeeweePlugin`:
-        # DuelerPlugin(prefixes=prefixes),
-        # AzinoPlugin("азино", prefixes=prefixes),
-        # RussianRoulettePlugin(prefixes=prefixes),
-        # LockChatPlugin("сохранять", prefixes=prefixes),
-
-        # Can use `PeeweePlugin`:
-        NotifierPlugin("напомни",prefixes=prefixes),  # use_db=True, if you can use PeeweePlugin
-
-        # Plugins:
         VoterPlugin(prefixes=prefixes),
         FacePlugin("сделай", prefixes=prefixes),
         SmileWritePlugin("смайлами", prefixes=prefixes),
@@ -85,8 +75,6 @@ class BotSettings(BaseSettings):
         GraffitiPlugin("граффити", prefixes=prefixes),
         QuoteDoerPlugin("цитатка"),
         WikiPlugin("что такое", prefixes=prefixes),
-        AnagramsPlugin(["анаграмма", "анаграммы"], prefixes=prefixes),
-        HangmanPlugin(["виселица"], prefixes=prefixes),
         MembersPlugin("кто тут", prefixes=prefixes),
         PairPlugin("кто кого", prefixes=prefixes),
         WhoIsPlugin("кто", prefixes=prefixes),
@@ -101,19 +89,14 @@ class BotSettings(BaseSettings):
         CalculatorPlugin("посчитай", "посч", prefixes=prefixes),
         VideoPlugin("видео", prefixes=prefixes),
         DispatchPlugin("рассылка", prefixes=prefixes, admins=admins),
-        hp,
+        help_plugin,
 
         # Needs tokens (see plugin's codes, some have defaults):
         SayerPlugin(prefixes=prefixes),
-        # Audio2TextPlugin(key="token for api", prefixes=prefixes),
-        # WeatherPlugin("погода", token="token for api", prefixes=prefixes),
-        # EmotionsDetectorPlugin("лицо", key="token for api", prefixes=prefixes),
-        DialogflowPlugin(prefixes=prefixes),  # plugin for DialogflowPlugin (chatting, learning etc)
 
         # Plugins for bot's control
         AntifloodPlugin(),
-        ResendCommanderPlugin(),
-        # ForwardedCheckerPlugin(),
+        CommandAttacherPlugin(),
     )
 
-    hp.add_plugins(PLUGINS)
+    help_plugin.add_plugins(PLUGINS)

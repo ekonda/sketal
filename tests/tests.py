@@ -1,16 +1,14 @@
 import sys, os
 sys.path.append(os.path.abspath("."))
 
-import unittest
+import asyncio, unittest
 
 from bot import Bot
 
-from vk.plus import asyncio, Wait
-from vk.data import Message, MAX_LENGHT
-from vk.helpers import upload_doc, upload_photo
+from skevk import Wait, Message, MAX_LENGHT, upload_doc, upload_photo
 
 try:
-    from settings_real import BotSettings
+    from settings_prod import BotSettings
 except ImportError:
     from settings import BotSettings
 

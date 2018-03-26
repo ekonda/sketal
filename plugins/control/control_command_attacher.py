@@ -1,7 +1,7 @@
 from handler.base_plugin import BasePlugin
 
 
-class ResendCommanderPlugin(BasePlugin):
+class CommandAttacherPlugin(BasePlugin):
     __slots__ = ()
 
     def __init__(self):

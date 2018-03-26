@@ -1,21 +1,16 @@
-import aiohttp
-import signal
-import json
-
-import logging
+import aiohttp, signal, json, time, logging, sys
 import asyncio
-from asyncio import Future, Task
 
-import time
+from asyncio import Future, Task
 from aiohttp import web
 from os import getenv
 
 from handler.handler_controller import MessageHandler
 from utils import parse_msg_flags
-from vk.plus import VkController
 
-from vk.data import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
-from vk.utils import MessageEventData
+from skevk import VkController
+from skevk import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
+from skevk import MessageEventData
 
 
 class Bot:
@@ -384,7 +379,7 @@ if __name__ == "__main__":
         if "-d" in sys.argv:
             raise ModuleNotFoundError
 
-        from settings_real import BotSettings
+        from settings_prod import BotSettings
 
     except ModuleNotFoundError:
         from settings import BotSettings

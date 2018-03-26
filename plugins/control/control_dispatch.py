@@ -1,6 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-from vk.utils import Wait
-from vk.helpers import upload_photo
+from skevk import Wait, upload_photo
 
 import asyncio
 import aiohttp

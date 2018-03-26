@@ -1,6 +1,6 @@
 from math import ceil
 
-from vk.utils import MessageEventData, Attachment, EventType, Wait
+from .utils import MessageEventData, Attachment, EventType, Wait
 
 
 MAX_LENGHT = 4000

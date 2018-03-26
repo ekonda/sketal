@@ -1,8 +1,8 @@
 import aiohttp
 import json
 
-from vk.utils import Attachment
 from utils import traverse
+from .utils import Attachment
 
 
 async def upload_audio_message(api, multipart_data, peer_id):

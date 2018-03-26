@@ -7,7 +7,6 @@ class MessageHandler:
 
         for plugin in self.bot.settings.PLUGINS:
             plugin.set_up(self.bot, self.api, self)
-
             self.plugins.append(plugin)
 
         if initiate_plugins:
@@ -23,18 +22,27 @@ class MessageHandler:
             plugin.initiate()
 
     async def process(self, msg):
-        for plugin in self.plugins:
+        res = await self.core_process(msg)
+
+        for plugin in sorted(self.plugins, key=lambda x: x.order[-1]):
+            if await plugin.global_after_message_process(msg, res) is False:
+                break
+
+    async def core_process(self, msg):
+        for plugin in sorted(self.plugins, key=lambda x: x.order[0]):
             if await plugin.global_before_message_checks(msg) is False:
                 self.bot.logger.debug(f"Message ({msg.msg_id}) cancelled with {plugin.name}")
-                return
+                return None
 
         plugins_to_check = msg.reserved_by if msg.reserved_by else self.plugins
 
         for plugin in plugins_to_check:
             if await plugin.check_message(msg):
-                if await self.process_with_plugin(msg, plugin) is not False:
+                subres = await self.process_with_plugin(msg, plugin)
+
+                if subres is not False:
                     self.bot.logger.debug(f"Finished with message ({msg.msg_id}) on {plugin.name}")
-                    break
+                    return subres
 
         else: self.bot.logger.debug(f"Processed message ({msg.msg_id})")
 
@@ -51,6 +59,13 @@ class MessageHandler:
         return result
 
     async def process_event(self, evnt):
+        res = await self.core_process_event(evnt)
+
+        for plugin in self.plugins:
+            if await plugin.global_after_event_process(evnt, res) is False:
+                break
+
+    async def core_process_event(self, evnt):
         for plugin in self.plugins:
             if await plugin.global_before_event_checks(evnt) is False:
                 self.bot.logger.debug(f"Event {evnt} cancelled with {plugin.name}")
@@ -60,9 +75,11 @@ class MessageHandler:
 
         for plugin in plugins_to_check:
             if await plugin.check_event(evnt):
-                if await self.process_event_with_plugin(evnt, plugin) is not False:
+                subres = await self.process_event_with_plugin(evnt, plugin)
+
+                if subres is not False:
                     self.bot.logger.debug(f"Finished with event ({evnt}) on {plugin.name}")
-                    break
+                    return subres
 
         else: self.bot.logger.debug(f"Processed event ({evnt})")
 
@@ -81,5 +98,4 @@ class MessageHandler:
     def stop(self):
         for plugin in self.plugins:
             self.bot.logger.debug(f"Stopping plugin: {plugin.name}")
-
             plugin.stop()

@@ -1,5 +1,5 @@
 from handler.base_plugin import BasePlugin
-from vk.utils import EventType
+from skevk import EventType
 
 
 class ChatGreeterPlugin(BasePlugin):
