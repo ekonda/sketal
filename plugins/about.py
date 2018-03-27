@@ -8,6 +8,9 @@ class AboutPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False, version=7.4):
         """Answers with information about bot."""
 
+        if not commands:
+            commands= ("о боте", "расскажи о себе")
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.version = version

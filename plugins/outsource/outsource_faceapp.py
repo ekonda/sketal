@@ -11,7 +11,7 @@ KNOWN_FILTERS = ('smile', 'smile_2', 'hot', 'old', 'young', 'female', 'male')
 # Thanks to https://github.com/vasilysinitsin/Faces
 
 class FacePlugin(CommandPlugin):
-    __slots__ = ("filters",)
+    __slots__ = ("filters", "command")
 
     def __init__(self, *commands, prefixes=None, strict=False):
         """Plugin using FaceApp for changing photo."""
@@ -45,11 +45,11 @@ class FacePlugin(CommandPlugin):
             'кисой': 'female',
         }
 
-        command = self.command_example()
-        
+        self.command = self.command_example()
+
         self.description = [f"FaceApp Фильтр",
-            f"{command} - показать помощь.",
-            f"{command} <фильтр> - использовать фильтр."]
+            f"{self.command} - показать помощь.",
+            f"{self.command} <фильтр> - использовать фильтр."]
 
     @staticmethod
     def _generate_device_id():
@@ -64,12 +64,14 @@ class FacePlugin(CommandPlugin):
     async def process_message(self, msg):
         command, text = self.parse_message(msg)
         if not text or text not in self.filters.keys():
-            return await msg.answer('🙋‍♂️ Список доступных фильтров:\n' + ", ".join(self.filters) + '\nВведите !лицо <фильтр> <прикрепленная фотография>')
+            return await msg.answer('🙋‍♂️ Список доступных фильтров:\n' + \
+                ", ".join(self.filters) + '\nВведите ' + self.command + \
+                    ' <фильтр> <прикрепленная фотография>')
 
         if not any(k.endswith('_type') and v == "photo"
             for k, v in msg.brief_attaches.items()):
-                return await msg.answer('Вы не прислали фото!\nВведите \
-                    !лицо <фильтр> <прикрепленная фотография>')
+                return await msg.answer('Вы не прислали фото!\nВведите ' + \
+                    self.command + ' <фильтр> <прикрепленная фотография>')
 
         photo_url = None
         for a in await msg.get_full_attaches():

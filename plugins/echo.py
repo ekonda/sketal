@@ -6,7 +6,6 @@ class EchoPlugin(BasePlugin):
 
     def __init__(self):
         """Answers with a message it received."""
-
         super().__init__()
 
     async def check_message(self, msg):

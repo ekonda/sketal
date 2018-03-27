@@ -444,7 +444,10 @@ class RequestsQueue:
             except asyncio.TimeoutError:
                 await asyncio.sleep(1)
 
-            except json.decoder.JSONDecodeError:
+            except RuntimeError:
+                pass
+
+            except ValueError:
                 pass
 
         for task in tasks:

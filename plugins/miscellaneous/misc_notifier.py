@@ -6,9 +6,9 @@ import asyncio, uuid, time, re
 class NotifierPlugin(CommandPlugin):
     __slots__ = ("after_pa", "after_re", "remember_list", "help", "add_entity",
                  "sub_entity", "clear_peer", "iterate_entities",
-                 "get_size_of_list", "place_data", "use_db")
+                 "get_size_of_list", "place_data")
 
-    def __init__(self, *commands, prefixes=None, strict=False, use_db=False):
+    def __init__(self, *commands, prefixes=None, strict=False):
         """Creates notification poping up after specified time"""
 
         if not commands:
@@ -17,7 +17,6 @@ class NotifierPlugin(CommandPlugin):
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.remember_list = []  # (uniq_id, peer_id, firetime, text, atta, user_id)
-        self.use_db = use_db
 
         self.add_entity = None
         self.sub_entity = None

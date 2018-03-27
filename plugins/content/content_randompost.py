@@ -28,7 +28,7 @@ class RandomPostPlugin(CommandPlugin):
 
         self.description = ["Случайные посты из групп", "Доступные команды:"]
         for k in self.commgroups.keys():
-            self.description.append(prefixes[0] + str(k))
+            self.description.append(self.prefixes[0] + str(k))
 
     async def process_message(self, msg):
         command, text = self.parse_message(msg, full_text=self.strict)

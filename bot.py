@@ -23,8 +23,9 @@ class Bot:
     def __init__(self, settings, logger=None, handler=None, loop=asyncio.get_event_loop()):
         self.settings = settings
 
-        self.logger = None
-        self.init_logger(logger)
+        self.logger = logger
+        if not logger:
+            self.init_logger()
 
         self.logger.info("Initializing bot")
 
@@ -56,9 +57,8 @@ class Bot:
 
         self.logger.info("Bot successfully initialized")
 
-    def init_logger(self, logger):
-        if not logger:
-            logger = logging.Logger("sketal", level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
+    def init_logger(self):
+        logger = logging.Logger("sketal", level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
 
         formatter = logging.Formatter(
             fmt=u'[%(asctime)s] %(levelname)-8s: %(message)s',

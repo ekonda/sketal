@@ -1,5 +1,6 @@
 import sys, os, re
 
+DEFAULTS = {}
 
 class BasePlugin:
     __slots__ = ("bot", "handler", "api", "name", "description", "order")
@@ -121,7 +122,7 @@ class CommandPlugin(BasePlugin):
         self.commands = commands if strict else [command.strip().lower() for command in commands]
         self.commands = sorted(self.commands, key=len, reverse=True)  # или x.count(" ")?
 
-        self.prefixes = prefixes if prefixes else ("!", )
+        self.prefixes = prefixes if prefixes else DEFAULTS["PREFIXES"]
         self.prefixes = sorted(self.prefixes, reverse=True)
 
         self.strict = strict

@@ -17,27 +17,27 @@ def traverse(o, tree_types=(list, tuple)):
 cases = (2, 0, 1, 1, 1, 2)
 
 
-def plural_form(n: int, v: (list, tuple)):
+def plural_form(n, v):
     """Функция возвращает число и просклонённое слово после него
 
-Аргументы:
-:param n: число
-:param v: варианты слова в формате (для 1, для 2, для 5)
+    Аргументы:
+    :param n: число
+    :param v: варианты слова в формате (для 1, для 2, для 5)
 
-Пример:
-plural_form(difference.days, ("день", "дня", "дней"))
+    Пример:
+    plural_form(difference.days, ("день", "дня", "дней"))
 
-:return: Число и просклонённое слово после него"""
+    :return: Число и просклонённое слово после него"""
 
-    return f"{n}  {v[2 if (4 < n % 100 < 20) else cases[min(n % 10, 5)]]}"
+    return f"{n} {v[2 if (4 < n % 100 < 20) else cases[min(n % 10, 5)]]}"
 
 
 def age(date):
     """Возвращает возраст в годах по дате рождения
 
-Функция
-:param date: дата рождения
-:return: возраст"""
+    Функция
+    :param date: дата рождения
+    :return: возраст"""
 
     # Get the current date
     now = datetime.datetime.utcnow()
@@ -79,8 +79,8 @@ def parse_msg_flags(bitmask, keys=('unread', 'outbox', 'replied', 'important', '
 def unquote(data: (str, dict, list)):
     """Функция, раскодирующая ответ от ВК
 
-:param data: строка для раскодировки
-:return: раскодированный ответ"""
+    :param data: строка для раскодировки
+    :return: раскодированный ответ"""
 
     temp = data
 

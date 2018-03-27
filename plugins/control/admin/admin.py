@@ -1,4 +1,4 @@
-from handler.base_plugin import BasePlugin
+from handler.base_plugin import BasePlugin, DEFAULTS
 
 from skevk import parse_user_id
 
@@ -8,13 +8,13 @@ class AdminPlugin(BasePlugin):
 
     def __init__(self, commands=None, admins=None, moders=None, banset=None, prefixes=(), setadmins=True):
         """Allows admins to ban people and control admins for plugins.
-        Admins are global.
-        Moders are local for chats"""
+        Admins are global. Moders are local for chats"""
 
         super().__init__()
 
-        self.commands = list(commands) if commands else ["ban", "unban", "admin", "unadmin", "moder", "unmoder", "banned", "admins"]
-        self.admins = list(admins) if admins else list()
+        self.commands = list(commands) if commands else ["ban", "unban",
+            "admin", "unadmin", "moder", "unmoder", "banned", "admins"]
+        self.admins = list(admins) if admins else DEFAULTS["ADMINS"]
         self.moders =  moders if moders else {}
         self.banset = list(banset) if banset else list()
         self.setadmins = setadmins

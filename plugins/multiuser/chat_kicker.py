@@ -1,4 +1,4 @@
-from handler.base_plugin import CommandPlugin
+from handler.base_plugin import CommandPlugin, DEFAULTS
 from skevk import EventType, parse_user_id
 
 import time
@@ -21,7 +21,7 @@ class ChatKickerPlugin(CommandPlugin):
 
         self.admins_only = admins_only
         self.unkick = free_commands
-        self.admins = admins
+        self.admins = admins or DEFAULTS["ADMINS"]
         self.exiled = {}
 
     async def process_message(self, msg):

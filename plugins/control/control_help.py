@@ -4,7 +4,7 @@ from handler.base_plugin import CommandPlugin
 class HelpPlugin(CommandPlugin):
     __slots__ = ("plugins", "short")
 
-    def __init__(self, *commands, plugins=None, short=True, prefixes=None, strict=False):
+    def __init__(self, *commands, plugins=None, short=False, prefixes=None, strict=False):
         """Answers with a user a list with plugins's descriptions from `plugins`."""
 
         if not commands:
@@ -42,12 +42,13 @@ class HelpPlugin(CommandPlugin):
     async def process_message(self, msg):
         result = ""
 
-        for plugin in self.plugins:
+        for i, plugin in enumerate(self.plugins):
             if not hasattr(plugin, "description") or not plugin.description:
                 continue
 
             if self.short:
-                result += "🔶 " + plugin.description[0] + ". " + " // ".join(plugin.description[1:]) + "\n"
+                result += ("🔶" if i&1 else "🔷")  + " " + \
+                    plugin.description[0] + ". " + " // ".join(plugin.description[1:]) + "\n"
                 continue
 
             result += "🔷" + plugin.description[0] + ":🔷" + "\n"

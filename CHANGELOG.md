@@ -1,21 +1,23 @@
 #### sketal v7.4 `happy pony`
 Version dedicated to performance updates, removing and unifying plugins.
-- Added `Bots Long Poll` https://vk.com/dev/bots_longpoll
-- Added `misc_counter.py`
+- Added `Bots Long Poll` https://vk.com/dev/bots_longpoll.
+- Added `misc_counter.py`.
 - Added `order` field to plugins.
 - Added `storage.py`
 - Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`).
+- Added default commands to plugins.
+- Added default values to plugins.
 - Added method `global_after_*_process` for plugins.
 - Changed `README.md` и `settings.py`.
 - Changed logger's format.
 - Rearranged plugins.
 - Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
 - Removed peewee and peewee_async.
-- Removed `base_plugin_command.py`
-- Renamed `bot_runner.py` -> `runner.py`
+- Removed `base_plugin_command.py`.
+- Renamed `bot_runner.py` -> `runner.py`.
 - Renamed and rearranged `vk` folder. Renamed to package `skevk`.
-- Renamed `bot.py` for running to `run.py`
-- Renamed `base_plugin_command.CommandPlugin` to `base_plugin.CommandPlugin`
+- Renamed `bot.py` for running to `run.py`.
+- Renamed `base_plugin_command.CommandPlugin` to `base_plugin.CommandPlugin`.
 
 #### sketal v7.3.4 `funny dog`
 https://github.com/vk-brain/sketal/commit/e320bc87694a88ea0019cbd11f0a254cb2a55293

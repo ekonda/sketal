@@ -1,11 +1,12 @@
 import sys, os
 sys.path.append(os.path.abspath("."))
 
-import asyncio, unittest
+import asyncio, unittest, logging, time
 
 from bot import Bot
 
 from skevk import Wait, Message, MAX_LENGHT, upload_doc, upload_photo
+from utils import plural_form
 
 try:
     from settings_prod import BotSettings
@@ -19,11 +20,15 @@ if user_token:
     )
 
 class TestBot(unittest.TestCase):
-    bot = Bot(BotSettings)
+    @classmethod
+    def setUpClass(cls):
+        cls.bot = Bot(BotSettings)
 
     def test_loading(self):
-        with self.assertLogs(self.bot.logger, level='INFO') as cm:
-            self.bot = Bot(BotSettings, logger=self.bot.logger)
+        logger = logging.getLogger()
+
+        with self.assertLogs(logger, level='INFO') as cm:
+            self.bot = Bot(BotSettings, logger=logger)
 
         self.assertIn(f'INFO:{self.bot.logger.name}:Initializing bot', cm.output)
         self.assertIn(f'INFO:{self.bot.logger.name}:Initializing vk clients', cm.output)
@@ -51,11 +56,11 @@ class TestBot(unittest.TestCase):
     def test_longpoll(self):
         task = self.bot.longpoll_run(True)
 
-        async def bot_killer():
+        async def bot_stopper():
             await asyncio.sleep(5)
             self.bot.stop_bot()
 
-        asyncio.ensure_future(bot_killer(), loop=self.bot.loop)
+        asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
 
         with self.assertLogs(self.bot.logger, level='INFO') as cm:
             with self.assertRaises(asyncio.CancelledError):
@@ -66,11 +71,11 @@ class TestBot(unittest.TestCase):
     def test_callback(self):
         task = self.bot.callback_run(True)
 
-        async def bot_killer():
+        async def bot_stopper():
             await asyncio.sleep(5)
             self.bot.stop_bot()
 
-        asyncio.ensure_future(bot_killer(), loop=self.bot.loop)
+        asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
 
         with self.assertLogs(self.bot.logger, level='INFO') as cm:
             with self.assertRaises(asyncio.CancelledError):
@@ -144,10 +149,20 @@ class TestBot(unittest.TestCase):
 
         self.bot.do(work())
 
-class TestVkUtils(unittest.TestCase):
+class TestUtils(unittest.TestCase):
     def check(self, message):
         self.assertLessEqual(len(message), MAX_LENGHT)
         self.assertGreaterEqual(len(message), 1)
+
+    def test_plural_form(self):
+        words = ("корова", "коровы", "коров")
+
+        self.assertEqual(plural_form(2, words), "2 коровы")
+        self.assertEqual(plural_form(25, words), "25 коров")
+        self.assertEqual(plural_form(21, words), "21 корова")
+        self.assertEqual(plural_form(12, words), "12 коров")
+        self.assertEqual(plural_form(100, words), "100 коров")
+        self.assertEqual(plural_form(51234, words), "51234 коровы")
 
     def test_simple_message(self):
         result = Message.prepare_message("hi")

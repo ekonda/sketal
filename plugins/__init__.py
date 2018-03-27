@@ -1,10 +1,10 @@
-from handler.base_plugin import BasePlugin
+from handler.base_plugin import BasePlugin, DEFAULTS
 
 import importlib
 import pkgutil
 import sys, os
 
-__all__ = []
+__all__ = ["DEFAULTS"]
 
 def save_doc(e, full_name, file_name=None):
     with open(file_name, "a") as o:

@@ -1,9 +1,7 @@
-from handler.base_plugin import CommandPlugin
+from handler.base_plugin import CommandPlugin, DEFAULTS
 from skevk import Wait, upload_photo
 
-import asyncio
-import aiohttp
-import io
+import asyncio, aiohttp, io
 
 
 class DispatchPlugin(CommandPlugin):
@@ -17,7 +15,7 @@ class DispatchPlugin(CommandPlugin):
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
-        self.admins = admins
+        self.admins = admins or DEFAULTS["ADMINS"]
 
     async def process_message(self, msg):
         if msg.user_id not in self.admins and not msg.meta.get("is_moder"):
