@@ -14,8 +14,11 @@ from skevk import MessageEventData
 
 
 class Bot:
-    __slots__ = ("logger", "loop", "values", "server", "main_task", "longpoll_request",
-                 "settings", "api", "handler", "logger_file")
+    __slots__ = (
+        "api", "bots_longpoll_request", "bots_server", "bots_values", "handler",
+        "logger", "logger_file", "longpoll_request", "loop", "main_task",
+        "server", "sessions", "settings", "values"
+    )
 
     def __init__(self, settings, logger=None, handler=None, loop=asyncio.get_event_loop()):
         self.settings = settings
@@ -27,10 +30,15 @@ class Bot:
 
         self.loop = loop
 
+        self.bots_values = {}
+        self.bots_server = ""
+        self.bots_longpoll_request = None
+
         self.values = {}
         self.server = ""
         self.longpoll_request = None
 
+        self.sessions = []
         self.main_task = None
 
         self.logger.info("Initializing vk clients")
@@ -72,9 +80,10 @@ class Bot:
 
     async def init_long_polling(self, update=0):
         result = None
-        retries = 10
-        for _ in range(retries):
-            result = await self.api(sender=self.api.target_client).messages.getLongPollServer(use_ssl=1, lp_version=2)
+
+        for _ in range(10):
+            result = await self.api(sender=self.api.target_client).\
+                messages.getLongPollServer(use_ssl=1, lp_version=2)
 
             if result:
                 break
@@ -82,38 +91,70 @@ class Bot:
             time.sleep(0.5)
 
         if not result:
-            self.logger.error("Unable to connect to VK's long polling server")
+            self.logger.error("Unable to connect to VK's long polling server.")
             exit()
 
-        last_ts = 0
-        longpoll_key = ""
-
-        if 'ts' in self.values:
-            last_ts = self.values['ts']
-
-        if 'key' in self.values:
-            longpoll_key = self.values['key']
+        last_ts = self.values.get('ts', 0)
+        longpoll_key = self.values.get('key', '')
 
         if update == 0:
             self.server = "https://" + result['server']
             longpoll_key = result['key']
             last_ts = result['ts']
 
+        elif update == 2:
+            longpoll_key = result['key']
+
         elif update == 3:
+            longpoll_key = result['key']
+            last_ts = result['ts']
+
+        self.values.update({
+            'act': 'a_check',
+            'key': longpoll_key,
+            'ts': last_ts,
+            'wait': 25,
+            'mode': 10,
+            'version': 2
+        })
+
+    async def init_bots_long_polling(self, update=0):
+        result = None
+
+        for _ in range(10):
+            result = await self.api(sender=self.api.target_client).\
+                groups.getLongPollServer(group_id=self.api.get_current_id())
+
+            if result:
+                break
+
+            time.sleep(0.5)
+
+        if not result:
+            self.logger.error("Unable to connect to VK's bots long polling server.")
+            exit()
+
+        last_ts = self.bots_values.get('ts', 0)
+        longpoll_key = self.bots_values.get('key', '')
+
+        if update == 0:
+            self.bots_server = result['server']
             longpoll_key = result['key']
             last_ts = result['ts']
 
         elif update == 2:
             longpoll_key = result['key']
 
-        self.values = {
+        elif update == 3:
+            longpoll_key = result['key']
+            last_ts = result['ts']
+
+        self.bots_values.update({
             'act': 'a_check',
             'key': longpoll_key,
             'ts': last_ts,
-            'wait': 20,
-            'mode': 10,
-            'version': 2
-        }
+            'wait': 25
+        })
 
     async def process_longpoll_event(self, new_event):
         if not new_event:
@@ -131,14 +172,12 @@ class Bot:
         data.attaches = new_event[6]
         data.time = int(new_event[4])
 
-        try:
-            data.user_id = int(data.attaches['from'])
+        if 'from' in data.attaches and len(new_event) > 3:
+            data.user_id = int(data.attaches.pop('from'))
             data.chat_id = int(new_event[3]) - 2000000000
             data.is_multichat = True
 
-            del data.attaches['from']
-
-        except KeyError:
+        else:
             data.user_id = int(new_event[3])
             data.is_multichat = False
 
@@ -154,8 +193,8 @@ class Bot:
         data.full_text = new_event[5].replace('<br>', '\n')
 
         if "fwd" in data.attaches:
-            data.forwarded = MessageEventData.parse_brief_forwarded_messages_from_lp(data.attaches["fwd"])
-            del data.attaches["fwd"]
+            data.forwarded = MessageEventData.\
+                parse_brief_forwarded_messages_from_lp(data.attaches.pop("fwd"))
 
         else:
             data.forwarded = []
@@ -171,23 +210,32 @@ class Bot:
         await self.init_long_polling()
 
         session = aiohttp.ClientSession(loop=self.loop)
+        self.sessions.append(session)
 
         while True:
             try:
-                self.longpoll_request = session.get(self.server, params=self.values)
+                self.longpoll_request = session.get(self.server,
+                    params=self.values)
 
                 resp = await self.longpoll_request
 
+                events = json.loads(await resp.text())
+
             except aiohttp.ClientOSError:
+                try:
+                    self.sessions.remove(session)
+                except ValueError:
+                    pass
+
                 session = aiohttp.ClientSession(loop=self.loop)
+                self.sessions.append(session)
+                continue
 
             except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
-                self.logger.warning("Long polling server doesn't respond. Changing server")
+                self.logger.warning("Long polling server doesn't respond. Changing server.")
                 await self.init_long_polling()
                 continue
 
-            try:
-                events = json.loads(await resp.text())
             except ValueError:
                 continue
 
@@ -197,7 +245,10 @@ class Bot:
                 err_num = int(failed)
 
                 if err_num == 1:  # 1 - update timestamp
-                    self.values['ts'] = events['ts']
+                    if 'ts' not in events:
+                        await self.init_long_polling()
+                    else:
+                        self.values['ts'] = events['ts']
 
                 elif err_num in (2, 3):  # 2, 3 - new data for long polling
                     await self.init_long_polling(err_num)
@@ -205,14 +256,87 @@ class Bot:
                 continue
 
             self.values['ts'] = events['ts']
+
             for event in events['updates']:
                 asyncio.ensure_future(self.process_longpoll_event(event))
+
+    async def bots_longpoll_processor(self):
+        await self.init_bots_long_polling()
+
+        session = aiohttp.ClientSession(loop=self.loop)
+        self.sessions.append(session)
+
+        while True:
+            try:
+                self.bots_longpoll_request = session.get(self.bots_server,
+                    params=self.bots_values)
+
+                resp = await self.bots_longpoll_request
+
+                events = json.loads(await resp.text())
+
+            except aiohttp.ClientOSError:
+                try:
+                    self.sessions.remove(session)
+                except ValueError:
+                    pass
+
+                session = aiohttp.ClientSession(loop=self.loop)
+                self.sessions.append(session)
+                continue
+
+            except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
+                self.logger.warning("Long polling server doesn't respond. Changing server.")
+                await self.init_bots_long_polling()
+                continue
+
+            except ValueError:
+                continue
+
+            failed = events.get('failed')
+
+            if failed:
+                err_num = int(failed)
+
+                if err_num == 1:  # 1 - update timestamp
+                    if 'ts' not in events:
+                        await self.init_bots_long_polling()
+                    else:
+                        self.bots_values['ts'] = events['ts']
+
+                elif err_num in (2, 3):  # 2, 3 - new data for long polling
+                    await self.init_bots_long_polling(err_num)
+
+                continue
+
+            self.bots_values['ts'] = events['ts']
+
+            for event in events['updates']:
+                if "type" not in event or "object" not in event:
+                    continue
+
+                data_type = event["type"]
+                obj = event["object"]
+
+                if "user_id" in obj:
+                    obj['user_id'] = int(obj['user_id'])
+
+                if data_type == 'message_new':
+                    await self.process_message(
+                        Message(self.api, MessageEventData.from_message_body(obj)))
+
+                else:
+                    await self.process_event(
+                        CallbackEvent(self.api, data_type, obj))
 
     async def callback_processor(self, request):
         try:
             data = await request.json()
 
-        except (UnicodeDecodeError, json.decoder.JSONDecodeError):
+            if "type" not in data or "object" not in data:
+                raise ValueError("Damaged data received.")
+
+        except (UnicodeDecodeError, ValueError):
             return web.Response(text="ok")
 
         data_type = data["type"]
@@ -226,15 +350,12 @@ class Bot:
             obj['user_id'] = int(obj['user_id'])
 
         if data_type == 'message_new':
-            data = MessageEventData.from_message_body(obj)
-
-            msg = Message(self.api, data)
-
-            await self.process_message(msg)
+            await self.process_message(
+                Message(self.api, MessageEventData.from_message_body(obj)))
 
         else:
-            evnt = CallbackEvent(self.api, data_type, obj)
-            await self.process_event(evnt)
+            await self.process_event(
+                CallbackEvent(self.api, data_type, obj))
 
         return web.Response(text="ok")
 
@@ -251,7 +372,24 @@ class Bot:
 
         except (KeyboardInterrupt, SystemExit):
             self.stop()
+            self.logger.info("Stopped to process messages")
 
+        except asyncio.CancelledError:
+            pass
+
+    def bots_longpoll_run(self, custom_process=False):
+        self.main_task = Task(self.bots_longpoll_processor())
+
+        if custom_process:
+            return self.main_task
+
+        self.logger.info("Started to process messages")
+
+        try:
+            self.loop.run_until_complete(self.main_task)
+
+        except (KeyboardInterrupt, SystemExit):
+            self.stop()
             self.logger.info("Stopped to process messages")
 
         except asyncio.CancelledError:
@@ -363,6 +501,10 @@ class Bot:
             print(e)
 
     def stop(self):
+        if self.loop.is_running():
+            for session in self.sessions:
+                asyncio.ensure_future(session.close())
+
         self.handler.stop()
         self.api.stop()
 
@@ -370,25 +512,4 @@ class Bot:
 
         self.logger.removeHandler(self.logger_file)
         self.logger_file.close()
-
-
-if __name__ == "__main__":
-    try:
-        import sys
-
-        if "-d" in sys.argv:
-            raise ModuleNotFoundError
-
-        from settings_prod import BotSettings
-
-    except ModuleNotFoundError:
-        from settings import BotSettings
-
-    except ImportError:
-        import traceback
-        traceback.print_exc()
-        exit(1)
-
-    bot = Bot(BotSettings)
-    bot.longpoll_run()
-    # bot.callback_run()
+        

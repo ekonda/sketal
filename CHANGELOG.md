@@ -1,5 +1,6 @@
 #### sketal v7.4 `happy pony`
 Version dedicated to performance updates, removing and unifying plugins.
+- Added `Bots Long Poll` https://vk.com/dev/bots_longpoll
 - Added `misc_counter.py`
 - Added `order` field to plugins.
 - Added `storage.py`
@@ -9,8 +10,9 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Rearranged plugins.
 - Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
 - Removed peewee and peewee_async.
-- Renamed `bot_runner.py` -> `bot_keeper.py`
+- Renamed `bot_runner.py` -> `runner.py`
 - Renamed and rearranged `vk` folder. Renamed to package `skevk`.
+- Renamed `bot.py` for running to `run.py`
 
 #### sketal v7.3.4 `funny dog`
 https://github.com/vk-brain/sketal/commit/e320bc87694a88ea0019cbd11f0a254cb2a55293
