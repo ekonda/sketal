@@ -12,6 +12,9 @@ class DispatchPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False, admins=()):
         """Allows admins to send out messages to users."""
 
+        if not commands:
+            commands = ("разослать",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.admins = admins

@@ -12,6 +12,9 @@ class EmotionsDetectorPlugin(CommandPlugin):
         if not key:
             raise AttributeError("You didn't specified key! You can get it here: https://azure.microsoft.com/ru-ru/services/cognitive-services/face/")
 
+        if not commands:
+            commands = ("эмоции",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.key = key
@@ -21,9 +24,8 @@ class EmotionsDetectorPlugin(CommandPlugin):
         self.clean_time = time.time() + time_delta
         self.requests_amount = requests_amount
 
-        example = self.command_example()
         self.description = [f"Детектор эмоций",
-                            f"{example} - распознать эмоции на лице'."]
+                            f"{self.command_example()} - распознать эмоции на лице'."]
 
     async def process_message(self, msg):
         if self.dirt >= self.requests_amount:

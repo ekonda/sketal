@@ -13,6 +13,9 @@ class QuoteDoerPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False):
         """Answers with image containing stylish quote."""
 
+        if not commands:
+            commands = ("цитата",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.q = Image.open(self.get_path("q.png")).resize((40, 40), Image.LANCZOS)

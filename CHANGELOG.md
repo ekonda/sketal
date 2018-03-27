@@ -7,6 +7,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`).
 - Added method `global_after_*_process` for plugins.
 - Changed `README.md` и `settings.py`.
+- Changed logger's format.
 - Rearranged plugins.
 - Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
 - Removed peewee and peewee_async.

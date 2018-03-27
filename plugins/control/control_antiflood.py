@@ -8,9 +8,8 @@ class AntifloodPlugin(BasePlugin):
 
     def __init__(self, delay=1, absolute=False):
         """ Forbids users to send messages to bot more often than delay `delay`.
-        If `absolute` is True, bot wont answer on more than 1 message in delay time.
-        """
-
+        If `absolute` is True, bot wont answer on more than 1 message in delay
+        time."""
         super().__init__()
 
         self.users = {}

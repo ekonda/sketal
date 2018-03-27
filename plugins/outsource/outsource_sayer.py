@@ -8,8 +8,6 @@ from random import choice
 import asyncio, aiohttp, io
 import logging
 
-logger = logging.getLogger("sketal")
-
 class SayerPlugin(CommandPlugin):
     __slots__ = ("key", "providers")
 
@@ -17,28 +15,25 @@ class SayerPlugin(CommandPlugin):
         """Answers with audio message of user's text"""
 
         if not commands:
-            commands = ["скажи", "произнеси"]
+            commands = ("скажи", "произнеси")
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
-        if not key:
-            self.key = "e02d4514-b2a7-4edb-8ee8-825f854ef890"
-        else:
-            self.key = key
-
+        self.key = key
         self.providers = [(lambda text, lang, key=None: gTTS(text=text, lang=lang)),
-                          (lambda text, lang, key=None: yTTS(text=text, lang=lang, key=key)),]
+            (lambda text, lang, key=None: yTTS(text=text, lang=lang, key=key)),]
 
         if use_yandex:
             self.providers[0], self.providers[1] = self.providers[1], self.providers[0]
 
         example = self.command_example()
         self.description = [f"Текст в речь",
-                            f"{example} [текст] - произнести текст (+ значит ударение перед ударной гласной)."]
+            f"{example} [текст] - произнести текст (+ значит ударение перед ударной гласной)."]
 
     def initiate(self):
-        if self.key == "e02d4514-b2a7-4edb-8ee8-825f854ef890":
-            self.bot.logger.warning("You are using public key for Speechkit Cloud! Get your own: https://tech.yandex.ru/speechkit/cloud/")
+        if not self.key:
+            self.bot.logger.warning("No key specified for Yandex Speechkit Cloud. Google "
+                "will be used. You can get your key - https://tech.yandex.ru/speechkit/cloud/.")
 
     @staticmethod
     def get_lang(text):

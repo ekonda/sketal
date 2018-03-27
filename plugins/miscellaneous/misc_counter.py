@@ -8,7 +8,7 @@ class CounterPlugin(CommandPlugin):
         """Useless plugin for counting up. Requires: StoragePlugin."""
 
         if not commands:
-            commands = ["up", "оп"]
+            commands = ["оп+"]
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 

@@ -7,7 +7,6 @@ class ForwardedCheckerPlugin(BasePlugin):
 
     def __init__(self, allow_self=False):
         """Checks messages' forwarded messages for commands."""
-
         super().__init__()
 
         self.allow_self = allow_self

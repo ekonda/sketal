@@ -9,6 +9,9 @@ class TimePlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False, offseth=3, offsetm=0, message=None):
         """Answers with current date and time."""
 
+        if not commands:
+            commands = ("время",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.message = message or "Текущие дата и время по МСК:"
@@ -23,5 +26,5 @@ class TimePlugin(CommandPlugin):
     async def process_message(self, msg):
         time = (datetime.datetime.now(datetime.timezone.utc) + self.delta)
         timestr = time.strftime('%d-%m-%Y %H:%M:%S')
-        
+
         await msg.answer(f'{self.message}\n{timestr}\nСегодня {self.days[time.weekday()]}.')

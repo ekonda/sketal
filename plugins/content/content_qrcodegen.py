@@ -12,6 +12,9 @@ class QRCodePlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False):
         """Answers with encoded and QR code data specified in command"""
 
+        if not commands:
+            commands = ("куер", "qr")
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         example = self.command_example()

@@ -11,7 +11,7 @@ class GraffitiPlugin(CommandPlugin):
         """Plugin turning image into graffiti."""
 
         if not commands:
-            commands = "граффити",
+            commands = ("граффити",)
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 

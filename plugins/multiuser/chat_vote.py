@@ -6,7 +6,7 @@ import asyncio, re
 
 # Requirements:
 # ChatMetaPlugin
-#
+# StoragePlugin
 
 class VoterPlugin(CommandPlugin):
     __slots__ = ("command_groups", "votes")
@@ -44,7 +44,8 @@ class VoterPlugin(CommandPlugin):
 
     async def do_vote(self, msg, title, maximum=None, votetime=180, kick=None):
         unvoters = 2 if kick else 1
-        maximum = min(len(msg.meta["__chat_data"].users) - unvoters, maximum if maximum else float("inf"))
+        maximum = min(len(msg.meta["data_chat"]["chat_info"]["users"]) - \
+            unvoters, maximum if maximum else float("inf"))
 
         await msg.answer(
             f"Начало голосования с темой \"{title}\". Максимальное кол-во проголосовавших: {maximum}. "
@@ -70,6 +71,7 @@ class VoterPlugin(CommandPlugin):
                 temp -= step
 
         await tick(votetime)
+
         for delta in times:
             await asyncio.sleep(delta)
             votetime -= delta
@@ -94,7 +96,7 @@ class VoterPlugin(CommandPlugin):
         if msg.chat_id == 0:
             return await msg.answer("Эта команда доступна только в беседах.")
 
-        if "__chat_data" not in msg.meta:
+        if not msg.meta.get("data_chat", {}).get("chat_info"):
             raise ValueError("This plugin requires `ChatMetaPlugin`.")
 
         command, text = self.parse_message(msg, True)
@@ -152,7 +154,7 @@ class VoterPlugin(CommandPlugin):
                 )
 
             user = None
-            for u in msg.meta["__chat_data"].users:
+            for u in msg.meta["data_chat"]["chat_info"]["users"]:
                 if u["id"] == puid:
                     user = u
                     break
@@ -162,7 +164,7 @@ class VoterPlugin(CommandPlugin):
 
             self.votes[msg.chat_id] = set()
 
-            members = len(msg.meta["__chat_data"].users)
+            members = len(msg.meta["data_chat"]["chat_info"]["users"])
             if members < 10:
                 maximum = members - 1
             elif members < 16:

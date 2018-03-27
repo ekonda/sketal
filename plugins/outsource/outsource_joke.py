@@ -11,7 +11,7 @@ class JokePlugin(CommandPlugin):
         """Plugin sending some jokes."""
 
         if not commands:
-            commands = ["анекдот", "а", "f"]
+            commands = ("анекдот", "а", "f")
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 

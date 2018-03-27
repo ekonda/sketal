@@ -9,6 +9,9 @@ class PairPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False, text="❤ Любит ❤ "):
         """Answers with 2 users separated by text `text` defaults to `❤ Любит ❤ `."""
 
+        if not commands:
+            commands = ("кто кого",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.text = text

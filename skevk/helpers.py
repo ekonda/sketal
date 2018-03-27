@@ -141,14 +141,15 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
         if puid.isdigit() and "]" in text[3:]:
             return int(puid)
 
-    if "__chat_data" in msg.meta:
+    if "data_chat" in msg.meta and "chat_info" in msg.meta["data_chat"]:
         if argument_ind == -1:
             targets = [original_text.split(" ")[-1].strip().lower()]
         else:
             targets = [i.strip().lower() for i in original_text.split(" ")[argument_ind: argument_ind + 2]]
 
         max_match, user_id = 0, None
-        for u in msg.meta["__chat_data"].users:
+        for u in msg.meta["data_chat"]["chat_info"]["users"] + \
+                msg.meta["data_chat"]["chat_info"]["prev_users"]:
             if u.get("screen_name") == text:
                 return u["id"]
 

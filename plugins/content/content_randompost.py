@@ -16,6 +16,14 @@ class RandomPostPlugin(CommandPlugin):
         else:
             self.commgroups = commgroups
 
+        if not self.commgroups:
+            self.commgroups = {
+                "kitties": -145935681,
+                "random": -111759315,
+                "savehouse": -96322217,
+                "octavia": -36007583
+            }
+
         super().__init__(*list(self.commgroups), prefixes=prefixes, strict=strict)
 
         self.description = ["Случайные посты из групп", "Доступные команды:"]
@@ -41,7 +49,8 @@ class RandomPostPlugin(CommandPlugin):
 
         for _ in range(10):
             if count > 100:
-                data = await self.api.wall.get(owner_id=group_id, offset=int(random.random() * (count - 90)), count=100)
+                data = await self.api.wall.get(owner_id=group_id,
+                    offset=int(random.random() * (count - 90)), count=100)
                 posts = data["items"]
 
             random.shuffle(posts)

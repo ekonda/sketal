@@ -9,6 +9,9 @@ class WikiPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False):
         """Asnwers with found data from wikipedia"""
 
+        if not commands:
+            commands = ("что такое", "расскажи о")
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.description = ["Википедия", f"{self.command_example()} [что-то] - получить информацию о чём-то"]

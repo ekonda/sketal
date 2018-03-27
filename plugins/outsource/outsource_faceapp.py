@@ -6,14 +6,18 @@ import aiohttp, random, string
 BASE_API_URL = 'https://node-01.faceapp.io/api/v2.3/photos'  # Ensure no slash at the end.
 BASE_HEADERS = {'User-agent': "FaceApp/1.0.229 (Linux; Android 4.4)"}
 DEVICE_ID_LENGTH = 8
-KNOWN_FILTERS = ['smile', 'smile_2', 'hot', 'old', 'young', 'female', 'male']
+KNOWN_FILTERS = ('smile', 'smile_2', 'hot', 'old', 'young', 'female', 'male')
+
 # Thanks to https://github.com/vasilysinitsin/Faces
 
 class FacePlugin(CommandPlugin):
-    __slots__ = ("filters")
+    __slots__ = ("filters",)
 
     def __init__(self, *commands, prefixes=None, strict=False):
         """Plugin using FaceApp for changing photo."""
+
+        if not commands:
+            commands = ("сделай", "фильтр")
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
@@ -40,6 +44,12 @@ class FacePlugin(CommandPlugin):
             'тётей': 'female',
             'кисой': 'female',
         }
+
+        command = self.command_example()
+        
+        self.description = [f"FaceApp Фильтр",
+            f"{command} - показать помощь.",
+            f"{command} <фильтр> - использовать фильтр."]
 
     @staticmethod
     def _generate_device_id():

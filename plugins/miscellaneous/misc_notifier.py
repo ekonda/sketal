@@ -11,6 +11,9 @@ class NotifierPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False, use_db=False):
         """Creates notification poping up after specified time"""
 
+        if not commands:
+            commands = ("напомни",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.remember_list = []  # (uniq_id, peer_id, firetime, text, atta, user_id)

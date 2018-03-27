@@ -10,6 +10,9 @@ class BirthdayPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False, max_users_in_group=1000):
         """Answers with birthday for users in group (but no more than `max_users_in_group`), for users in conference."""
 
+        if not commands:
+            commands = ("дни рождения",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.max_users_in_group = max_users_in_group

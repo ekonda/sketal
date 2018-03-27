@@ -6,11 +6,14 @@ class VideoPlugin(CommandPlugin):
 
     def __init__(self, *commands, prefixes=None, strict=False):
         """Plugin sending some videos by request."""
+
+        if not commands:
+            commands = ("видео", "видос")
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
-        self.description = [
-            "Видео", f"{self.command_example()} [запрос] - поиск видео по запросу"
-        ]
+        self.description = ["Видео",
+            f"{self.command_example()} [запрос] - поиск видео по запросу"]
 
     async def process_message(self, msg):
         data = await self.api.video.search(

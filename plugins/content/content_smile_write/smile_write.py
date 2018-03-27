@@ -10,7 +10,7 @@ class SmileWritePlugin(CommandPlugin):
         """Plugin printing text with emojies."""
 
         if not commands:
-            commands = ["смайлами"]
+            commands = ("смайлами",)
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 

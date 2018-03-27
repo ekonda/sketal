@@ -6,7 +6,6 @@ class CommandAttacherPlugin(BasePlugin):
 
     def __init__(self):
         """Forwards command with it's answer."""
-
         super().__init__()
 
     async def global_before_message(self, msg, plugin):

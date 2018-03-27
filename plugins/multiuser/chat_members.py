@@ -9,6 +9,9 @@ class MembersPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False, show_offline=False):
         """Answers with users in conference. Doesn't show users offline if `show_offline` is False."""
 
+        if not commands:
+            commands = ("члены", "кто тут")
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.show_offline = show_offline

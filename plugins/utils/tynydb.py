@@ -27,6 +27,8 @@ class TinyDBPlugin(BasePlugin):
 
         super().__init__()
 
+        self.order = (-95, 95)
+
         self.tinydb = TinyDB(path=self.get_path("tinydb_database.json"), storage=CachingMiddleware(JSONStorage))
 
     def get_user(self, user_id):

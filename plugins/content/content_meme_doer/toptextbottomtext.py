@@ -13,6 +13,9 @@ class MemeDoerPlugin(CommandPlugin):
                  image="Default.jpg", allow_photos=True):
         """Answers with picture with custom text on."""
 
+        if not commands:
+            commands = "мем"
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.allow_photos = allow_photos

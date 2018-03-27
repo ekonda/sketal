@@ -7,6 +7,9 @@ class HelpPlugin(CommandPlugin):
     def __init__(self, *commands, plugins=None, short=True, prefixes=None, strict=False):
         """Answers with a user a list with plugins's descriptions from `plugins`."""
 
+        if not commands:
+            commands = ("помощь", "команды", "че")
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.short = short

@@ -27,9 +27,9 @@ class YandexNewsPlugin(CommandPlugin):
     def __init__(self, main_commands=None, help_words=None, prefixes=None,
                  strict=False, error="Произошла ошибка! Попробуйте позже."):
         """Answers with a news from News.Yandex."""
-
-        if main_commands is None:
-            main_commands = ["новости"]
+        
+        if not main_commands:
+            main_commands = ("новости",)
 
         super().__init__(*main_commands, prefixes=prefixes, strict=strict)
 

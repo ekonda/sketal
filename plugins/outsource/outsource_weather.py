@@ -18,6 +18,9 @@ class WeatherPlugin(CommandPlugin):
         if not key:
             raise ValueError("Token is not specified! Get it from: https://darksky.net")
 
+        if not commands:
+            commands = ("погода",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.key = key

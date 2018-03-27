@@ -7,6 +7,9 @@ class CalculatorPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False):
         "Calculator plugin"
 
+        if not commands:
+            commands = ("посчитай",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.calculator = Calculator()

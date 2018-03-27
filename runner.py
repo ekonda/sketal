@@ -9,6 +9,10 @@ Keep in mind, that not all logs will be shown in bot_runner's terminal.
 """
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO,
+        format=u'>> [%(asctime)s] %(message)s',
+        datefmt='%y.%m.%d %H:%M:%S')
+
     cmd = "python3.6 -u run.py"
     p = None
 

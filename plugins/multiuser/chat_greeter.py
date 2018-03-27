@@ -7,7 +7,6 @@ class ChatGreeterPlugin(BasePlugin):
 
     def __init__(self, motd="Добро пожаловать ;)!"):
         """Answers with message `motd` when user joins a chat."""
-
         super().__init__()
 
         self.motd = motd

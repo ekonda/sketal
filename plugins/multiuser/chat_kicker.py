@@ -12,10 +12,10 @@ class ChatKickerPlugin(CommandPlugin):
         [prefix][command] [time in seconds if kicking]"""
 
         if not free_commands:
-            free_commands = ["освободить", "анкик", "приг"]
+            free_commands = ("освободить", "анкик", "приг")
 
         if not commands:
-            commands = ["кик", "удалить"]
+            commands = ("кик", "удалить")
 
         super().__init__(*(commands + free_commands), prefixes=prefixes, strict=strict)
 

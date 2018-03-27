@@ -13,7 +13,10 @@ class TranslatePlugin(CommandPlugin):
         You can change language pair by passing list of 2 names of desired languages (https://tech.yandex.ru/translate/)."""
 
         if key is None:
-            raise AttributeError("No key specified! https://tech.yandex.ru/translate/")
+            raise AttributeError("No key specified! Get your key - https://tech.yandex.ru/translate/")
+
+        if not commands:
+            commands = ("переведи",)
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
@@ -21,9 +24,8 @@ class TranslatePlugin(CommandPlugin):
         self.pair = pair
         self.commands = commands if commands else "переведи"
 
-        example = self.command_example()
         self.description = [f"Переводчик",
-                            f"{example} [тест] - тепевести текст с языка \"{pair[0]}\" на \"{pair[1]}\" или наоборот."]
+            f"{self.command_example()} [тест] - тепевести текст с языка \"{pair[0]}\" на \"{pair[1]}\" или наоборот."]
 
     def check_code(self, result):
         if "code" not in result:

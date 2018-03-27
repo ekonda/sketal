@@ -9,6 +9,9 @@ class WhoIsPlugin(CommandPlugin):
     def __init__(self, *commands, prefixes=None, strict=False):
         """Answers with a random user from conference with a title specified in command."""
 
+        if not commands:
+            commands = ("кто",)
+
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
         self.set_description()

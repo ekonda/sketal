@@ -60,8 +60,9 @@ class Bot:
         if not logger:
             logger = logging.Logger("sketal", level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
 
-        formatter = logging.Formatter(fmt=u'%(filename)-10s [%(asctime)s] %(levelname)-8s: %(message)s',
-                                      datefmt='%y.%m.%d %H:%M:%S')
+        formatter = logging.Formatter(
+            fmt=u'[%(asctime)s] %(levelname)-8s: %(message)s',
+            datefmt='%y.%m.%d %H:%M:%S')
 
         file_handler = logging.FileHandler('logs.txt')
         file_handler.setLevel(logging.DEBUG)
@@ -226,17 +227,19 @@ class Bot:
                     self.sessions.remove(session)
                 except ValueError:
                     pass
-
                 session = aiohttp.ClientSession(loop=self.loop)
                 self.sessions.append(session)
+                await asyncio.sleep(0.5)
                 continue
 
             except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
                 self.logger.warning("Long polling server doesn't respond. Changing server.")
+                await asyncio.sleep(0.5)
                 await self.init_long_polling()
                 continue
 
             except ValueError:
+                await asyncio.sleep(0.5)
                 continue
 
             failed = events.get('failed')
@@ -280,17 +283,19 @@ class Bot:
                     self.sessions.remove(session)
                 except ValueError:
                     pass
-
                 session = aiohttp.ClientSession(loop=self.loop)
                 self.sessions.append(session)
+                await asyncio.sleep(0.5)
                 continue
 
             except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
                 self.logger.warning("Long polling server doesn't respond. Changing server.")
+                await asyncio.sleep(0.5)
                 await self.init_bots_long_polling()
                 continue
 
             except ValueError:
+                await asyncio.sleep(0.5)
                 continue
 
             failed = events.get('failed')
@@ -512,4 +517,3 @@ class Bot:
 
         self.logger.removeHandler(self.logger_file)
         self.logger_file.close()
-        

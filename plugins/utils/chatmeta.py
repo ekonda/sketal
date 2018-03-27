@@ -1,62 +1,64 @@
 from handler.base_plugin import BasePlugin
 
 
-class ChatData:
-    __slots__ = ("admin_id", "users", "id", "previous_users")
-
-    def __init__(self, cid, admin_id, users):
-        self.id = cid
-
-        self.admin_id = admin_id
-        self.users = users
-        self.previous_users = []
-
-
 class ChatMetaPlugin(BasePlugin):
-    __slots__ = ("chats")
+    __slots__ = ("chats",)
 
     def __init__(self):
-        """Adds self to messages and chat's data if available."""
+        """Adds `__chat_info` to messages and events's meta with chat's data
+        if available (https://vk.com/dev/messages.getChat). You can refresh data
+        with coroutine stored in `meta['chat_info_refresh']`."""
         super().__init__()
+
+        self.order = (-90, 90)
 
         self.chats = {}
 
-    async def get_chat_data(self, chat_id, refresh=False):
-        if chat_id == 0:
-            return None
+    async def update_chat_info(self, entity, refresh=False):
+        """Argument `entity` must be Message or Event"""
 
-        if not refresh and chat_id in self.chats:
-            return self.chats[chat_id]
+        if entity.chat_id == 0 or not entity.meta.get("data_chat"):
+            return False
 
-        chat = await self.api.messages.getChat(chat_id=chat_id, fields="sex,screen_name,nickname")
-        chat_data = ChatData(chat["id"], chat["admin_id"], chat["users"])
+        current_data = entity.meta["data_chat"].get("chat_info")
 
-        if chat_id in self.chats:
-            chat_data.previous_users = self.chats[chat_id].users
+        if not refresh and current_data:
+            return True
 
-        self.chats[chat_id] = chat_data
+        new_data = await self.api.messages.getChat(chat_id=entity.chat_id,
+            fields="sex,screen_name,nickname") or {}
 
-        return chat_data
+        if current_data:
+            new_data["prev_users"] = current_data["users"]
+        else:
+            new_data["prev_users"] = []
 
-    def create_refresh(self, chat_id):
+        entity.meta["data_chat"]["chat_info"] = new_data
+
+        return True
+
+    def create_refresh(self, entity):
+        """Argument `entity` must be Message or Event"""
+
         async def func():
-            return await self.get_chat_data(chat_id, True)
+            return await self.update_chat_info(entity, True)
 
         return func
 
     async def global_before_message_checks(self, msg):
-        msg.meta["__refresh_chat_data"] = self.create_refresh(msg.chat_id)
-        msg.meta["__chat_data"] = await self.get_chat_data(msg.chat_id)
+        if await self.update_chat_info(msg):
+            msg.meta["chat_info_refresh"] = self.create_refresh(msg)
 
     async def global_before_event_checks(self, evnt):
         if not hasattr(evnt, "chat_id"):
             return
 
-        evnt.meta["__refresh_chat_data"] = self.create_refresh(evnt.chat_id)
-        evnt.meta["__chat_data"] = await self.get_chat_data(evnt.chat_id)
+        if await self.update_chat_info(evnt):
+            msg.meta["chat_info_refresh"] = self.create_refresh(evnt)
 
     async def process_event(self, evnt):
-        if evnt.source_act in "chat_invite_user":
-            await evnt.meta["__refresh_chat_data"]()
+        if evnt.source_act in "chat_invite_user" and \
+                evnt.meta["data_chat"].get("chat_info"):
+            await evnt.meta["chat_info_refresh"]()
 
         return False
