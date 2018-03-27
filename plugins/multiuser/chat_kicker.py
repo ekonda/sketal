@@ -1,4 +1,4 @@
-from handler.base_plugin_command import CommandPlugin
+from handler.base_plugin import CommandPlugin
 from skevk import EventType, parse_user_id
 
 import time

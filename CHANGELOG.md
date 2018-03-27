@@ -10,9 +10,11 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Rearranged plugins.
 - Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
 - Removed peewee and peewee_async.
+- Removed `base_plugin_command.py`
 - Renamed `bot_runner.py` -> `runner.py`
 - Renamed and rearranged `vk` folder. Renamed to package `skevk`.
 - Renamed `bot.py` for running to `run.py`
+- Renamed `base_plugin_command.CommandPlugin` to `base_plugin.CommandPlugin`
 
 #### sketal v7.3.4 `funny dog`
 https://github.com/vk-brain/sketal/commit/e320bc87694a88ea0019cbd11f0a254cb2a55293

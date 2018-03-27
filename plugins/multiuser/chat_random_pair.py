@@ -1,6 +1,6 @@
 import random
 
-from handler.base_plugin_command import CommandPlugin
+from handler.base_plugin import CommandPlugin
 
 
 class PairPlugin(CommandPlugin):
