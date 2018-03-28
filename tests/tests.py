@@ -17,15 +17,15 @@ except ImportError:
 
 BotSettings.USERS = ()
 
-# Install token for tests if provided
+# Install tokens for tests if provided
 test_group_token = os.environ.get('SKETAL_GROUP_TOKEN', '')
-if test_group_token:
+if test_group_token and not os.environ.get('SKETAL_GROUP_IGNORE', 0):
     BotSettings.USERS += (
         ("group", test_group_token,),
     )
 
 test_user_token = os.environ.get('SKETAL_USER_TOKEN', '')
-if test_user_token:
+if test_user_token and not os.environ.get('SKETAL_USER_IGNORE', 0):
     BotSettings.USERS += (
         ("user", test_user_token,),
     )

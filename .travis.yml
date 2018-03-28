@@ -5,3 +5,7 @@ script:
   - make test
 install:
   - pip install -r requirements.txt
+env:
+  - SKETAL_GROUP_IGNORE=0 SKETAL_USER_IGNORE=1
+  - SKETAL_GROUP_IGNORE=1 SKETAL_USER_IGNORE=0
+  - SKETAL_GROUP_IGNORE=0 SKETAL_USER_IGNORE=0
