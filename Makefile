@@ -14,7 +14,10 @@ else
 endif
 
 all:
-	$(pythonrun) bot.py
+	$(pythonrun) run.py
+
+runner:
+	$(pythonrun) runner.py
 
 test:
 	$(pythonrun) tests/tests.py

@@ -493,7 +493,8 @@ class Bot:
         asyncio.ensure_future(self.handler.process_event(evnt), loop=self.loop)
 
     def do(self, coroutine):
-        if asyncio.iscoroutine(coroutine):
+        if asyncio.iscoroutine(coroutine) or \
+                isinstance(coroutine, asyncio.Future):
             return self.loop.run_until_complete(coroutine)
 
         return False

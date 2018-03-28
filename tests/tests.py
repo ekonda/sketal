@@ -1,11 +1,13 @@
 import sys, os
 sys.path.append(os.path.abspath("."))
 
-import asyncio, unittest, logging, time
+import asyncio, unittest, logging, types, time
 
 from bot import Bot
+from plugins import *
 
-from skevk import Wait, Message, MAX_LENGHT, upload_doc, upload_photo
+from skevk import Wait, Message, MessageEventData, \
+    MAX_LENGHT, upload_doc, upload_photo
 from utils import plural_form
 
 try:
@@ -13,16 +15,44 @@ try:
 except ImportError:
     from settings import BotSettings
 
-user_token = os.environ.get('SKETAL_USER_TOKEN', '')
-if user_token:
-    BotSettings.USERS = (
-        ("user", user_token,),
+BotSettings.USERS = ()
+
+# Install token for tests if provided
+test_group_token = os.environ.get('SKETAL_GROUP_TOKEN', '')
+if test_group_token:
+    BotSettings.USERS += (
+        ("group", test_group_token,),
     )
 
+test_user_token = os.environ.get('SKETAL_USER_TOKEN', '')
+if test_user_token:
+    BotSettings.USERS += (
+        ("user", test_user_token,),
+    )
+
+# Install required plugins for tests
+required = [AntifloodPlugin, TimePlugin]
+for p in BotSettings.PLUGINS[::]:
+    for r in required[::]:
+        if isinstance(p, r):
+            required.remove(r)
+for r in required:
+    BotSettings.PLUGINS = BotSettings.PLUGINS + r()
+
+# BotSettings.DEBUG = True
+
 class TestBot(unittest.TestCase):
+    # def setUp(self):
+    #     self.startTime = time.time()
+    #
+    # def tearDown(self):
+    #     t = time.time() - self.startTime
+    #     print("%s: %.3f" % (self.id(), t))
+
     @classmethod
     def setUpClass(cls):
         cls.bot = Bot(BotSettings)
+        cls.user_id = cls.bot.do(cls.bot.api.get_current_id())
 
     def test_loading(self):
         logger = logging.getLogger()
@@ -34,18 +64,55 @@ class TestBot(unittest.TestCase):
         self.assertIn(f'INFO:{self.bot.logger.name}:Initializing vk clients', cm.output)
         self.assertIn(f'INFO:{self.bot.logger.name}:Loading plugins', cm.output)
 
+    def test_process(self):
+        m = Message(self.bot.api, MessageEventData.from_message_body({
+            "id": 1, "date": 0,
+            "user_id": self.user_id,
+            "body": "Привет! Просто сообщение.",
+            "random_id": 0, "read_state": 1, "title": "", "out": 0
+        }))
+
+        self.bot.do(self.bot.handler.process(m))
+
+    def test_plugins(self):
+        """Requires TimePlugin and AntifloodPlugin."""
+
+        messages = []
+
+        _answer = Message.answer
+        async def answer(self, text, **kwargs):
+            messages.insert(0, text)
+        Message.answer = answer
+
+        m = Message(self.bot.api, MessageEventData.from_message_body({
+            "id": 1,
+            "date": 0,
+            "user_id": self.user_id,
+            "body": "/время",
+            "random_id": 0, "read_state": 1, "title": "", "out": 0
+        }))
+
+        self.bot.do(self.bot.handler.process(m))
+
+        self.assertIn("Текущие дата и время по МСК", messages[0])
+
+        self.bot.do(self.bot.handler.process(m))
+
+        self.assertEqual(len(messages), 1)
+
+        Message.answer = _answer
+
     def test_methods(self):
+        """Requires at least 1 message in dialogs on account."""
+
         result = self.bot.do(self.bot.api.groups.getById(group_id=1))
         self.assertNotIn(result, (False, None))
 
-        count = 4
+        count = 2
         result = self.bot.do(self.bot.api.messages.get(count=count))
         self.assertNotIn(result, (False, None))
         self.assertIn("items", result)
         self.assertEqual(len(result['items']), count)
-
-        result = self.bot.do(self.bot.api().messages.get(count=1))
-        self.assertNotIn(result, (False, None))
 
         result = self.bot.do(self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
         self.assertEqual(asyncio.isfuture(result), True)
@@ -57,7 +124,25 @@ class TestBot(unittest.TestCase):
         task = self.bot.longpoll_run(True)
 
         async def bot_stopper():
-            await asyncio.sleep(5)
+            await asyncio.sleep(1.5)
+            self.bot.stop_bot()
+
+        asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
+
+        with self.assertLogs(self.bot.logger, level='INFO') as cm:
+            with self.assertRaises(asyncio.CancelledError):
+                self.bot.loop.run_until_complete(task)
+
+        self.assertEqual(cm.output, [f'INFO:{self.bot.logger.name}:Attempting to turn bot off'])
+
+    def test_bots_longpoll(self):
+        if all("group" not in e for e in self.bot.settings.USERS):
+            return
+
+        task = self.bot.bots_longpoll_run(True)
+
+        async def bot_stopper():
+            await asyncio.sleep(1.5)
             self.bot.stop_bot()
 
         asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
@@ -72,7 +157,7 @@ class TestBot(unittest.TestCase):
         task = self.bot.callback_run(True)
 
         async def bot_stopper():
-            await asyncio.sleep(5)
+            await asyncio.sleep(1.5)
             self.bot.stop_bot()
 
         asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
@@ -91,38 +176,38 @@ class TestBot(unittest.TestCase):
 
     def test_upload(self):
         with open("tests/simple_image.png", "rb") as f:
-            result = self.bot.do(upload_photo(self.bot.api, f.read()))
+            image = f.read()
 
-        self.assertIsNotNone(result)
-        self.assertNotEqual(result.url, "")
+            res_photo, res_doc = self.bot.do(
+                asyncio.gather(
+                    upload_photo(self.bot.api, image),
+                    upload_doc(self.bot.api, image, "image.png")
+                )
+            )
 
-        self.bot.do(self.bot.api.photos.delete(owner_id=result.owner_id, photo_id=result.id))
+        self.assertIsNotNone(res_photo)
+        self.assertIsNotNone(res_doc)
+        self.assertNotEqual(res_photo.url, "")
+        self.assertNotEqual(res_doc.url, "")
 
-        with open("tests/simple_image.png", "rb") as f:
-            result = self.bot.do(upload_doc(self.bot.api, f.read(), "image.png"))
-
-        self.assertIsNotNone(result)
-        self.assertNotEqual(result.url, "")
-
-        self.bot.do(self.bot.api.docs.delete(owner_id=result.owner_id, doc_id=result.id))
+        self.bot.do(
+            asyncio.gather(
+                self.bot.api.photos.delete(owner_id=res_photo.owner_id,
+                    photo_id=res_photo.id),
+                self.bot.api.docs.delete(owner_id=res_doc.owner_id,
+                    doc_id=res_doc.id)
+            )
+        )
 
     def test_mass_method(self):
         async def work():
             with self.bot.api.mass_request():
                 tasks = []
 
-                for _ in range(70):
+                for _ in range(50):
                     tasks.append(await self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
 
-                while tasks:
-                    await asyncio.sleep(0.01)
-
-                    task = tasks.pop()
-
-                    if task.done():
-                        continue
-
-                    tasks.append(task)
+                await asyncio.gather(*tasks)
 
         self.bot.do(work())
 

@@ -1,15 +1,17 @@
-#### sketal v7.4 `happy pony`
+#### sketal v8.0.0 `happy pony`
 Version dedicated to performance updates, removing and unifying plugins.
 - Added `Bots Long Poll` https://vk.com/dev/bots_longpoll.
 - Added `misc_counter.py`.
 - Added `order` field to plugins.
-- Added `storage.py`
+- Added `storage.py`.
 - Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`).
 - Added default commands to plugins.
 - Added default values to plugins.
 - Added method `global_after_*_process` for plugins.
+- Added more tests and enchanced them.
 - Changed `README.md` и `settings.py`.
 - Changed logger's format.
+- Changed `Makefile`
 - Rearranged plugins.
 - Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
 - Removed peewee and peewee_async.

@@ -34,9 +34,12 @@ async def upload_audio_message(api, multipart_data, peer_id):
         return None
 
     data = dict(file=result['file'])
-    result = (await api(sender=sender).docs.save(**data))[0]
+    result = await api(sender=sender).docs.save(**data)
 
-    return Attachment.from_upload_result(result, "doc")
+    if not result:
+        return None
+
+    return Attachment.from_upload_result(result[0], "doc")
 
 async def upload_graffiti(api, multipart_data, filename):
     return await upload_doc(api, multipart_data, filename, {"type": "graffiti"})
@@ -51,7 +54,8 @@ async def upload_doc(api, multipart_data, filename="image.png", additional_param
     client = api.get_current_sender("docs.getWallUploadServer", sender=sender)
 
     data = aiohttp.FormData()
-    data.add_field('file', multipart_data, filename=filename, content_type='multipart/form-data')
+    data.add_field('file', multipart_data, filename=filename,
+        content_type='multipart/form-data')
 
     values = {}
     values.update(additional_params)
@@ -74,23 +78,28 @@ async def upload_doc(api, multipart_data, filename="image.png", additional_param
         return None
 
     data = dict(file=result['file'])
-    result = (await api(sender=sender).docs.save(**data))[0]
+    result = await api(sender=sender).docs.save(**data)
 
-    return Attachment.from_upload_result(result, "doc")
+    if not result:
+        return None
+
+    return Attachment.from_upload_result(result[0], "doc")
 
 
 async def upload_photo(api, multipart_data, peer_id=None):
-    " Upload photo file `multipart_data` and return Attachment for sending to \
-    user with id `peer_id`(optional but recommended)"
+    """Upload photo file `multipart_data` and return Attachment for sending to
+    user with id `peer_id`(optional but recommended)"""
 
     sender = api.get_default_sender('photos.getMessagesUploadServer')
 
     data = aiohttp.FormData()
-    data.add_field('photo', multipart_data, filename='picture.png', content_type='multipart/form-data')
+    data.add_field('photo', multipart_data, filename='picture.png',
+        content_type='multipart/form-data')
 
-    kwargs = {}
     if peer_id:
-        kwargs["peer_id"] = peer_id
+        kwargs = {"peer_id": peer_id}
+    else:
+        kwargs = {}
 
     response = await api(sender=sender).photos.getMessagesUploadServer(**kwargs)
 
@@ -106,8 +115,8 @@ async def upload_photo(api, multipart_data, peer_id=None):
     if not result:
         return None
 
-    data = {'photo': result['photo'], 'hash': result['hash'], 'server': result['server']}
-    result = await api(sender=sender).photos.saveMessagesPhoto(**data)
+    result = await api(sender=sender).photos.saveMessagesPhoto(
+        **{'photo': result['photo'], 'hash': result['hash'], 'server': result['server']})
 
     if not result:
         return None

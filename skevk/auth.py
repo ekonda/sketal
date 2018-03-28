@@ -38,7 +38,8 @@ class Auth:
         self.obj = obj
 
     def enter_captcha(self, captcha_url, session=None):
-        self.logger.warning('(this can be caused by wrong login/password!)')
+        self.logger.warning('Please make sure your LOGIN/PASSWORD or TOKENS are valid.')
+        self.logger.warning('Please consider using TOKEN instead of LOGIN/PASSWORD.')
         return self.obj.enter_captcha(captcha_url, session)
 
     def enter_confirmation_code(self):

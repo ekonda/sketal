@@ -5,7 +5,7 @@ from skevk import Message
 class AboutPlugin(CommandPlugin):
     __slots__ = ("version", )
 
-    def __init__(self, *commands, prefixes=None, strict=False, version=7.4):
+    def __init__(self, *commands, prefixes=None, strict=False, version=8.0):
         """Answers with information about bot."""
 
         if not commands:
