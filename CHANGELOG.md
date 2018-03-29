@@ -13,13 +13,13 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Changed `ISSUE_TEMPLATE.py`.
 - Changed `settings.py`.
 - Changed logger's format.
-- Changed `Makefile`
-- Changed many base plugins (!important)
+- Changed `Makefile`.
+- Changed many base plugins (!important!).
 - Rearranged plugins.
 - Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
 - Removed peewee and peewee_async.
 - Removed `base_plugin_command.py`.
-- Removed mass methods (it wasn't useful)
+- Removed mass methods (it wasn't useful).
 - Renamed `bot_runner.py` -> `runner.py`.
 - Renamed and rearranged `vk` folder. Renamed to package `skevk`.
 - Renamed `bot.py` for running to `run.py`.

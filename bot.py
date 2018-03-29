@@ -49,13 +49,6 @@ class Bot:
 
         self.logger.info("Bot successfully initialized")
 
-        async def info():
-            while True:
-                print("R/S/T:", len(self.requests), len(self.sessions), len(self.tasks))
-                await asyncio.sleep(10)
-
-        asyncio.ensure_future(info())
-
     def init_logger(self):
         logger = logging.Logger("sketal", level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
 

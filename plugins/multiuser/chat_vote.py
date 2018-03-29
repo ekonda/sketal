@@ -29,7 +29,7 @@ class VoterPlugin(CommandPlugin):
         self.command_groups = vote_commands, vote_undo_commands, votekick_commands
         self.votes = {}
 
-        p = self.prefixes[0]
+        p = self.prefixes[-1]
         self.description = [
             f"Голосование",
             f"Устраивайте голосование или выкидывайте людей из чата голосованием ;)",
@@ -150,7 +150,7 @@ class VoterPlugin(CommandPlugin):
             if not puid:
                 return await msg.answer(
                     "Введите пользователя, которого хотите выкинуть голосованием.\nПример: " +
-                    self.prefixes[0] + self.command_groups[2][0] + " 87641997"
+                    self.prefixes[-1] + self.command_groups[2][0] + " 87641997"
                 )
 
             user = None

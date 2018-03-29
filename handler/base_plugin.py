@@ -123,7 +123,7 @@ class CommandPlugin(BasePlugin):
         self.strict = strict
 
         self.commands = commands if strict else [command.strip().lower() for command in commands]
-        self.commands = sorted(self.commands, key=len, reverse=True)  # или x.count(" ")?
+        self.commands = sorted(self.commands, key=len, reverse=True)
 
         self.compiled_commands = []
         for command in self.commands:

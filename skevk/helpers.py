@@ -124,6 +124,8 @@ async def upload_photo(api, multipart_data, peer_id=None):
     return Attachment.from_upload_result(result[0])
 
 async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=None):
+    """Returns specified in messages user's id if possible."""
+
     for m in traverse(await msg.get_full_forwarded()):
         if m.user_id and m.true_user_id != msg.user_id:
             return m.true_user_id
@@ -150,7 +152,7 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
         if puid.isdigit() and "]" in text[3:]:
             return int(puid)
 
-    if "data_chat" in msg.meta and "chat_info" in msg.meta["data_chat"]:
+    if msg.meta.get("data_chat") and "chat_info" in msg.meta["data_chat"]:
         if argument_ind == -1:
             targets = [original_text.split(" ")[-1].strip().lower()]
         else:

@@ -324,9 +324,9 @@ class RequestsQueue:
                 traceback.print_exc()
 
             if not self.requests:
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(0.44)
 
-            await asyncio.sleep(0.35)
+            await asyncio.sleep(0.34)
 
     async def _queue_processor(self):
         """Process queue"""

@@ -37,6 +37,16 @@ class ChatMetaPlugin(BasePlugin):
 
         return True
 
+    def create_name_getter(self, msg):
+        def func(user_id):
+            for u in (msg.meta.get("data_chat") or {}).get("chat_info", {}).get("users", []):
+                if u["id"] == user_id:
+                    return u["first_name"] + " " + u["last_name"]
+
+            return str(user_id)
+
+        return func
+
     def create_refresh(self, entity):
         """Argument `entity` must be Message or Event"""
 
@@ -48,13 +58,15 @@ class ChatMetaPlugin(BasePlugin):
     async def global_before_message_checks(self, msg):
         if await self.update_chat_info(msg):
             msg.meta["chat_info_refresh"] = self.create_refresh(msg)
+            msg.meta["chat_get_cached_name"] = self.create_name_getter(msg)
 
     async def global_before_event_checks(self, evnt):
         if not hasattr(evnt, "chat_id"):
             return
 
         if await self.update_chat_info(evnt):
-            msg.meta["chat_info_refresh"] = self.create_refresh(evnt)
+            evnt.meta["chat_info_refresh"] = self.create_refresh(evnt)
+            evnt.meta["chat_get_cached_name"] = self.create_name_getter(msg)
 
     async def process_event(self, evnt):
         if evnt.source_act in "chat_invite_user" and \

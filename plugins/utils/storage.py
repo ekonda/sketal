@@ -6,7 +6,7 @@ import motor.motor_asyncio
 
 
 class StoragePlugin(BasePlugin):
-    __slots__ = ("client", "database", "users", "chats", "inmemory")
+    __slots__ = ("client", "database", "users", "chats", "meta", "inmemory")
 
     def __init__(self, host="localhost", port=27017, database="sketal_db",
             inmemory=False):
@@ -27,6 +27,7 @@ class StoragePlugin(BasePlugin):
 
             self.users = {}
             self.chats = {}
+            self.meta = {}
 
         else:
             self.client = motor.motor_asyncio.AsyncIOMotorClient(host, port)
@@ -34,6 +35,7 @@ class StoragePlugin(BasePlugin):
 
             self.users = self.database["users"]
             self.chats = self.database["chats"]
+            self.meta = self.database["meta"]
 
         self.inmemory = inmemory
 
