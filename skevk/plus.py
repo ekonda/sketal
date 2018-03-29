@@ -8,10 +8,9 @@ from .utils import *
 from .methods import *
 
 
-class VkController(object):
+class VkController:
     __slots__ = ("logger", "vk_users", "vk_groups", "scope", "group", "app_id",
-                 "hold", "proxies", "users_data", "solver", "target_client",
-                 "settings")
+                 "proxies", "users_data", "solver", "target_client", "settings")
 
     def __init__(self, settings, logger=None):
         if logger:
@@ -23,32 +22,29 @@ class VkController(object):
 
         self.vk_users = []
         self.vk_groups = []
-        self.scope = settings.SCOPE
         self.group = False
+        self.scope = settings.SCOPE
         self.app_id = settings.APP_ID
 
         self.target_client = None
 
-        self.hold = 0
-
-        self.proxies = settings.PROXIES
-        if not self.proxies:
-            self.proxies = []
+        self.proxies = settings.PROXIES or []
 
         if not isinstance(settings.USERS, (list, tuple)) or not settings.USERS:
             raise ValueError("You have wrong `USERS` variable in settings. Please, check again.")
 
         for PACK in settings.USERS:
-            if not isinstance(PACK, (list, tuple)) or len(PACK) < 2 or len(PACK) > 3 or PACK[0] not in ("group", "user"):
-                raise ValueError("You have wrong entity in `USERS` in settings: " + str(PACK))
+            if not isinstance(PACK, (list, tuple)) or len(PACK) < 2 or \
+                    len(PACK) > 3 or PACK[0] not in ("group", "user"):
+                raise ValueError("You have wrong entity in `USERS` in "
+                    "settings: " + str(PACK) + ".")
 
-        self.users_data = settings.USERS
-        if not self.users_data:
-            self.users_data = []
+        self.users_data = settings.USERS or []
 
-        self.solver = None
         if settings.CAPTCHA_KEY and settings.CAPTCHA_SERVER:
             self.solver = CaptchaSolver(settings.CAPTCHA_SERVER, api_key=settings.CAPTCHA_KEY)
+        else:
+            self.solver = None
 
         loop = asyncio.get_event_loop()
         if not loop.is_running():
@@ -110,23 +106,6 @@ class VkController(object):
             return wrapper
 
         return Proxy(self, outer_name, sender, wait)
-
-    @contextmanager
-    def mass_request(self):
-        """Contexmanager for cases when user need to perform many requests at once"""
-
-        self.hold += 1
-
-        for client in self.vk_users + self.vk_groups:
-            client.queue.hold = True
-
-        yield
-
-        self.hold -= 1
-
-        if self.hold < 1:
-            for client in self.vk_users + self.vk_groups:
-                client.queue.hold = False
 
     def __call__(self, sender=None, wait=Wait.YES):
         return ProxyParametrs(self, sender, wait)

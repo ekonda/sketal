@@ -58,13 +58,11 @@ class DispatchPlugin(CommandPlugin):
 
         tasks = []
 
-        with self.bot.api.mass_request():
-            for i in range(int(dialogs / 200) + 1):
-                tasks.append(await self.bot.api(wait=Wait.CUSTOM).messages.getDialogs(count=200, preview_length=1))
+        for i in range(int(dialogs / 200) + 1):
+            tasks.append(await self.bot.api(wait=Wait.CUSTOM).messages.getDialogs(count=200, preview_length=1))
 
-            future = asyncio.gather(*tasks, return_exceptions=True)
-
-        await asyncio.wait_for(future, None)
+        await asyncio.wait_for(
+            asyncio.gather(*tasks, return_exceptions=True), None)
 
         for r in future.result():
             if not r:

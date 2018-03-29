@@ -9,17 +9,22 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Added default values to plugins.
 - Added method `global_after_*_process` for plugins.
 - Added more tests and enchanced them.
-- Changed `README.md` и `settings.py`.
+- Changed `README.md`.
+- Changed `ISSUE_TEMPLATE.py`.
+- Changed `settings.py`.
 - Changed logger's format.
 - Changed `Makefile`
+- Changed many base plugins (!important)
 - Rearranged plugins.
 - Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
 - Removed peewee and peewee_async.
 - Removed `base_plugin_command.py`.
+- Removed mass methods (it wasn't useful)
 - Renamed `bot_runner.py` -> `runner.py`.
 - Renamed and rearranged `vk` folder. Renamed to package `skevk`.
 - Renamed `bot.py` for running to `run.py`.
 - Renamed `base_plugin_command.CommandPlugin` to `base_plugin.CommandPlugin`.
+- Many fixes.
 
 #### sketal v7.3.4 `funny dog`
 https://github.com/vk-brain/sketal/commit/e320bc87694a88ea0019cbd11f0a254cb2a55293

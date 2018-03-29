@@ -1,9 +1,6 @@
-import asyncio
-import json
+import asyncio, json, logging, time
 
 import aiohttp
-import logging
-import time
 
 from utils import json_iter_parse
 from .auth import Auth
@@ -247,10 +244,10 @@ class VkClient:
             self.logger.warning("Enter information for captcha solving in settings.py")
 
             async with session.get(url) as resp:
-                with open("tempcaptcha.png", "wb") as o:
+                with open("captcha.png", "wb") as o:
                     o.write(await resp.read())
 
-            return input("Enter captcha from file `tempcaptcha.png`: ")
+            return input("Enter captcha from file `captcha.png`: ")
 
         try:
             async with session.get(url) as resp:
@@ -282,8 +279,8 @@ class VkClient:
 
 
 class RequestsQueue:
-    __slots__ = ("vk_client", "queue", "hold", "requests_done_clear_time",
-                 "_requests_done", "release", "processing", "logger")
+    __slots__ = ("vk_client", "queue", "requests_done_clear_time",
+                 "_requests_done", "processor", "logger")
 
     def __init__(self, vk_client, logger=None):
         if logger:
@@ -293,9 +290,7 @@ class RequestsQueue:
 
         self.vk_client = vk_client
 
-        self.hold = False
-        self.release = False
-        self.processing = False
+        self.processor = asyncio.ensure_future(self.queue_processor())
 
         self._requests_done = 0
         self.requests_done_clear_time = 0
@@ -320,58 +315,37 @@ class RequestsQueue:
 
         return self._requests_done
 
-    async def update_queue_processor(self, redo=False):
-        """Create a queue processor or update it's state"""
-
-        if not self.processing or redo:
-            self.release = False
-            self.processing = True
-
-            asyncio.ensure_future(self.queue_processor())
-
-        if not self.hold or self.requests > 24:
-            self.release = True
-
     async def queue_processor(self):
-        try:
-            await self._queue_processor()
-        except Exception:
-            import traceback
-            traceback.print_exc()
+        while True:
+            try:
+                await self._queue_processor()
+            except Exception:
+                import traceback
+                traceback.print_exc()
+
+            if not self.requests:
+                await asyncio.sleep(0.5)
+
+            await asyncio.sleep(0.35)
 
     async def _queue_processor(self):
         """Process queue"""
 
-        for _ in range(4):
-            await asyncio.sleep(0.1)
-
-            if self.release:
-                break
+        if not self.requests:
+            return
 
         if self.requests_done > 2:
-            wait_time = self.requests_done_clear_time - time.time() + 0.05
+            return await asyncio.sleep(max(0,
+                self.requests_done_clear_time - time.time() + 0.03))
 
-            if wait_time > 0: await asyncio.sleep(wait_time)
-
-            return await self.update_queue_processor(True)
-
-        elif self.requests:
-            await self.execute_queue()
-
-            if self.requests:
-                return await self.update_queue_processor(True)
-
-        self.processing = False
+        await self.execute_queue()
 
     async def enqueue(self, task):
         """Add task to client's queue and update queue processor"""
-
         if not task:
             return False
 
         self.queue.put_nowait(task)
-
-        await self.update_queue_processor()
 
         return True
 

@@ -14,7 +14,9 @@ def traverse(o, tree_types=(list, tuple)):
         yield o
 
 
-cases = (2, 0, 1, 1, 1, 2)
+def timestamp_to_date(timestamp):
+    return datetime.datetime.fromtimestamp(timestamp).\
+        strftime('%Y-%m-%d %H:%M:%S')
 
 
 def plural_form(n, v):
@@ -29,7 +31,7 @@ def plural_form(n, v):
 
     :return: Число и просклонённое слово после него"""
 
-    return f"{n} {v[2 if (4 < n % 100 < 20) else cases[min(n % 10, 5)]]}"
+    return f"{n} {v[2 if (4 < n % 100 < 20) else (2, 0, 1, 1, 1, 2)[min(n % 10, 5)]]}"
 
 
 def age(date):
@@ -48,23 +50,8 @@ def age(date):
     return res.years
 
 
-keys = [
-    'unread',
-    'outbox',
-    'replied',
-    'important',
-    'chat',
-    'friends',
-    'spam',
-    'deleted',
-    'fixed',
-    'media',
-    'hidden'
-]
-
-
 def parse_msg_flags(bitmask, keys=('unread', 'outbox', 'replied', 'important', 'chat',
-                                   'friends', 'spam', 'deleted', 'fixed', 'media', 'hidden')):
+        'friends', 'spam', 'deleted', 'fixed', 'media', 'hidden')):
     "Функция для чтения битовой маски и возврата словаря значений"
 
     start = 1

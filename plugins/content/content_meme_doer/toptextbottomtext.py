@@ -9,12 +9,12 @@ import aiohttp, io
 class MemeDoerPlugin(CommandPlugin):
     __slots__ = ("fonts", "sizes", "allow_photos", "default_photo")
 
-    def __init__(self, *commands, prefixes=None, strict=False, font="Impact.ttf",
-                 image="Default.jpg", allow_photos=True):
+    def __init__(self, *commands, prefixes=None, strict=False, font="impact.ttf",
+                 image="default.jpg", allow_photos=True):
         """Answers with picture with custom text on."""
 
         if not commands:
-            commands = "мем"
+            commands = ("мем",)
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
@@ -111,7 +111,7 @@ class MemeDoerPlugin(CommandPlugin):
 
         draw = ImageDraw.Draw(img)
 
-        outline_range = int(top_text_size[1] * 0.12)
+        outline_range = int(top_text_size[1] * 0.1)
         for x in range(-outline_range, outline_range + 1, 2):
             for y in range(-outline_range, outline_range + 1, 2):
                 draw.text((top_text_position[0] + x, top_text_position[1] + y),
@@ -123,10 +123,8 @@ class MemeDoerPlugin(CommandPlugin):
         draw.text(top_text_position, strings[0], (255, 255, 255), font=font)
         draw.text(bottom_text_position, strings[1], (255, 255, 255), font=font)
 
-        f = io.BytesIO()
-        img.save(f, format='png')
-        f.seek(0)
-        attachment = await upload_photo(self.bot.api, f, msg.user_id)
-        f.close()
+        buff = io.BytesIO()
+        img.save(buff, format='png')
+        attachment = await upload_photo(self.api, buff.getvalue(), msg.user_id)
 
-        return await msg.answer('Результат:', attachment=str(attachment))
+        return await msg.answer(attachment=str(attachment))

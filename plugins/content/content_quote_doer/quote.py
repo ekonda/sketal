@@ -1,6 +1,6 @@
 from handler.base_plugin import CommandPlugin
 from skevk import upload_photo
-from utils import traverse
+from utils import traverse, timestamp_to_date
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -21,8 +21,9 @@ class QuoteDoerPlugin(CommandPlugin):
         self.q = Image.open(self.get_path("q.png")).resize((40, 40), Image.LANCZOS)
         self.qf = self.q.copy().transpose(Image.FLIP_LEFT_RIGHT).transpose(Image.FLIP_TOP_BOTTOM)
 
-        self.f = ImageFont.truetype(self.get_path("font.ttf"), 19)
-        self.fs = ImageFont.truetype(self.get_path("font.ttf"), 13)
+        self.f = ImageFont.truetype(self.get_path("font.ttf"), 24)
+        self.fs = ImageFont.truetype(self.get_path("font.ttf"), 16)
+        self.fss = ImageFont.truetype(self.get_path("font.ttf"), 16)
 
         example = self.command_example()
         self.description = [f"Генератор цитат",
@@ -32,7 +33,7 @@ class QuoteDoerPlugin(CommandPlugin):
     async def process_message(self, msg):
         command, otext = self.parse_message(msg)
 
-        i, url, name, last_name = None, None, None, None
+        i, url, name, last_name, timestamp = None, None, None, None, None
 
         for m in traverse(await msg.get_full_forwarded()):
             if m.full_text:
@@ -43,9 +44,12 @@ class QuoteDoerPlugin(CommandPlugin):
                     break
 
                 i = m.true_user_id
+                timestamp = m.timestamp
 
                 u = await self.api.users.get(user_ids=i, fields="photo_max")
-                if not u: continue
+                if not u:
+                    continue
+
                 u = u[0]
 
                 url = u["photo_max"]
@@ -60,60 +64,68 @@ class QuoteDoerPlugin(CommandPlugin):
         async with aiohttp.ClientSession() as sess:
             async with sess.get(url) as response:
                 img = Image.open(io.BytesIO(await response.read()))
-                img = img.resize((200, 200))
+                img = img.resize((200, 200), Image.NEAREST)
 
         rsize = (700, 400)
-        res = Image.new("RGBA", rsize, color=(0, 0, 0))
+
+        res = Image.new("RGB", rsize, color=(0, 0, 0))
         res.paste(img, (25, 100))
 
-        tex = Image.new("RGBA", rsize, color=(0, 0, 0))
-
+        tex = Image.new("RGB", rsize, color=(0, 0, 0))
         draw = ImageDraw.Draw(tex)
 
-        sidth = draw.textsize(" ", font=self.f)[0]
-        seight = int(draw.textsize("I", font=self.f)[1] * 1.05)
+        if len(text) > 70:
+            font = self.fss
+        else:
+            font = self.f
 
-        text = text.splitlines()
+        sidth = int(draw.textsize(" ", font=font)[0])
+        seight = int(draw.textsize("I", font=font)[1])
 
-        midth = 0
-        width = 0
-        height = 0
-        for line in text:
-            for word in line.split(" "):
-                size = draw.textsize(word, font=self.f)
+        width, height = 0, 0
+        new_text = ""
 
-                if width + size[0] >= rsize[0] - 340:
-                    height += seight
+        for line in text.splitlines():
+            for word in line.split():
+                word_width = len(word) * sidth
+
+                if width + word_width >= rsize[0] - 340:
                     width = 0
+                    new_text += "\n"
 
-                draw.text((width, height), word, font=self.f)
-                width += sidth + size[0]
+                width += sidth + word_width
+                new_text += word + " "
 
-                if width > midth:
-                    midth = width
-
-            height += seight
             width = 0
+            new_text += "\n"
+
+        new_text = new_text[:-1]
+
+        width, height = draw.multiline_textsize(new_text, font=font)
+        draw.multiline_text((0, 0), new_text, font=font)
 
         y = rsize[1] // 2 - height // 2
-        x = 300 + (rsize[0] - 370 - midth) // 2
-        res.alpha_composite(tex, (x, y))
+        x = 300 + (rsize[0] - 370 - width) // 2
+
+        res.paste(tex, (x, y))
+
+        if y <= 10:
+            return await msg.answer("Не получилось... простите.")
 
         if height < 210:
             height = 210
             y = rsize[1] // 2 - height // 2
 
-        res.alpha_composite(self.q, (250, y + 10))
-        res.alpha_composite(self.qf, (rsize[0] - 75, y + int(height - seight * 2 + 10)))
+        res.paste(self.q, (240, y))
+        res.paste(self.qf, (rsize[0] - 65, y + height - 40))
 
         draw = ImageDraw.Draw(res)
-        draw.multiline_text((25, 310), f"© {name} {last_name}{' - ' + otext if otext else ''}\n"
-                                       f"@ {datetime.date.today()}", font=self.fs)
+        draw.multiline_text((25, 310), f"© {name} {last_name}{' - ' + otext if otext else ''}"
+            f"\n@ {timestamp_to_date(timestamp)}", font=self.fs)
 
-        f = io.BytesIO()
-        res.save(f, format='png')
-        f.seek(0)
-        attachment = await upload_photo(self.api, f, msg.user_id)
-        f.close()
+        buff = io.BytesIO()
+        res.save(buff, format='png')
 
-        return await msg.answer('', attachment=str(attachment))
+        attachment = await upload_photo(self.api, buff.getvalue(), msg.user_id)
+
+        return await msg.answer(attachment=str(attachment))

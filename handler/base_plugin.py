@@ -114,18 +114,33 @@ class BasePlugin:
 
 
 class CommandPlugin(BasePlugin):
-    __slots__ = ("commands", "strict", "prefixes")
+    __slots__ = ("commands",  "compiled_commands", "prefixes",
+        "compiled_prefixes", "strict")
 
     def __init__(self, *commands, prefixes=None, strict=False):
         super().__init__()
 
+        self.strict = strict
+
         self.commands = commands if strict else [command.strip().lower() for command in commands]
         self.commands = sorted(self.commands, key=len, reverse=True)  # или x.count(" ")?
+
+        self.compiled_commands = []
+        for command in self.commands:
+            if self.strict:
+                pattern = re.compile(rf"^{re.escape(command)}( +|\n+|$)")
+            else:
+                pattern = re.compile(rf"^{re.escape(command)}( +|\n+|$)", re.I)
+
+            self.compiled_commands.append(pattern)
 
         self.prefixes = prefixes if prefixes else DEFAULTS["PREFIXES"]
         self.prefixes = sorted(self.prefixes, reverse=True)
 
-        self.strict = strict
+        self.compiled_prefixes = []
+        for prefix in self.prefixes:
+            self.compiled_prefixes.append(
+                re.compile(rf"^{re.escape(prefix)}", re.I))
 
     def command_example(self, command_index=0):
         return f"{self.prefixes[-1] if self.prefixes else ''}{self.commands[command_index]}"
@@ -138,31 +153,35 @@ class CommandPlugin(BasePlugin):
             if full_text else msg.meta["__arguments"])
 
     async def check_message(self, msg):
-        subtext = ""
-        subtext_full = ""
-
-        for v in self.prefixes:
-            if msg.text.startswith(v):
-                msg.meta["__prefix"] = v
-
-                subtext = msg.text[len(v):].strip()
-                subtext_full = msg.full_text[len(v):].strip()
-
-                break
-
-        else:
+        if msg.meta.get("__no_prefix"):
             return False
 
-        for command in self.commands:
-            if self.strict:
-                match = re.search(rf"^{re.escape(command)}( +|\n+|$)", subtext_full)
+        if any(e not in msg.meta for e in ("__prefix", "__raw_text", "__raw_full_text")):
+            for prefix, pattern in zip(self.prefixes, self.compiled_prefixes):
+                match = pattern.match(msg.text)
+
+                if match:
+                    msg.meta["__prefix"] = prefix
+                    msg.meta["__raw_text"] = msg.text[match.end():].strip()
+                    msg.meta["__raw_full_text"] = msg.full_text[match.end():].strip()
+
+                    msg.meta["__no_prefix"] = False
+
+                    break
+
             else:
-                match = re.search(rf"^{re.escape(command)}( +|\n+|$)", subtext)
+                msg.meta["__no_prefix"] = True
+                return False
+
+        for command, pattern in zip(self.commands, self.compiled_commands):
+            match = pattern.match(msg.meta["__raw_full_text"])
 
             if match:
                 msg.meta["__command"] = command
-                msg.meta["__arguments"] = subtext[match.end():].strip()
-                msg.meta["__arguments_full"] = subtext_full[match.end():].strip()
+                msg.meta["__arguments"] = msg.meta["__raw_text"] \
+                    [match.end():].strip()
+                msg.meta["__arguments_full"] = msg.meta["__raw_full_text"] \
+                    [match.end():].strip()
 
                 return True
 

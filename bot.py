@@ -15,9 +15,8 @@ from skevk import MessageEventData
 
 class Bot:
     __slots__ = (
-        "api", "bots_longpoll_request", "bots_server", "bots_values", "handler",
-        "logger", "logger_file", "longpoll_request", "loop", "main_task",
-        "server", "sessions", "settings", "values"
+        "api", "handler", "logger", "logger_file", "loop",
+        "tasks", "sessions", "requests", "settings"
     )
 
     def __init__(self, settings, logger=None, handler=None, loop=asyncio.get_event_loop()):
@@ -31,16 +30,9 @@ class Bot:
 
         self.loop = loop
 
-        self.bots_values = {}
-        self.bots_server = ""
-        self.bots_longpoll_request = None
-
-        self.values = {}
-        self.server = ""
-        self.longpoll_request = None
-
+        self.requests = []
         self.sessions = []
-        self.main_task = None
+        self.tasks = []
 
         self.logger.info("Initializing vk clients")
         self.api = VkController(settings, logger=self.logger)
@@ -56,6 +48,13 @@ class Bot:
         signal.signal(signal.SIGINT, lambda x, y: self.stop_bot(True))
 
         self.logger.info("Bot successfully initialized")
+
+        async def info():
+            while True:
+                print("R/S/T:", len(self.requests), len(self.sessions), len(self.tasks))
+                await asyncio.sleep(10)
+
+        asyncio.ensure_future(info())
 
     def init_logger(self):
         logger = logging.Logger("sketal", level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
@@ -79,10 +78,20 @@ class Bot:
 
         self.logger = logger
 
-    async def init_long_polling(self, update=0):
+    def add_task(self, task):
+        for ctask in self.tasks[::]:
+            if ctask.done() or ctask.cancelled():
+                self.tasks.remove(ctask)
+
+        if task.done() or task.cancelled():
+            return
+
+        self.tasks.append(task)
+
+    async def init_long_polling(self, pack, update=0):
         result = None
 
-        for _ in range(10):
+        for _ in range(4):
             result = await self.api(sender=self.api.target_client).\
                 messages.getLongPollServer(use_ssl=1, lp_version=2)
 
@@ -95,34 +104,22 @@ class Bot:
             self.logger.error("Unable to connect to VK's long polling server.")
             exit()
 
-        last_ts = self.values.get('ts', 0)
-        longpoll_key = self.values.get('key', '')
-
         if update == 0:
-            self.server = "https://" + result['server']
-            longpoll_key = result['key']
-            last_ts = result['ts']
+            pack[1] = "https://" + result['server']
+            pack[0]['key'] = result['key']
+            pack[0]['ts'] = result['ts']
 
         elif update == 2:
-            longpoll_key = result['key']
+            pack[0]['key'] = result['key']
 
         elif update == 3:
-            longpoll_key = result['key']
-            last_ts = result['ts']
+            pack[0]['key'] = result['key']
+            pack[0]['ts'] = result['ts']
 
-        self.values.update({
-            'act': 'a_check',
-            'key': longpoll_key,
-            'ts': last_ts,
-            'wait': 25,
-            'mode': 10,
-            'version': 2
-        })
-
-    async def init_bots_long_polling(self, update=0):
+    async def init_bots_long_polling(self, pack, update=0):
         result = None
 
-        for _ in range(10):
+        for _ in range(4):
             result = await self.api(sender=self.api.target_client).\
                 groups.getLongPollServer(group_id=self.api.get_current_id())
 
@@ -135,27 +132,17 @@ class Bot:
             self.logger.error("Unable to connect to VK's bots long polling server.")
             exit()
 
-        last_ts = self.bots_values.get('ts', 0)
-        longpoll_key = self.bots_values.get('key', '')
-
         if update == 0:
-            self.bots_server = result['server']
-            longpoll_key = result['key']
-            last_ts = result['ts']
+            pack[1] = result['server']
+            pack[0]['key'] = result['key']
+            pack[0]['ts'] = result['ts']
 
         elif update == 2:
-            longpoll_key = result['key']
+            pack[0]['key'] = result['key']
 
         elif update == 3:
-            longpoll_key = result['key']
-            last_ts = result['ts']
-
-        self.bots_values.update({
-            'act': 'a_check',
-            'key': longpoll_key,
-            'ts': last_ts,
-            'wait': 25
-        })
+            pack[0]['key'] = result['key']
+            pack[0]['ts'] = result['ts']
 
     async def process_longpoll_event(self, new_event):
         if not new_event:
@@ -208,39 +195,52 @@ class Bot:
         await self.process_message(msg)
 
     async def longpoll_processor(self):
-        await self.init_long_polling()
+        pack = [{'act': 'a_check', 'key': '', 'ts': 0, 'wait': 25, 'mode': 10,
+            'version': 2}, ""]
+
+        await self.init_long_polling(pack)
 
         session = aiohttp.ClientSession(loop=self.loop)
         self.sessions.append(session)
 
         while True:
             try:
-                self.longpoll_request = session.get(self.server,
-                    params=self.values)
+                requ = session.get(pack[1], params=pack[0])
+            except aiohttp.ClientOSError:
+                await asyncio.sleep(0.5)
+                continue
 
-                resp = await self.longpoll_request
+            self.requests.append(requ)
 
-                events = json.loads(await resp.text())
+            try:
+                events = json.loads(await (await requ).text())
 
             except aiohttp.ClientOSError:
                 try:
                     self.sessions.remove(session)
                 except ValueError:
                     pass
+
+                await asyncio.sleep(0.5)
+
                 session = aiohttp.ClientSession(loop=self.loop)
                 self.sessions.append(session)
-                await asyncio.sleep(0.5)
                 continue
 
             except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
                 self.logger.warning("Long polling server doesn't respond. Changing server.")
                 await asyncio.sleep(0.5)
-                await self.init_long_polling()
+
+                await self.init_long_polling(pack)
                 continue
 
             except ValueError:
                 await asyncio.sleep(0.5)
                 continue
+
+            finally:
+                if requ in self.requests:
+                    self.requests.remove(requ)
 
             failed = events.get('failed')
 
@@ -249,54 +249,67 @@ class Bot:
 
                 if err_num == 1:  # 1 - update timestamp
                     if 'ts' not in events:
-                        await self.init_long_polling()
+                        await self.init_long_polling(pack)
                     else:
-                        self.values['ts'] = events['ts']
+                        pack[0]['ts'] = events['ts']
 
                 elif err_num in (2, 3):  # 2, 3 - new data for long polling
-                    await self.init_long_polling(err_num)
+                    await self.init_long_polling(pack, err_num)
 
                 continue
 
-            self.values['ts'] = events['ts']
+            pack[0]['ts'] = events['ts']
 
             for event in events['updates']:
                 asyncio.ensure_future(self.process_longpoll_event(event))
 
     async def bots_longpoll_processor(self):
-        await self.init_bots_long_polling()
+        pack = [{'act': 'a_check', 'key': '', 'ts': 0,
+            'wait': 25}, ""]
+
+        await self.init_bots_long_polling(pack)
 
         session = aiohttp.ClientSession(loop=self.loop)
         self.sessions.append(session)
 
         while True:
             try:
-                self.bots_longpoll_request = session.get(self.bots_server,
-                    params=self.bots_values)
+                requ = session.get(pack[1], params=pack[0])
+            except aiohttp.ClientOSError:
+                await asyncio.sleep(0.5)
+                continue
 
-                resp = await self.bots_longpoll_request
+            self.requests.append(requ)
 
-                events = json.loads(await resp.text())
+            try:
+                events = json.loads(await (await requ).text())
 
             except aiohttp.ClientOSError:
                 try:
                     self.sessions.remove(session)
                 except ValueError:
                     pass
+
+                await asyncio.sleep(0.5)
+
                 session = aiohttp.ClientSession(loop=self.loop)
                 self.sessions.append(session)
-                await asyncio.sleep(0.5)
                 continue
 
             except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
                 self.logger.warning("Long polling server doesn't respond. Changing server.")
                 await asyncio.sleep(0.5)
-                await self.init_bots_long_polling()
+
+                await self.init_bots_long_polling(pack)
                 continue
 
             except ValueError:
                 await asyncio.sleep(0.5)
                 continue
+
+            finally:
+                if requ in self.requests:
+                    self.requests.remove(requ)
 
             failed = events.get('failed')
 
@@ -305,16 +318,16 @@ class Bot:
 
                 if err_num == 1:  # 1 - update timestamp
                     if 'ts' not in events:
-                        await self.init_bots_long_polling()
+                        await self.init_bots_long_polling(pack)
                     else:
-                        self.bots_values['ts'] = events['ts']
+                        pack[0]['ts'] = events['ts']
 
                 elif err_num in (2, 3):  # 2, 3 - new data for long polling
-                    await self.init_bots_long_polling(err_num)
+                    await self.init_bots_long_polling(pack, err_num)
 
                 continue
 
-            self.bots_values['ts'] = events['ts']
+            pack[0]['ts'] = events['ts']
 
             for event in events['updates']:
                 if "type" not in event or "object" not in event:
@@ -365,15 +378,17 @@ class Bot:
         return web.Response(text="ok")
 
     def longpoll_run(self, custom_process=False):
-        self.main_task = Task(self.longpoll_processor())
+        task = Task(self.longpoll_processor())
+
+        self.add_task(task)
 
         if custom_process:
-            return self.main_task
+            return task
 
         self.logger.info("Started to process messages")
 
         try:
-            self.loop.run_until_complete(self.main_task)
+            self.loop.run_until_complete(task)
 
         except (KeyboardInterrupt, SystemExit):
             self.stop()
@@ -383,15 +398,17 @@ class Bot:
             pass
 
     def bots_longpoll_run(self, custom_process=False):
-        self.main_task = Task(self.bots_longpoll_processor())
+        task = Task(self.bots_longpoll_processor())
+
+        self.add_task(task)
 
         if custom_process:
-            return self.main_task
+            return task
 
         self.logger.info("Started to process messages")
 
         try:
-            self.loop.run_until_complete(self.main_task)
+            self.loop.run_until_complete(task)
 
         except (KeyboardInterrupt, SystemExit):
             self.stop()
@@ -413,10 +430,12 @@ class Bot:
             self.logger.error("Address already in use: " + str(host) + ":" + str(port))
             return
 
-        self.main_task = Future()
+        task = Future()
+
+        self.add_task(task)
 
         if custom_process:
-            return self.main_task
+            return task
 
         print("======== Running on http://{}:{} ========\n"
               "         (Press CTRL+C to quit)".format(*server.sockets[0].getsockname()))
@@ -433,7 +452,7 @@ class Bot:
             self.loop.run_until_complete(app.cleanup())
 
         try:
-            self.loop.run_until_complete(self.main_task)
+            self.loop.run_until_complete(task)
         except KeyboardInterrupt:
             self.stop()
 
@@ -459,12 +478,12 @@ class Bot:
         return server_generator, handler, app
 
     def stop_bot(self, full=False):
-        try:
-            if self.main_task:
-                self.main_task.cancel()
-        except Exception:
-            import traceback
-            traceback.print_exc()
+        for task in self.tasks:
+            try:
+                task.cancel()
+            except Exception:
+                import traceback
+                traceback.print_exc()
 
         if full:
             self.stop()
@@ -499,13 +518,6 @@ class Bot:
 
         return False
 
-    @staticmethod
-    def silent(func):
-        try:
-            func()
-        except Exception as e:
-            print(e)
-
     def stop(self):
         if self.loop.is_running():
             for session in self.sessions:
@@ -514,7 +526,11 @@ class Bot:
         self.handler.stop()
         self.api.stop()
 
-        self.silent(self.main_task.cancel)
+        for task in self.tasks:
+            try:
+                task.cancel()
+            except Exception as e:
+                pass
 
         self.logger.removeHandler(self.logger_file)
         self.logger_file.close()

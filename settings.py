@@ -1,33 +1,7 @@
 from plugins import *  # Importing all the plugins from plugins/ folder
-
-# ------------------------------------------------------------------------------
-# Base settings. Your settings should be written at least in BotSettings (lower)
-# ------------------------------------------------------------------------------
-class BaseSettings:
-    USERS = ()  # Private VK info
-    PROXIES = ()  # Private proxies info
-
-    CONF_CODE = ""  # Code for Callback Api (if you use it)
-
-    SCOPE = 140489887  # Not private VK info
-    APP_ID = 5982451  # Not private VK info
-
-    CAPTCHA_KEY = ""  # Captcha solver's data
-    CAPTCHA_SERVER = "rucaptcha"  # Captcha solver's data
-
-    # Some settings
-    READ_OUT = False
-    DEBUG = False
-    DEFAULTS["PREFIXES"] = DEFAULT_PREFIXES = ("/",)
-    DEFAULTS["ADMINS"] = DEFAULT_ADMINS = ()  # (admin_id_1,) !Comma is required even if only element
-
-    # Plugins
-    PLUGINS = ()
+from settings_base import BaseSettings  # Importing base settings
 
 
-# ------------------------------------------------------------------------------
-# Settings that bot will use!
-# ------------------------------------------------------------------------------
 class BotSettings(BaseSettings):
     # See README.md for details!
     USERS = (
@@ -45,7 +19,7 @@ class BotSettings(BaseSettings):
 
     # List of active plugins
     PLUGINS = (
-        AdminPlugin(prefixes=DEFAULT_PREFIXES, admins=DEFAULT_ADMINS, setadmins=True),
+        AdminPlugin(prefixes=DEFAULT_PREFIXES, admins=DEFAULT_ADMINS, set_admins=True),
         ChatMetaPlugin(),
 
         VoterPlugin(prefixes=DEFAULT_PREFIXES),
@@ -76,7 +50,7 @@ class BotSettings(BaseSettings):
         SayerPlugin(),
 
         # Plugins for bot's control
-        AntifloodPlugin(),
+        AntifloodPlugin(), NoQueuePlugin(),
         CommandAttacherPlugin(),
     )
 

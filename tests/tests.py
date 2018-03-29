@@ -5,17 +5,15 @@ import asyncio, unittest, logging, types, time
 
 from bot import Bot
 from plugins import *
-
-from skevk import Wait, Message, MessageEventData, \
-    MAX_LENGHT, upload_doc, upload_photo
-from utils import plural_form
+from skevk import *
+from utils import *
 
 try:
     from settings_prod import BotSettings
+
 except ImportError:
     from settings import BotSettings
-
-BotSettings.USERS = ()
+    BotSettings.USERS = ()
 
 # Install tokens for tests if provided
 test_group_token = os.environ.get('SKETAL_GROUP_TOKEN', '')
@@ -41,7 +39,7 @@ for r in required:
 
 # BotSettings.DEBUG = True
 
-class TestBot(unittest.TestCase):
+class TestSketal(unittest.TestCase):
     # def setUp(self):
     #     self.startTime = time.time()
     #
@@ -52,7 +50,7 @@ class TestBot(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.bot = Bot(BotSettings)
-        cls.user_id = cls.bot.do(cls.bot.api.get_current_id())
+        cls.user_id = cls.bot.api.get_current_id()
 
     def test_loading(self):
         logger = logging.getLogger()
@@ -80,7 +78,7 @@ class TestBot(unittest.TestCase):
         messages = []
 
         _answer = Message.answer
-        async def answer(self, text, **kwargs):
+        async def answer(self, text="", **kwargs):
             messages.insert(0, text)
         Message.answer = answer
 
@@ -199,34 +197,19 @@ class TestBot(unittest.TestCase):
             )
         )
 
-    def test_mass_method(self):
-        async def work():
-            with self.bot.api.mass_request():
-                tasks = []
-
-                for _ in range(50):
-                    tasks.append(await self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
-
-                await asyncio.gather(*tasks)
-
-        self.bot.do(work())
-
     def test_accumulative_methods(self):
         async def work():
             sender = self.bot.api.get_default_sender("wall.getById")
 
-            with self.bot.api.mass_request():
-                tas1 = await self.bot.api.method_accumulative("wall.getById", {}, {"posts": "-145935681_515"},
-                                                              sender=sender, wait=Wait.CUSTOM)
-                tas2 = await self.bot.api.method_accumulative("wall.getById", {}, {"posts": "-145935681_512"},
-                                                              sender=sender, wait=Wait.CUSTOM)
-                tas3 = await self.bot.api.method_accumulative("wall.getById", {}, {"posts": "-145935681_511"},
-                                                              sender=sender, wait=Wait.CUSTOM)
+            tas1 = await self.bot.api.method_accumulative("wall.getById", {},
+                {"posts": "-145935681_515"}, sender=sender, wait=Wait.CUSTOM)
+            tas2 = await self.bot.api.method_accumulative("wall.getById", {},
+                {"posts": "-145935681_512"}, sender=sender, wait=Wait.CUSTOM)
+            tas3 = await self.bot.api.method_accumulative("wall.getById", {},
+                {"posts": "-145935681_511"}, sender=sender, wait=Wait.CUSTOM)
 
-                if tas1 is False and tas2 is False and tas3 is False:
-                    return
-
-                await asyncio.gather(tas1, tas2, tas3, loop=self.bot.loop, return_exceptions=True)
+            await asyncio.gather(tas1, tas2, tas3, loop=self.bot.loop,
+                return_exceptions=True)
 
             self.assertEqual(tas1.result()["id"], 515)
             self.assertEqual(tas2.result()["id"], 512)
@@ -234,10 +217,34 @@ class TestBot(unittest.TestCase):
 
         self.bot.do(work())
 
-class TestUtils(unittest.TestCase):
+class TestSketalUtils(unittest.TestCase):
     def check(self, message):
         self.assertLessEqual(len(message), MAX_LENGHT)
         self.assertGreaterEqual(len(message), 1)
+
+    def test_json_iter_parse(self):
+        self.assertEqual(
+            list(json_iter_parse('{"a": 1, "b": 2}{"c": 3, "d": 4}')),
+            [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
+        )
+
+    def test_parse_msg_flags(self):
+        a = parse_msg_flags(2)
+        self.assertTrue(a['outbox'])
+        self.assertFalse(a['unread'])
+        self.assertFalse(a['hidden'])
+
+        a = parse_msg_flags(3)
+        self.assertTrue(a['unread'])
+        self.assertTrue(a['outbox'])
+        self.assertFalse(a['hidden'])
+
+    def test_traverse(self):
+        a = [10, 20, [10, 20, [10, 20]]]
+        self.assertEqual(list(traverse(a)), [10, 20, 10, 20, 10, 20])
+
+        b = [50, [40, 30]]
+        self.assertEqual(list(traverse(b)), [50, 40, 30])
 
     def test_plural_form(self):
         words = ("корова", "коровы", "коров")
@@ -307,6 +314,10 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(len(result), 2)
         self.assertEqual(len(result[-1]), 4)
+
+
+class TestSketalPlugins(unittest.TestCase):
+    pass  # Currently no tests here
 
 
 if __name__ == '__main__':

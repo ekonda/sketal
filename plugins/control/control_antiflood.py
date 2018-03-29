@@ -4,37 +4,34 @@ from handler.base_plugin import BasePlugin
 
 
 class AntifloodPlugin(BasePlugin):
-    __slots__ = ("users", "delay", "absolute", "absolute_time")
+    __slots__ = ("users", "delay")
 
-    def __init__(self, delay=1, absolute=False):
+    def __init__(self, delay=1):
         """ Forbids users to send messages to bot more often than delay `delay`.
         If `absolute` is True, bot wont answer on more than 1 message in delay
         time."""
         super().__init__()
+        self.order = (-85, 85)
 
         self.users = {}
-
         self.delay = delay
 
-        self.absolute = absolute
-        self.absolute_time = 0
-
     async def global_before_message_checks(self, msg):
-        if len(self.users) > 2000:
-            self.users.clear()
+        current_time = time.time()
 
-        current = time.time()
+        if msg.meta.get("data_user"):
+            last_message = msg.meta["data_user"].get("last_message", 0)
 
-        if self.absolute:
-            if  current - self.absolute_time <= self.delay:
+            if  current_time - last_message <= self.delay:
                 return False
 
-            self.absolute_time = current
+            msg.meta["data_user"]["last_message"] = current_time
 
         else:
-            if current - self.users.get(msg.user_id, 0) <= self.delay:
+            if len(self.users) > 5000:
+                self.users.clear()
+
+            if current_time - self.users.get(msg.user_id, 0) <= self.delay:
                 return False
 
-            self.users[msg.user_id] = current
-
-        return True
+            self.users[msg.user_id] = current_time

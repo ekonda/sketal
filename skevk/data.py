@@ -6,7 +6,7 @@ from .utils import MessageEventData, Attachment, EventType, Wait
 MAX_LENGHT = 4000
 
 
-class Message(object):
+class Message:
     "Класс, объект которого передаётся в плагин для упрощённого ответа"
 
     __slots__ = ('message_data', 'api', 'is_multichat', 'chat_id', 'user_id', 'is_out', 'true_user_id',

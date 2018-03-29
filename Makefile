@@ -25,6 +25,6 @@ test:
 clean:
 	find . -name "*.pyc" -type f -delete
 	find . -name "__pycache__" -type d -delete
-	-rm "tempcaptcha.png"
+	-rm "captcha.png"
 	-rm "logs.txt"
 	-rm "log.txt"

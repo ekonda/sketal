@@ -16,20 +16,20 @@ class VoterPlugin(CommandPlugin):
         """This plugin allows users to do votes in chats with ability to kick someone with votekick"""
 
         if not vote_commands:
-            vote_commands = ["vote", "+"]
+            vote_commands = ("vote", "+")
 
         if not vote_undo_commands:
-            vote_undo_commands = ["unvote", "-"]
+            vote_undo_commands = ("unvote", "-")
 
         if not votekick_commands:
-            votekick_commands = ["votekick", "выгоняем"]
+            votekick_commands = ("votekick", "выгоняем")
 
         super().__init__(*(vote_commands + votekick_commands + vote_undo_commands), prefixes=prefixes, strict=strict)
 
         self.command_groups = vote_commands, vote_undo_commands, votekick_commands
         self.votes = {}
 
-        p = self.prefixes[-1]
+        p = self.prefixes[0]
         self.description = [
             f"Голосование",
             f"Устраивайте голосование или выкидывайте людей из чата голосованием ;)",
