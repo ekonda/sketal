@@ -13,6 +13,8 @@ class CounterPlugin(CommandPlugin):
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
     async def process_message(self, msg):
+        msg.meta["data_meta"]["123"] = "Привет"
+
         if "value" in msg.meta["data_user"]:
             msg.meta["data_user"]["value"] += 1
         else:

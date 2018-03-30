@@ -1,6 +1,8 @@
 # Custom
 # Local data
+*.localdata.*
 localdata
+
 captcha.png
 logs.txt
 

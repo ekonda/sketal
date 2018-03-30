@@ -20,9 +20,9 @@ class AntifloodPlugin(BasePlugin):
         current_time = time.time()
 
         if msg.meta.get("data_user"):
-            last_message = msg.meta["data_user"].get("last_message", 0)
+            last_message = msg.meta["data_user"].getraw("last_message", 0)
 
-            if  current_time - last_message <= self.delay:
+            if current_time - last_message <= self.delay:
                 return False
 
             msg.meta["data_user"]["last_message"] = current_time

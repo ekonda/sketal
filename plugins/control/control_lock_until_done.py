@@ -22,7 +22,7 @@ class NoQueuePlugin(BasePlugin):
                 msg.meta["data_user"]["being_processed"] = time.time()
                 return
 
-            if time.time() - msg.meta["data_user"]["being_processed"] >= self.fail_time:
+            if time.time() - msg.meta["data_user"].getraw("being_processed", 0) >= self.fail_time:
                 del msg.meta["data_user"]["being_processed"]
                 return
 
@@ -42,7 +42,8 @@ class NoQueuePlugin(BasePlugin):
         return False
 
     async def global_after_message_process(self, msg, result):
-        if msg.meta.get("data_user", {}).get("being_processed"):
+        if msg.meta.get("data_user") and \
+                    msg.meta["data_user"].getraw("being_processed"):
             del msg.meta["data_user"]["being_processed"]
 
         elif msg.user_id in self.users:

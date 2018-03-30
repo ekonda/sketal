@@ -3,7 +3,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Added `Bots Long Poll` https://vk.com/dev/bots_longpoll.
 - Added `misc_counter.py`.
 - Added `order` field to plugins.
-- Added `storage.py`.
+- Added highly optimized plugin `storage.py`.
 - Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`).
 - Added default commands to plugins.
 - Added default values to plugins.

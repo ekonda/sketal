@@ -5,8 +5,8 @@ from skevk import traverse, parse_user_id
 import time
 
 # TODO:
-# Add `meta` to Storage
-# Add saving (local->all and storage->(vip, admins, banned))
+# Move (admins, banned, vip) to meta["data_meta"], but leave reference to (meta["admins"]...)
+# Add saving to file for storage
 
 class AdminPlugin(CommandPlugin):
     __slots__ = ("commands_base", "commands_get_list", "commands_add_to_list",
@@ -14,10 +14,9 @@ class AdminPlugin(CommandPlugin):
         "banned", "vip", "show_all")
 
     def __init__(self, bslist=None, cglist=None, catl=None, crfl=None, admins=None,
-            banned=None, vip=None, set_admins=True, prefixes=(), strict=False,
-            show_all=True):
+            set_admins=True, prefixes=(), strict=False, show_all=True):
         """Allows admins to ban people and control admins for plugins.
-        Requires StoragePlugin. Admins are global. Moders are local for chats"""
+        Requires StoragePlugin. Admins are global. Moders are local for chats."""
 
         if not bslist:
             bslist = ("контроль",)
@@ -45,8 +44,6 @@ class AdminPlugin(CommandPlugin):
             prefixes=prefixes,strict=strict)
 
         self.admins = list(admins or DEFAULTS["ADMINS"])
-        self.banned = list(banned or [])
-        self.vip = list(vip or [])
 
         self.set_admins = set_admins
         self.show_all = show_all
@@ -69,22 +66,6 @@ class AdminPlugin(CommandPlugin):
     def stop(self):
         pass # self.save()
 
-    async def clean_user(self, msg, user_id):
-        try:
-            msg.meta["moders"].remove(user_id)
-        except ValueError:
-            pass
-
-        try:
-            self.admins.remove(user_id)
-        except ValueError:
-            pass
-
-        try:
-            self.banned.remove(user_id)
-        except ValueError:
-            pass
-
     async def process_message(self, msg):
         command, text = self.parse_message(msg)
 
@@ -92,7 +73,10 @@ class AdminPlugin(CommandPlugin):
             return await msg.answer("У вас недостаточно прав.")
 
         if command in self.commands_base and not text:
-            return await msg.answer("\n".join(self.description[1:]))
+            return await msg.answer("🤝 " + "\n🤝 ".join(self.description[1:]))
+
+        admin_lists = msg.meta["data_meta"].getraw("admin_lists")
+        moders = msg.meta["data_chat"].getraw("moders")
 
         if command in self.commands_get_list:
             if not text or text not in ("админов", "модеров", "банов", "випов"):
@@ -100,33 +84,36 @@ class AdminPlugin(CommandPlugin):
                     self.commands_get_list[0] + " [админов, модеров, банов, випов]")
 
             if text == "админов":
-                if not self.admins:
+                if not admin_lists["admins"]:
                     return await msg.answer("Никого нет!")
 
                 return await msg.answer("Администраторы:\n👆 " + "\n👆 ".join(
-                    msg.meta["chat_get_cached_name"](m) for m in self.admins))
+                    msg.meta["chat_get_cached_name"](m)
+                        for m in admin_lists["admins"]))
 
             if text == "модеров":
-                if not msg.meta["data_chat"]["moders"]:
+                if not moders:
                     return await msg.answer("Никого нет!")
 
                 return await msg.answer("Модераторы:\n👉 " + "\n👉 ".join(
                     msg.meta["chat_get_cached_name"](m)
-                        for m in msg.meta["data_chat"]["moders"]))
+                        for m in moders))
 
             if text == "банов":
-                if not self.banned:
+                if not admin_lists["banned"]:
                     return await msg.answer("Никого нет!")
 
                 return await msg.answer("Заблокированные пользователи:\n👺 " +
-                    "\n👺 ".join(msg.meta["chat_get_cached_name"](m) for m in self.banned))
+                    "\n👺 ".join(msg.meta["chat_get_cached_name"](m)
+                        for m in admin_lists["banned"]))
 
             if text == "випов":
-                if not self.vip:
+                if not admin_lists["vips"]:
                     return await msg.answer("Никого нет!")
 
                 return await msg.answer("Особые пользователя:\n👻 " +
-                    "\n👻 ".join(msg.meta["chat_get_cached_name"](m) for m in self.vip))
+                    "\n👻 ".join(msg.meta["chat_get_cached_name"](m)
+                        for m in admin_lists["vips"]))
 
         # ------------------------------------------------------------------ #
 
@@ -145,6 +132,9 @@ class AdminPlugin(CommandPlugin):
         if "chat_get_cached_name" in msg.meta:
             target_user_name = msg.meta["chat_get_cached_name"](target_user)
 
+        msg.meta["data_meta"].changed = True
+        msg.meta["data_chat"].changed = True
+
         # ------------------------------------------------------------------ #
 
         if command in self.commands_add_to_list:
@@ -152,12 +142,15 @@ class AdminPlugin(CommandPlugin):
                 if not msg.meta["is_admin"]:
                     return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
-                if target_user in self.admins:
+                if target_user in admin_lists["admins"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "уже администратор!")
 
-                await self.clean_user(msg, target_user)
-                self.admins.append(target_user)
+                if target_user in admin_lists["banned"]:
+                    return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
+                        "заблокирован!")
+
+                admin_lists["admins"].append(target_user)
 
                 return await msg.answer(f"🙌 Пользователь \"{target_user_name}\" "
                     "теперь администратор!")
@@ -166,16 +159,19 @@ class AdminPlugin(CommandPlugin):
                 if not msg.meta["is_admin_or_moder"]:
                     return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
-                if target_user in msg.meta["moders"]:
+                if target_user in moders:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "уже модератор!")
 
-                if target_user in self.admins:
+                if target_user in admin_lists["admins"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "уже администратор!")
 
-                await self.clean_user(msg, target_user)
-                msg.meta["moders"].append(target_user)
+                if target_user in admin_lists["banned"]:
+                    return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
+                        "заблокирован!")
+
+                moders.append(target_user)
 
                 return await msg.answer(f"🙌 Пользователь \"{target_user_name}\" "
                     "теперь модератор!")
@@ -184,16 +180,15 @@ class AdminPlugin(CommandPlugin):
                 if not msg.meta["is_admin_or_moder"]:
                     return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
-                if target_user in self.banned:
+                if target_user in admin_lists["banned"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "уже заблокирован!")
 
-                if target_user in msg.meta["moders"] or target_user in self.admins:
+                if target_user in msg.meta["moders"] or target_user in admin_lists["admins"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "не может быть заблокирован!")
 
-                await self.clean_user(msg, target_user)
-                self.banned.append(target_user)
+                admin_lists["banned"].append(target_user)
 
                 return await msg.answer(f"🙌 Пользователь \"{target_user_name}\" "
                     "теперь заблокирован!")
@@ -202,14 +197,15 @@ class AdminPlugin(CommandPlugin):
                 if not msg.meta["is_admin_or_moder"]:
                     return await msg.answer("У вас недостаточно прав.")
 
-                if target_user in self.vip:
+                if target_user in admin_lists["vips"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "уже VIP!")
 
-                self.vip.append(target_user)
+                admin_lists["vips"].append(target_user)
 
                 return await msg.answer(f"🙌 Пользователь \"{target_user_name}\" "
                     "теперь VIP!")
+
         # ------------------------------------------------------------------ #
 
         if command in self.commands_remove_from_list:
@@ -217,11 +213,11 @@ class AdminPlugin(CommandPlugin):
                 if not msg.meta["is_admin"]:
                     return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
-                if target_user not in self.admins:
+                if target_user not in admin_lists["admins"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "не администратор!")
 
-                self.admins.remove(target_user)
+                admin_lists["admins"].remove(target_user)
 
                 return await msg.answer(f"🙌 Пользователь \"{target_user_name}\" "
                     "теперь не администратор!")
@@ -230,11 +226,11 @@ class AdminPlugin(CommandPlugin):
                 if not msg.meta["is_admin_or_moder"]:
                     return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
-                if target_user not in msg.meta["moders"]:
+                if target_user not in moders:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "не модератор!")
 
-                msg.meta["moders"].remove(target_user)
+                moders.remove(target_user)
 
                 return await msg.answer(f"🙌 Пользователь \"{target_user_name}\" "
                     "теперь не модератор!")
@@ -243,11 +239,11 @@ class AdminPlugin(CommandPlugin):
                 if not msg.meta["is_admin_or_moder"]:
                     return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
-                if target_user not in self.banned:
+                if target_user not in admin_lists["banned"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "не заблокирован!")
 
-                self.banned.remove(target_user)
+                admin_lists["banned"].remove(target_user)
 
                 return await msg.answer(f"🙌 Пользователь \"{target_user_name}\" "
                     "теперь разблокирован!")
@@ -256,17 +252,23 @@ class AdminPlugin(CommandPlugin):
                 if not msg.meta["is_admin_or_moder"]:
                     return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
-                if target_user not in self.vip:
+                if target_user not in admin_lists["vips"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "
                         "не VIP!")
 
-                self.vip.remove(target_user)
+                admin_lists["vips"].remove(target_user)
 
                 return await msg.answer(f"🙌 Пользователь \"{target_user_name}\" "
                     "теперь не VIP!")
 
     async def global_before_message_checks(self, msg):
-        if msg.user_id in self.banned:
+        admin_lists = msg.meta["data_meta"].getraw("admin_lists")
+
+        if admin_lists is None:
+            admin_lists = msg.meta["data_meta"]["admin_lists"] = \
+                {"banned": [], "admins": list(self.admins), "vips": []}
+
+        if msg.user_id in admin_lists["banned"]:
             return False
 
         if msg.meta["data_chat"] is None:
@@ -276,13 +278,18 @@ class AdminPlugin(CommandPlugin):
             if "moders" not in msg.meta["data_chat"]:
                 msg.meta["data_chat"]["moders"] = []
 
-            msg.meta["is_moder"] = msg.user_id in msg.meta["data_chat"]["moders"]
-            msg.meta["moders"] = msg.meta["data_chat"]["moders"]
+            moders = msg.meta["data_chat"].getraw("moders")
 
-        msg.meta["is_vip"] = msg.user_id in self.vip
-        msg.meta["is_admin"] = msg.user_id in self.admins
+            msg.meta["is_moder"] = msg.user_id in moders
+            msg.meta["moders"] = tuple(moders)
+
+        msg.meta["is_vip"] = msg.user_id in admin_lists["vips"]
+        msg.meta["is_admin"] = msg.user_id in admin_lists["admins"]
         msg.meta["is_admin_or_moder"] = msg.meta["is_admin"] or msg.meta["is_moder"]
 
-        msg.meta["vip"] = self.vip
-        msg.meta["admins"] = self.admins
-        msg.meta["banned"] = self.banned
+        msg.meta["vips"] = tuple(admin_lists["vips"])
+        msg.meta["admins"] = tuple(admin_lists["admins"])
+        msg.meta["banned"] = tuple(admin_lists["banned"])
+
+        msg.meta["get_editable_admins_lists"] = \
+            (lambda: msg.meta["data_meta"]["admin_lists"])
