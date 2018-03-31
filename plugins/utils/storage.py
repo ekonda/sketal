@@ -60,12 +60,12 @@ class StoragePlugin(BasePlugin):
             self.client = None
             self.database = None
 
+            self.users = sdict()
+            self.chats = sdict()
+            self.meta = sdict()
+
             if save_to_file:
                 path = self.get_path("storage.localdata.json")
-
-                self.users = sdict()
-                self.chats = sdict()
-                self.meta = sdict()
 
                 try:
                     with open(path) as o:

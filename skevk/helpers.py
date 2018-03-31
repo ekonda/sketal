@@ -123,6 +123,28 @@ async def upload_photo(api, multipart_data, peer_id=None):
 
     return Attachment.from_upload_result(result[0])
 
+async def parse_user_name(user_id, entity):
+    """Entitty is Message or Event"""
+
+    if entity:
+        if entity.meta.get("user_info"):
+            u = entity.meta["user_info"]["raw"]
+
+            if u and u["id"] == user_id:
+                return u["first_name"] + " " + u["last_name"]
+
+        if entity.meta.get("data_chat") and entity.meta["data_chat"].get("chat_info"):
+            for u in entity.meta["data_chat"]["chat_info"]["users"]:
+                if u and u["id"] == user_id:
+                    return u["first_name"] + " " + u["last_name"]
+
+    us = await entity.api.users.get(user_ids=user_id, fields="sex,screen_name,nickname")
+
+    if not us:
+        return str(user_id)
+
+    return us[0]["first_name"] + " " + us[0]["last_name"]
+
 async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=None):
     """Returns specified in messages user's id if possible."""
 

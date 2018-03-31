@@ -5,6 +5,8 @@ class MessageHandler:
 
         self.plugins = []
 
+        import time
+
         for plugin in self.bot.settings.PLUGINS:
             plugin.set_up(self.bot, self.api, self)
             self.plugins.append(plugin)

@@ -8,9 +8,9 @@ from plugins import *
 from skevk import *
 from utils import *
 
+from settings_base import BaseSettings
 try:
     from settings_prod import BotSettings
-
 except ImportError:
     from settings import BotSettings
     BotSettings.USERS = ()
@@ -28,15 +28,6 @@ if test_user_token and not os.environ.get('SKETAL_USER_IGNORE', 0):
         ("user", test_user_token,),
     )
 
-# Install required plugins for tests
-required = [AntifloodPlugin, TimePlugin]
-for p in BotSettings.PLUGINS[::]:
-    for r in required[::]:
-        if isinstance(p, r):
-            required.remove(r)
-for r in required:
-    BotSettings.PLUGINS = BotSettings.PLUGINS + r()
-
 # BotSettings.DEBUG = True
 
 class TestSketal(unittest.TestCase):
@@ -49,6 +40,16 @@ class TestSketal(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        required = [AntifloodPlugin, TimePlugin]
+
+        for p in BotSettings.PLUGINS[::]:
+            for r in required[::]:
+                if isinstance(p, r):
+                    required.remove(r)
+
+        for r in required:
+            BotSettings.PLUGINS = BotSettings.PLUGINS + r()
+
         cls.bot = Bot(BotSettings)
         cls.user_id = cls.bot.api.get_current_id()
 
@@ -79,7 +80,7 @@ class TestSketal(unittest.TestCase):
 
         _answer = Message.answer
         async def answer(self, text="", **kwargs):
-            messages.insert(0, text)
+            messages.append(text)
         Message.answer = answer
 
         m = Message(self.bot.api, MessageEventData.from_message_body({
@@ -317,7 +318,74 @@ class TestSketalUtils(unittest.TestCase):
 
 
 class TestSketalPlugins(unittest.TestCase):
-    pass  # Currently no tests here
+    """Some amount of testing."""
+
+    @classmethod
+    def setUpClass(cls):
+        DEFAULTS["ADMINS"] = BaseSettings.DEFAULT_ADMINS
+        BotSettings.DEFAULT_ADMINS = BaseSettings.DEFAULT_ADMINS
+
+        BotSettings.PLUGINS = (
+            StoragePlugin(in_memory=True), CalculatorPlugin(),
+            AdminPlugin(set_admins=True), AboutPlugin(), TimePlugin(),
+            NoQueuePlugin()
+        )
+
+        cls.bot = Bot(BotSettings)
+        cls.user_id = cls.bot.api.get_current_id()
+
+        cls._answer = Message.answer
+        cls.messages = []
+
+        async def answer(self, text="", **kwargs):
+            cls.messages.append(text)
+
+        Message.answer = answer
+
+    @classmethod
+    def tearDownClass(cls):
+        Message.answer = cls._answer
+
+    def tearDown(self):
+        self.messages.clear()
+
+    def message(self, text):
+        return Message(self.bot.api, MessageEventData.from_message_body({
+            "id": 1,
+            "date": 0,
+            "user_id": self.user_id,
+            "body": text,
+            "random_id": 0, "read_state": 1, "title": "", "out": 0
+        }))
+
+    def process(self, text):
+        self.bot.do(self.bot.handler.process(self.message(text)))
+
+    def test_about_plugin(self):
+        self.process("/о боте")
+
+        self.assertEqual(self.messages[0], self.messages[1])
+        self.assertIn("https://github.com/vk-brain/sketal", self.messages[0])
+
+    def test_about_plugin(self):
+        self.process("/контроль")
+        self.process("/контроль список админов")
+        self.process("/контроль список модеров")
+        self.process("/контроль список банов")
+        self.process("/контроль список випов")
+        self.process("/контроль добавить админа 100")
+        self.process("/контроль добавить модера 50")
+        self.process("/контроль добавить вип 10")
+        self.process("/контроль добавить бан 1")
+
+        self.assertEqual(len(self.messages), 9)
+        self.assertIn("Администрационные команды", self.messages[0])
+
+        for message in self.messages[1:5]:
+            self.assertIn("Никого нет", message)
+
+        for message in self.messages[-4:]:
+            self.assertIn("недостаточно прав", message)
 
 
 if __name__ == '__main__':

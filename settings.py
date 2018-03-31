@@ -19,8 +19,10 @@ class BotSettings(BaseSettings):
 
     # List of active plugins
     PLUGINS = (
+        StoragePlugin(in_memory=True, save_to_file=True),
         AdminPlugin(prefixes=DEFAULT_PREFIXES, admins=DEFAULT_ADMINS, set_admins=True),
         ChatMetaPlugin(),
+        UserMetaPlugin(),
 
         VoterPlugin(prefixes=DEFAULT_PREFIXES),
         FacePlugin("сделай", prefixes=DEFAULT_PREFIXES),
