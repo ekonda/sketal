@@ -3,6 +3,33 @@ sys.path.append(os.path.abspath("."))
 
 import asyncio, unittest, logging, types, time
 
+
+# Optimize testing
+import skevk
+
+async def parse_user_name(user_id, entity):
+    return str(user_id)
+
+async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=None):
+    text = msg.text.split(" ")[argument_ind]
+
+    if text.isdigit():
+        return int(text)
+
+    if text.startswith("https://vk.com/"):
+        text = text[15:]
+
+    if text[:3] == "[id":
+        puid = text[3:].split("|")[0]
+
+        if puid.isdigit() and "]" in text[3:]:
+            return int(puid)
+
+skevk.parse_user_name = parse_user_name
+skevk.parse_user_id = parse_user_id
+# ----------------
+
+
 from bot import Bot
 from plugins import *
 from skevk import *
@@ -14,6 +41,8 @@ try:
 except ImportError:
     from settings import BotSettings
     BotSettings.USERS = ()
+
+# BotSettings.DEBUG = True
 
 # Install tokens for tests if provided
 test_group_token = os.environ.get('SKETAL_GROUP_TOKEN', '')
@@ -28,7 +57,6 @@ if test_user_token and not os.environ.get('SKETAL_USER_IGNORE', 0):
         ("user", test_user_token,),
     )
 
-# BotSettings.DEBUG = True
 
 class TestSketal(unittest.TestCase):
     # def setUp(self):
@@ -327,8 +355,8 @@ class TestSketalPlugins(unittest.TestCase):
 
         BotSettings.PLUGINS = (
             StoragePlugin(in_memory=True), CalculatorPlugin(),
-            AdminPlugin(set_admins=True), AboutPlugin(), TimePlugin(),
-            NoQueuePlugin()
+            StaffControlPlugin(admins=(2,), set_admins=True), AboutPlugin(),
+            TimePlugin(), NoQueuePlugin(), ChatControlPlugin(banned=(100,)),
         )
 
         cls.bot = Bot(BotSettings)
@@ -349,25 +377,68 @@ class TestSketalPlugins(unittest.TestCase):
     def tearDown(self):
         self.messages.clear()
 
-    def message(self, text):
+    def message(self, text, chat=False, admin=False):
+        if chat:
+            return Message(self.bot.api, MessageEventData.from_message_body({
+                "id": 1,
+                "date": 0,
+                "user_id": 2 if admin else 1,
+                "chat_id": chat,
+                "body": text,
+                "title": "Тестик",
+                "random_id": 0, "read_state": 1, "title": "", "out": 0
+            }))
+
         return Message(self.bot.api, MessageEventData.from_message_body({
             "id": 1,
             "date": 0,
-            "user_id": self.user_id,
+            "user_id": 2 if admin else 1,
             "body": text,
             "random_id": 0, "read_state": 1, "title": "", "out": 0
         }))
 
-    def process(self, text):
-        self.bot.do(self.bot.handler.process(self.message(text)))
+    def process(self, text, chat=False, admin=False):
+        self.bot.do(self.bot.handler.process(self.message(text, chat, admin)))
 
     def test_about_plugin(self):
+        self.process("/о боте")
         self.process("/о боте")
 
         self.assertEqual(self.messages[0], self.messages[1])
         self.assertIn("https://github.com/vk-brain/sketal", self.messages[0])
 
-    def test_about_plugin(self):
+    def test_chat_control_plugin(self):
+        self.process("/беседа", 50)
+        self.process("/беседа")
+        self.process("/беседа инфо", 50)
+
+        self.assertEqual(self.messages, [])
+
+        self.process("/беседа техинфо")
+        self.assertIn(" не беседа", self.messages[0])
+
+        self.process("/беседа техинфо", 50, True)
+        self.assertIn(" #50", self.messages[1])
+
+        self.process("/беседа техинфо", 100, True)
+        self.assertEqual(len(self.messages), 2)
+
+        self.process("/беседа бан 99", 50)
+        self.assertIn(" недостаточно прав", self.messages[2])
+
+        self.process("/беседа разбан 100", 50)
+        self.assertIn(" недостаточно прав", self.messages[3])
+
+        self.process("/беседа разбан 100", 50, True)
+        self.assertIn(" #100 разблокирована", self.messages[4])
+
+        self.process("/беседа техинфо", 100, True)
+        self.assertIn(" #100", self.messages[5])
+
+        self.process("/беседа бан 100", 100, True)
+        self.assertIn(" #100 заблокирована", self.messages[6])
+
+    def test_control_plugin(self):
         self.process("/контроль")
         self.process("/контроль список админов")
         self.process("/контроль список модеров")
@@ -381,12 +452,41 @@ class TestSketalPlugins(unittest.TestCase):
         self.assertEqual(len(self.messages), 9)
         self.assertIn("Администрационные команды", self.messages[0])
 
-        for message in self.messages[1:5]:
+        self.assertEqual(self.messages[1].count("👆"), 1)
+
+        for message in self.messages[2:5]:
             self.assertIn("Никого нет", message)
 
         for message in self.messages[-4:]:
             self.assertIn("недостаточно прав", message)
 
+        self.process("/контроль добавить админа 3", admin=True)
+        self.process("/контроль добавить модера 4", 51, admin=True)
+        self.process("/контроль добавить вип 5", admin=True)
+        self.process("/контроль добавить бан 6", admin=True)
+
+        self.process("/контроль список админов")
+        self.assertEqual(self.messages[13].count("👆"), 2)
+        self.process("/контроль список модеров", 51)
+        self.assertEqual(self.messages[14].count("👉"), 1)
+        self.process("/контроль список випов")
+        self.assertEqual(self.messages[15].count("👻"), 1)
+        self.process("/контроль список банов")
+        self.assertEqual(self.messages[16].count("👺"), 1)
+
+        self.process("/контроль убрать админа 3", admin=True)
+        self.process("/контроль убрать модера 4", 51, admin=True)
+        self.process("/контроль убрать вип 5", admin=True)
+        self.process("/контроль убрать бан 6", admin=True)
+
+        self.process("/контроль список админов")
+        self.assertEqual(self.messages[21].count("👆"), 1)
+        self.process("/контроль список модеров")
+        self.assertEqual(self.messages[22].count("👉"), 0)
+        self.process("/контроль список випов")
+        self.assertEqual(self.messages[23].count("👻"), 0)
+        self.process("/контроль список банов")
+        self.assertEqual(self.messages[24].count("👺"), 0)
 
 if __name__ == '__main__':
     unittest.main()

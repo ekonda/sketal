@@ -46,7 +46,6 @@ class Message:
 
         if self.is_multichat:
             self.answer_values = {'chat_id': self.chat_id}
-
         else:
             self.answer_values = {'user_id': self.user_id}
 

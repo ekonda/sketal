@@ -1,6 +1,7 @@
 #### sketal v8.0.0 `happy pony`
 Version dedicated to performance updates, removing and unifying plugins.
 - Added `Bots Long Poll` https://vk.com/dev/bots_longpoll.
+- Added `control_chat_control.py`.
 - Added `misc_counter.py`.
 - Added `order` field to plugins.
 - Added highly optimized plugin `storage.py`.
@@ -8,7 +9,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Added default commands to plugins.
 - Added default values to plugins.
 - Added method `global_after_*_process` for plugins.
-- Added more tests and enchanced them.
+- Added more tests(!) and enchanced them.
 - Changed `README.md`.
 - Changed `ISSUE_TEMPLATE.py`.
 - Changed `settings.py`.
@@ -21,6 +22,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Removed `base_plugin_command.py`.
 - Removed mass methods (it wasn't useful).
 - Renamed `bot_runner.py` -> `runner.py`.
+- Renamed `admin` to `control_staff_control.py` and reworked it.
 - Renamed and rearranged `vk` folder. Renamed to package `skevk`.
 - Renamed `bot.py` for running to `run.py`.
 - Renamed `base_plugin_command.CommandPlugin` to `base_plugin.CommandPlugin`.

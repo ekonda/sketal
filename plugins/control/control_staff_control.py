@@ -4,11 +4,8 @@ from skevk import traverse, parse_user_id, parse_user_name
 
 import time
 
-# TODO:
-# Move (admins, banned, vip) to meta["data_meta"], but leave reference to (meta["admins"]...)
-# Add saving to file for storage
 
-class AdminPlugin(CommandPlugin):
+class StaffControlPlugin(CommandPlugin):
     __slots__ = ("commands_base", "commands_get_list", "commands_add_to_list",
         "set_admins", "commands_remove_from_list", "admins", "moders",
         "banned", "vip", "show_all")
@@ -43,6 +40,8 @@ class AdminPlugin(CommandPlugin):
             self.commands_add_to_list + self.commands_remove_from_list),
             prefixes=prefixes,strict=strict)
 
+        self.order = (-89, 89)
+
         self.admins = list(admins or DEFAULTS["ADMINS"])
 
         self.set_admins = set_admins
@@ -50,9 +49,9 @@ class AdminPlugin(CommandPlugin):
 
         self.description = [
             "Администрационные команды",
-            self.prefixes[-1] + self.commands_get_list[0] + " [админов, модеров, банов, випов]",
-            self.prefixes[-1] + self.commands_add_to_list[0] + " [админа, модера, бан, вип] <пользователь>",
-            self.prefixes[-1] + self.commands_remove_from_list[0] + " [админа, модера, бан, вип]"
+            self.prefixes[-1] + self.commands_get_list[0] + " [админов, модеров, банов, випов] - показать список.",
+            self.prefixes[-1] + self.commands_add_to_list[0] + " [админа, модера, бан, вип] <пользователь> - добавить в список.",
+            self.prefixes[-1] + self.commands_remove_from_list[0] + " [админа, модера, бан, вип] - убрать из списка."
         ]
 
     def initiate(self):
@@ -67,7 +66,7 @@ class AdminPlugin(CommandPlugin):
         command, text = self.parse_message(msg)
 
         if not self.show_all and not msg.meta["is_admin_or_moder"]:
-            return await msg.answer("У вас недостаточно прав.")
+            return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
         if command in self.commands_base and not text:
             return await msg.answer(self.description[0] + "\n🤝 " +
@@ -91,7 +90,7 @@ class AdminPlugin(CommandPlugin):
                 usrs = []
 
                 for m in admin_lists["admins"]:
-                    usrs.append(await parse_user_name(m, msg))
+                    usrs.append(await parse_user_name(m, msg) + f" vk.com/id{m}")
 
                 return await msg.answer("Администраторы:\n👆 " + "\n👆 ".join(usrs))
 
@@ -102,7 +101,7 @@ class AdminPlugin(CommandPlugin):
                 usrs = []
 
                 for m in moders:
-                    usrs.append(await parse_user_name(m, msg))
+                    usrs.append(await parse_user_name(m, msg) + f" vk.com/id{m}")
 
                 return await msg.answer("Модераторы:\n👉 " + "\n👉 ".join(usrs))
 
@@ -113,7 +112,7 @@ class AdminPlugin(CommandPlugin):
                 usrs = []
 
                 for m in admin_lists["banned"]:
-                    usrs.append(await parse_user_name(m, msg))
+                    usrs.append(await parse_user_name(m, msg) + f" vk.com/id{m}")
 
                 return await msg.answer("Заблокированные пользователи:\n👺 " +
                     "\n👺 ".join(usrs))
@@ -125,7 +124,7 @@ class AdminPlugin(CommandPlugin):
                 usrs = []
 
                 for m in admin_lists["vips"]:
-                    usrs.append(await parse_user_name(m, msg))
+                    usrs.append(await parse_user_name(m, msg) + f" vk.com/id{m}")
 
                 return await msg.answer("Особые пользователя:\n👻 " +
                     "\n👻 ".join(usrs))
@@ -143,9 +142,7 @@ class AdminPlugin(CommandPlugin):
         if not target_user:
             return await msg.answer("👀 Целевой пользователь не найден.")
 
-        target_user_name = target_user
-        if "chat_get_cached_name" in msg.meta:
-            target_user_name = await parse_user_name(target_user, msg)
+        target_user_name = await parse_user_name(target_user, msg)
 
         msg.meta["data_meta"].changed = True
         if msg.meta["data_chat"]:
@@ -211,7 +208,7 @@ class AdminPlugin(CommandPlugin):
 
             if args[0] == "вип":
                 if not msg.meta["is_admin_or_moder"]:
-                    return await msg.answer("У вас недостаточно прав.")
+                    return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
                 if target_user in admin_lists["vips"]:
                     return await msg.answer(f"🤜🏻 Пользователь \"{target_user_name}\" "

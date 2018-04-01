@@ -5,9 +5,7 @@ import asyncio, aiohttp, io
 
 
 class DispatchPlugin(CommandPlugin):
-    __slots__ = ("admins", )
-
-    def __init__(self, *commands, prefixes=None, strict=False, admins=()):
+    def __init__(self, *commands, prefixes=None, strict=False):
         """Allows admins to send out messages to users."""
 
         if not commands:
@@ -15,11 +13,9 @@ class DispatchPlugin(CommandPlugin):
 
         super().__init__(*commands, prefixes=prefixes, strict=strict)
 
-        self.admins = admins or DEFAULTS["ADMINS"]
-
     async def process_message(self, msg):
-        if msg.user_id not in self.admins and not msg.meta.get("is_moder"):
-            return await msg.answer("Вы не администратор.")
+        if not msg.meta["is_admin_or_moder"]:
+            return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
         cmd_len = len(msg.meta.get("__prefix", "")) + len(msg.meta.get("__command", ""))
 
@@ -40,12 +36,12 @@ class DispatchPlugin(CommandPlugin):
 
                         attachment += str(new_a) + ","
 
-        await msg.answer("Приступаю к рассылке!")
+        await msg.answer("> Приступаю к рассылке!")
 
         if await self.dispatch(message, attachment) is False:
-            return await msg.answer("Ошибка при отправлении! Попробуйте позже!")
+            return await msg.answer("< Ошибка при отправлении! Попробуйте позже!")
 
-        return await msg.answer("Рассылка закончена!")
+        return await msg.answer("< Рассылка закончена!")
 
     async def dispatch(self, message, attachment):
         dialogs = await self.bot.api.messages.getDialogs(count=1, preview_length=1)

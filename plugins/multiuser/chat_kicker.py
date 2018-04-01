@@ -7,7 +7,8 @@ import time
 class ChatKickerPlugin(CommandPlugin):
     __slots__ = ("admins", "exiled", "admins_only", "unkick")
 
-    def __init__(self, commands=None, free_commands=None, prefixes=None, strict=False, admins=(), admins_only=True):
+    def __init__(self, commands=None, free_commands=None, prefixes=None,
+            strict=False, admins_only=True):
         """Allows admins to kick users for short amount of time.
         [prefix][command] [time in seconds if kicking]"""
 
@@ -21,15 +22,14 @@ class ChatKickerPlugin(CommandPlugin):
 
         self.admins_only = admins_only
         self.unkick = free_commands
-        self.admins = admins or DEFAULTS["ADMINS"]
         self.exiled = {}
 
     async def process_message(self, msg):
         if not msg.is_multichat:
-            return await msg.answer("Данную команду можно использовать только в беседах!")
+            return await msg.answer("🤜🏻 Это не беседа.")
 
-        if self.admins_only and msg.user_id not in self.admins and not msg.meta.get("is_moder"):
-            return await msg.answer("Вы не являетесь администратором.")
+        if self.admins_only and msg.meta["is_admin_or_moder"]:
+            return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
         command, text = self.parse_message(msg)
 

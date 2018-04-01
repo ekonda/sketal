@@ -65,7 +65,7 @@ Plugin printing text with emojies.
 Plugin sending some videos by request.
 
 ---
-[**AdminPlugin** `[plugins.control.admin]`](/plugins/control/admin/admin.py)
+[**StaffControlPlugin** `[plugins.control.admin]`](/plugins/control/admin/admin.py)
 
 
 Allows admins to ban people and control admins for plugins.
