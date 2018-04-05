@@ -1,8 +1,10 @@
 #### sketal v8.0.0 `happy pony`
 Version dedicated to performance updates, removing and unifying plugins.
 - Added `Bots Long Poll` https://vk.com/dev/bots_longpoll.
-- Added `control_chat_control.py`.
+- Added `control_chat.py`.
+- Added `control_staff.py`.
 - Added `misc_counter.py`.
+- Added `content_statistics.py`
 - Added `order` field to plugins.
 - Added highly optimized plugin `storage.py`.
 - Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`).

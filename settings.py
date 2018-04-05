@@ -21,9 +21,10 @@ class BotSettings(BaseSettings):
     PLUGINS = (
         StoragePlugin(in_memory=True, save_to_file=True),
         StaffControlPlugin(prefixes=DEFAULT_PREFIXES, admins=DEFAULT_ADMINS, set_admins=True),
-        ChatControlPlugin(),
+        ChatControlPlugin(banned=(140,139)), # TODO: REMOVE BANNED
         ChatMetaPlugin(),
         UserMetaPlugin(),
+        StatisticsPlugin(),
 
         VoterPlugin(prefixes=DEFAULT_PREFIXES),
         FacePlugin("сделай", prefixes=DEFAULT_PREFIXES),

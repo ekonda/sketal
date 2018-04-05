@@ -121,7 +121,7 @@ class VkController:
         client = self.get_current_sender(key, sender)
 
         if not client:
-            self.logger.error(f"No executor for \"{key}\"!")
+            self.logger.error(f"No account to execute: \"{key}\"!")
             return False
 
         task = Request(key, data, sender)
@@ -152,7 +152,7 @@ class VkController:
         client = self.get_current_sender(key, sender)
 
         if not client:
-            self.logger.error(f"No executor for \"{key}\"!")
+            self.logger.error(f"No account to execute: \"{key}\"!")
             return False
 
         a_task = None
