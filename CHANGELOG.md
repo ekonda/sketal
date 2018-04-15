@@ -19,7 +19,11 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Changed `Makefile`.
 - Changed many base plugins (!important!).
 - Rearranged plugins.
-- Removed `dueler.py`, `azino.py`, `russianroulette.py`, `hangman` and `anagram`.
+- Removed `dueler.py`.
+- Removed `azino.py`.
+- Removed `russianroulette.py`.
+- Removed `hangman` and `anagram`.
+- Removed `anagram`.
 - Removed peewee and peewee_async.
 - Removed `base_plugin_command.py`.
 - Removed mass methods (it wasn't useful).

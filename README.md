@@ -61,6 +61,8 @@
 
 #### Материалы:
 - [Sketal. Быстрый ввод в разработку плагинов.](https://vk.com/@vkbraindev-quick-dev-start)
+
+##### Sketal <8.0
 - [Как бесплатно захостить Sketal (деплой на Heroku).](http://disonds.com/2018/01/31/razviertyvaniie-python-bota-sketal-dlia-vkontaktie-na-heroku/)
 
 #### Замечания

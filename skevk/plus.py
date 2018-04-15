@@ -1,5 +1,3 @@
-from contextlib import contextmanager
-
 from captcha_solver import CaptchaSolver
 
 from utils import *

@@ -5,8 +5,6 @@ class MessageHandler:
 
         self.plugins = []
 
-        import time
-
         for plugin in self.bot.settings.PLUGINS:
             plugin.set_up(self.bot, self.api, self)
             self.plugins.append(plugin)
@@ -46,7 +44,7 @@ class MessageHandler:
                     self.bot.logger.debug(f"Finished with message ({msg.msg_id}) on {plugin.name}")
                     return subres
 
-        else: self.bot.logger.debug(f"Processed message ({msg.msg_id})")
+        self.bot.logger.debug(f"Processed message ({msg.msg_id})")
 
     async def process_with_plugin(self, msg, plugin):
         for p in self.plugins:
@@ -83,7 +81,7 @@ class MessageHandler:
                     self.bot.logger.debug(f"Finished with event ({evnt}) on {plugin.name}")
                     return subres
 
-        else: self.bot.logger.debug(f"Processed event ({evnt})")
+        self.bot.logger.debug(f"Processed event ({evnt})")
 
     async def process_event_with_plugin(self, evnt, plugin):
         for p in self.plugins:

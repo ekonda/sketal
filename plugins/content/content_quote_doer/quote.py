@@ -4,7 +4,7 @@ from utils import traverse, timestamp_to_date
 
 from PIL import Image, ImageDraw, ImageFont
 
-import aiohttp, datetime, io
+import aiohttp, io
 
 
 class QuoteDoerPlugin(CommandPlugin):
@@ -80,7 +80,6 @@ class QuoteDoerPlugin(CommandPlugin):
             font = self.f
 
         sidth = int(draw.textsize(" ", font=font)[0])
-        seight = int(draw.textsize("I", font=font)[1])
 
         width, height = 0, 0
         new_text = ""

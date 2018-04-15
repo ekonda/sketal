@@ -9,7 +9,7 @@ class NoQueuePlugin(BasePlugin):
     def __init__(self, fail_time=10):
         """Forbids user to send messages to bot while his message is being processing by bot."""
         super().__init__()
-        
+
         self.order = (-87, 87)
 
         self.users = {}

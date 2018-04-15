@@ -2,8 +2,6 @@ from handler.base_plugin import CommandPlugin, DEFAULTS
 
 from skevk import traverse, parse_user_id, parse_user_name
 
-import time
-
 
 class StaffControlPlugin(CommandPlugin):
     __slots__ = ("commands_base", "commands_get_list", "commands_add_to_list",

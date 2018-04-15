@@ -1,4 +1,4 @@
-from handler.base_plugin import CommandPlugin, DEFAULTS
+from handler.base_plugin import CommandPlugin
 
 
 class ChatControlPlugin(CommandPlugin):

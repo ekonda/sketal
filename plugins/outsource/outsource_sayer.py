@@ -6,7 +6,7 @@ import langdetect
 
 from random import choice
 import asyncio, aiohttp, io
-import logging
+
 
 class SayerPlugin(CommandPlugin):
     __slots__ = ("key", "providers")

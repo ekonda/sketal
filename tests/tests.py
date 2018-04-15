@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.abspath("."))
 
-import asyncio, unittest, logging, types, time
+import asyncio, unittest, logging, time
 
 
 # Optimize testing
@@ -36,6 +36,7 @@ from skevk import *
 from utils import *
 
 from settings_base import BaseSettings
+
 try:
     from settings_prod import BotSettings
 except ImportError:
@@ -46,17 +47,16 @@ except ImportError:
 
 # Install tokens for tests if provided
 test_group_token = os.environ.get('SKETAL_GROUP_TOKEN', '')
-if test_group_token and not os.environ.get('SKETAL_GROUP_IGNORE', 0):
+if test_group_token and not int(os.environ.get('SKETAL_GROUP_IGNORE', 0)):
     BotSettings.USERS += (
         ("group", test_group_token,),
     )
 
 test_user_token = os.environ.get('SKETAL_USER_TOKEN', '')
-if test_user_token and not os.environ.get('SKETAL_USER_IGNORE', 0):
+if test_user_token and not int(os.environ.get('SKETAL_USER_IGNORE', 0)):
     BotSettings.USERS += (
         ("user", test_user_token,),
     )
-
 
 class TestSketal(unittest.TestCase):
     # def setUp(self):
@@ -227,6 +227,9 @@ class TestSketal(unittest.TestCase):
         )
 
     def test_accumulative_methods(self):
+        if int(os.environ.get('SKETAL_USER_IGNORE', 0)):
+            return
+
         async def work():
             sender = self.bot.api.get_default_sender("wall.getById")
 
@@ -386,7 +389,7 @@ class TestSketalPlugins(unittest.TestCase):
                 "chat_id": chat,
                 "body": text,
                 "title": "Тестик",
-                "random_id": 0, "read_state": 1, "title": "", "out": 0
+                "random_id": 0, "read_state": 1, "out": 0
             }))
 
         return Message(self.bot.api, MessageEventData.from_message_body({

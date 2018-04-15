@@ -1,8 +1,9 @@
 from handler.base_plugin import BasePlugin
 
-import json, time
+import json
 
 import motor.motor_asyncio
+
 
 class sdict(dict):
     """Dictionary with field `changed`. `changed` is True when any element was
@@ -35,6 +36,7 @@ class sdict(dict):
 
     def delraw(self, item):
         super().__delitem__(item)
+
 
 class StoragePlugin(BasePlugin):
     __slots__ = ("client", "database", "users", "chats", "meta", "cached_meta",
@@ -309,7 +311,7 @@ class StoragePlugin(BasePlugin):
         if ctrl["save_chat"] and entity.meta["data_chat"]:
             await ctrl["save_chat"](entity.meta["data_chat"])
 
-    async def global_after_message_process(self, msg, res):
+    async def global_after_message_process(self, msg, result):
         await self.save_target_meta(msg)
 
     async def globa_after_event_process(self, evnt, res):

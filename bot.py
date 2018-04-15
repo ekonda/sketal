@@ -1,5 +1,4 @@
-import aiohttp, signal, json, time, logging, sys
-import asyncio
+import asyncio, aiohttp, signal, json, time, logging
 
 from asyncio import Future, Task
 from aiohttp import web
@@ -522,7 +521,7 @@ class Bot:
         for task in self.tasks:
             try:
                 task.cancel()
-            except Exception as e:
+            except Exception:
                 pass
 
         self.logger.removeHandler(self.logger_file)

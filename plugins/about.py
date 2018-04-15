@@ -1,5 +1,4 @@
 from handler.base_plugin import CommandPlugin
-from skevk import Message
 
 
 class AboutPlugin(CommandPlugin):

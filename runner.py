@@ -3,10 +3,9 @@ import logging
 import signal
 import os
 
-"""
-File for keeping bot running. If bot dies - it will be restarted.
-Keep in mind, that not all logs will be shown in bot_runner's terminal.
-"""
+# File for keeping bot running. If bot dies - it will be restarted.
+# Keep in mind, that not all logs will be shown in bot_runner's terminal.
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
