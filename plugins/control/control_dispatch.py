@@ -60,9 +60,11 @@ class DispatchPlugin(CommandPlugin):
         await asyncio.wait_for(
             asyncio.gather(*tasks, return_exceptions=True), None)
 
-        for r in future.result():
-            if not r:
+        for r in tasks:
+            if not r or not r.result():
                 continue
+
+            r = r.result()
 
             for dialog in r.get("items", []):
                 if "message" not in dialog or "user_id" not in dialog["message"]:

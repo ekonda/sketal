@@ -116,6 +116,6 @@ class ChatControlPlugin(CommandPlugin):
             return
 
         if evnt.meta.get("data_meta"):
-            return msg.chat_id not in await self.load(evnt)
+            return evnt.chat_id not in await self.load(evnt)
 
-        return msg.chat_id not in self.banned
+        return evnt.chat_id not in self.banned
