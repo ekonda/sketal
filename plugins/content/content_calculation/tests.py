@@ -9,6 +9,12 @@ class TestCalculator(unittest.TestCase):
     def setUp(self):
         self.calculator = calculator.Calculator()
 
+    def test_round(self):
+        self.assertEqual(self.calculator.calculate("0.3 - 0.2"), 0.1)
+        self.assertEqual(self.calculator.calculate("0.4 - 0.3"), 0.1)
+        self.assertEqual(self.calculator.calculate("0.1 + 0.1 + 0.1 + 0.1 + 0.1+ 0.1"), 0.6)
+        self.assertEqual(self.calculator.calculate("cos(pi /4) - sqrt(2)/2"), 0)
+
     def test_tokenize(self):
         self.assertEqual(self.calculator.tokenized("1 + 1"), ["1", "+", "1"])
         self.assertEqual(self.calculator.tokenized("1 - (-1) + 1"), ["1", "-", "(", "-", "1", ")", "+", "1"])

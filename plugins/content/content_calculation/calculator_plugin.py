@@ -21,7 +21,7 @@ class CalculatorPlugin(CommandPlugin):
     async def process_message(self, msg):
         command, text = self.parse_message(msg)
 
-        success, result = self.calculator.calculate_safe(text, **self.calculator.default_variables)
+        success, result = self.calculator.calculate_safe(text)
 
         if success:
             return await msg.answer("Результат: " + str(result))

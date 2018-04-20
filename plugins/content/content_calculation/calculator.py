@@ -29,6 +29,8 @@ class Calculator():
 
         "unary pow": (9, lambda x: x[0]**x[1]),
         "unary fact": (9, math.factorial),
+        "unary sin": (9, math.sin),
+        "unary cos": (9, math.cos),
         "unary log": (9, lambda x: (math.log(x) if x > 0 else ex(ValueError("Value x can't be zero for log!")))
                                     if len(x) == 1 or isinstance(x, (int, float))
                                     else math.log(x[0], x[1]) if x[0] > 0 and x[1] > 0 and x[1] != 1 else
@@ -161,6 +163,8 @@ class Calculator():
 
 
     def calculate(self, expr, **variables):
+        variables.update(self.default_variables)
+
         postfix = self.infix_to_postfix(expr, **variables)
 
         stack = []
@@ -177,18 +181,31 @@ class Calculator():
 
                 continue
 
-            if token.startswith("unary"):
-                a = self.prepare_token(stack.pop(-1))
+            if token.startswith("unary "):
+                r = self.operations[token][1](self.prepare_token(stack.pop(-1)))
 
-                stack.append(self.operations[token][1](a))
+                if isinstance(r, float):
+                    stack.append(round(r, 10))
+                else:
+                    stack.append(r)
 
             else:
                 a = self.prepare_token(stack.pop(-1))
                 b = self.prepare_token(stack.pop(-1))
 
-                stack.append(self.operations[token][1](b, a))
+                r = self.operations[token][1](b, a)
+
+                if isinstance(r, float):
+                    stack.append(round(r, 10))
+                else:
+                    stack.append(r)
 
         if len(stack) > 1:
             raise ValueError("Unbalanced expression")
 
-        return stack.pop(0)
+        res = stack.pop(0)
+
+        if isinstance(res, float):
+            return round(res, 10)
+
+        return res
