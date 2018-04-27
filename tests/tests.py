@@ -5,7 +5,7 @@ import asyncio, unittest, logging, time
 
 
 # Optimize testing
-import skevk
+import vkutils
 
 async def parse_user_name(user_id, entity):
     return str(user_id)
@@ -25,14 +25,14 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
         if puid.isdigit() and "]" in text[3:]:
             return int(puid)
 
-skevk.parse_user_name = parse_user_name
-skevk.parse_user_id = parse_user_id
+vkutils.parse_user_name = parse_user_name
+vkutils.parse_user_id = parse_user_id
 # ----------------
 
 
 from bot import Bot
 from plugins import *
-from skevk import *
+from vkutils import *
 from utils import *
 
 from settings_base import BaseSettings

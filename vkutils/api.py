@@ -59,7 +59,7 @@ class VkClient:
         return f"Group ({self.group_id})" if self.group_id else f"User ({self.user_id})"
 
     async def method(self, key, **data):
-        " Return a result of executing vk's method `method`. Function for \
+        "Return a result of executing vk's method `method`. Function for \
         special cases only! This method doesn't process nor errors nor captcha."
 
         url = f"https://api.vk.com/method/{key}?access_token={self.token}&v={VERSION}"
@@ -67,13 +67,18 @@ class VkClient:
         if data is None:
             data = {}
 
-        if data.get("_replace_nl", True):
+        nl_to_text = data.pop("_nl_to_text", False)
+        nl_to_br = not nl_to_text and data.pop("_nl_to_br", True)
+
+        if nl_to_br:
             for k, v in data.items():
                 if isinstance(v, str):
                      data[k] = v.replace("\r\n", "<br>").replace("\n", "<br>")
 
-        if "_replace_nl" in data:
-            del data["_replace_nl"]
+        if nl_to_text:
+            for k, v in data.items():
+                if isinstance(v, str):
+                     data[k] = v.replace("\n", "\\n")
 
         async with self.session.post(url, data=data, **self.req_kwargs) as resp:
             try:
@@ -96,12 +101,6 @@ class VkClient:
         if reties > 4:
             self.logger.warning("Can't execute code: \"" + str(code) + "\"")
             return False
-
-        if additional_values.get("_replace_nl", True):
-            code = code.replace("\n", "<br>")
-
-        if "_replace_nl" in additional_values:
-            del additional_values["_replace_nl"]
 
         url = f"https://api.vk.com/method/execute"
 
@@ -384,12 +383,26 @@ class RequestsQueue:
 
             execute += "API." + task.key + "({ "
 
+            nl_to_text = task.data.pop("_nl_to_text", False)
+            nl_to_br = not nl_to_text and task.data.pop("_nl_to_br", True)
+
             for k, v in task.data.items():
                 if isinstance(v, (int, float)):
                     execute += '"' + str(k) + '":' + str(v) + ','
-                else:
-                    v = str(v).replace('\\', '\\\\').replace('"', '\\"')
-                    execute += '"' + str(k) + '":"' + v + '",'
+                    continue
+
+                if not isinstance(v, str):
+                    v = str(v)
+
+                if nl_to_br:
+                    v = v.replace("\n", "<br>")
+
+                v = v.replace('\\', '\\\\').replace('"', '\\"')
+
+                if nl_to_text:
+                    v = v.replace("\n", "\\n")
+
+                execute += '"' + str(k) + '":"' + v + '",'
 
             execute = execute[:-1] + '}),'
 

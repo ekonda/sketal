@@ -11,6 +11,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Added default commands to plugins.
 - Added default values to plugins.
 - Added method `global_after_*_process` for plugins.
+- Added `_nl_to_text` and `_nl_to_br` for method execution.
 - Added more tests(!) and enchanced them.
 - Changed `README.md`.
 - Changed `ISSUE_TEMPLATE.py`.
@@ -29,7 +30,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Removed mass methods (it wasn't useful).
 - Renamed `bot_runner.py` -> `runner.py`.
 - Renamed `admin` to `control_staff_control.py` and reworked it.
-- Renamed and rearranged `vk` folder. Renamed to package `skevk`.
+- Renamed and rearranged `vk` folder. Renamed to package `vkutils`.
 - Renamed `bot.py` for running to `run.py`.
 - Renamed `base_plugin_command.CommandPlugin` to `base_plugin.CommandPlugin`.
 - Many fixes.

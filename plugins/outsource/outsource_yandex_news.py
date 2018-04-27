@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from skevk import Message
+from vkutils import Message
 
 from random import choice
 

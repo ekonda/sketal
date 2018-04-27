@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from skevk import parse_user_name
+from vkutils import parse_user_name
 
 import time
 

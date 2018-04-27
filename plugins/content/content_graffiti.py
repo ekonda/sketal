@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from skevk import upload_graffiti
+from vkutils import upload_graffiti
 
 import aiohttp, io
 

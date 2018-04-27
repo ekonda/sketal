@@ -1,6 +1,6 @@
 from handler.base_plugin import CommandPlugin, DEFAULTS
 
-from skevk import traverse, parse_user_id, parse_user_name
+from vkutils import traverse, parse_user_id, parse_user_name
 
 
 class StaffControlPlugin(CommandPlugin):

@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from skevk import Wait, upload_photo
+from vkutils import Wait, upload_photo
 
 import asyncio, aiohttp, io
 

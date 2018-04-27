@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from skevk import upload_photo
+from vkutils import upload_photo
 from utils import traverse, timestamp_to_date
 
 from PIL import Image, ImageDraw, ImageFont

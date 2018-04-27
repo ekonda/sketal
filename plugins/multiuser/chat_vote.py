@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from skevk import parse_user_id
+from vkutils import parse_user_id
 from utils import plural_form
 
 import asyncio, re

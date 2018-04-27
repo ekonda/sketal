@@ -7,9 +7,9 @@ from os import getenv
 from handler.handler_controller import MessageHandler
 from utils import parse_msg_flags
 
-from skevk import VkController
-from skevk import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
-from skevk import MessageEventData
+from vkutils import VkController
+from vkutils import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
+from vkutils import MessageEventData
 
 
 class Bot:
