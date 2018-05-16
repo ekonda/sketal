@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from vkutils import upload_photo
+from utils import upload_photo
 
 import io
 
@@ -22,7 +22,7 @@ class QRCodePlugin(CommandPlugin):
                             f"{example} [тест / ссылка] - закодировать текст или ссылку."]
 
     async def process_message(self, msg):
-        command, text = self.parse_message(msg, full_text=True)
+        command, text = self.parse_message(msg, full=True)
 
         if not text:
             await msg.answer('Введите слова или ссылку чтобы сгенерировать QR код')
@@ -36,11 +36,14 @@ class QRCodePlugin(CommandPlugin):
         qr.add_data(text)
 
         try:
-            qr.make(fit=True)
+            result = await self.run_in_executor(lambda: qr.make(fit=True))
         except DataOverflowError:
             return await msg.answer('Слишком длинное сообщение!')
 
-        img = qr.make_image()
+        img = await self.run_in_executor(qr.make_image)
+
+        if not img:
+            return await msg.answer("Произошла ошибка!")
 
         buf = io.BytesIO()
         img.save(buf, format='png')
@@ -48,4 +51,4 @@ class QRCodePlugin(CommandPlugin):
 
         result = await upload_photo(self.api, buf)
 
-        return await msg.answer(f'Ваш QR код, с данными: \n "{msg.text}"', attachment=str(result))
+        return await msg.answer(f'Ваш QR код, с данными: \n "{text}"', attachment=str(result))

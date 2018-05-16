@@ -18,17 +18,6 @@ class NoQueuePlugin(BasePlugin):
     async def global_before_message_checks(self, msg):
         current_time = time.time()
 
-        if msg.meta.get("data_user"):
-            if "being_processed" not in msg.meta["data_user"]:
-                msg.meta["data_user"]["being_processed"] = time.time()
-                return
-
-            if time.time() - msg.meta["data_user"].getraw("being_processed", 0) >= self.fail_time:
-                del msg.meta["data_user"]["being_processed"]
-                return
-
-            return False
-
         if len(self.users) > 5000:
             self.users.clear()
 
@@ -43,9 +32,5 @@ class NoQueuePlugin(BasePlugin):
         return False
 
     async def global_after_message_process(self, msg, result):
-        if msg.meta.get("data_user") and \
-                    msg.meta["data_user"].getraw("being_processed"):
-            del msg.meta["data_user"]["being_processed"]
-
-        elif msg.user_id in self.users:
+        if msg.user_id in self.users:
             del self.users[msg.user_id]

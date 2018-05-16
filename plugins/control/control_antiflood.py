@@ -6,7 +6,7 @@ from handler.base_plugin import BasePlugin
 class AntifloodPlugin(BasePlugin):
     __slots__ = ("users", "delay")
 
-    def __init__(self, delay=1):
+    def __init__(self, delay=1.1):
         """ Forbids users to send messages to bot more often than delay `delay`.
         If `absolute` is True, bot wont answer on more than 1 message in delay
         time."""

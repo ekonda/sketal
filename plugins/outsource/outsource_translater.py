@@ -42,7 +42,7 @@ class TranslatePlugin(CommandPlugin):
         return "ok"
 
     async def process_message(self, msg):
-        command, text = self.parse_message(msg, full_text=True)
+        command, text = self.parse_message(msg, full=True)
 
         if not text:
             return await msg.answer("Введите текст!")

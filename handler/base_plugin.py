@@ -1,14 +1,16 @@
 import sys, os, re
+import concurrent.futures
 
 DEFAULTS = {}
 
 class BasePlugin:
-    __slots__ = ("bot", "handler", "api", "name", "description", "order")
+    __slots__ = ("bot", "handler", "api", "name", "description", "order", "executor")
 
     def __init__(self):
         self.bot = None
         self.api = None
         self.handler = None
+        self.executor = None
 
         # order for (global_before_*_checks, global_after_*_process)
         # -100 -> absolutly first
@@ -36,12 +38,27 @@ class BasePlugin:
         self.api = api
         self.handler = handler
 
+    def create_executor(self, max_workers=2):
+        """Create and sets new executor for this plugin"""
+        self.executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=max_workers,
+        )
+
+        return self.executor
+
+    def run_in_executor(self, func, *args):
+        """Runs function in plugin's executor"""
+        if self.executor is None:
+            self.create_executor()
+
+        return self.bot.loop.run_in_executor(self.executor, func, *args)
+
     def preload(self):
         """Very first thing any plugin executes."""
         pass
 
     def initiate(self):
-        """Initiation of plugin (see `bot.do()` for async methods here)."""
+        """Initiation of plugin (see `bot.coroutine_exec()` for async methods here)."""
         pass
 
     # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -109,7 +126,7 @@ class BasePlugin:
         to other plugins."""
         pass
 
-    def stop(self):
+    async def stop(self):
         pass
 
 
@@ -146,11 +163,11 @@ class CommandPlugin(BasePlugin):
         return f"{self.prefixes[-1] if self.prefixes else ''}{self.commands[command_index]}"
 
     @staticmethod
-    def parse_message(msg, full_text=None):
+    def parse_message(msg, full=None):
         """Returns message without command from Message object"""
 
         return msg.meta["__command"], (msg.meta["__arguments_full"]
-            if full_text else msg.meta["__arguments"])
+            if full else msg.meta["__arguments"])
 
     async def check_message(self, msg):
         if msg.meta.get("__no_prefix"):

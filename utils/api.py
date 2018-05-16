@@ -2,9 +2,9 @@ import asyncio, json, logging, time
 
 import aiohttp
 
-from utils import json_iter_parse
 from .auth import Auth
 from .utils import RequestAccumulative
+from .routine import json_iter_parse
 
 AUTHORIZATION_FAILED = 5
 CAPTCHA_IS_NEEDED = 14
@@ -19,13 +19,18 @@ class VkClient:
     __slots__ = ("token", "session", "req_kwargs", "auth",
                  "username", "password", "app_id", "scope",
                  "solver", "logger", "group_id", "user_id",
-                 "queue")
+                 "queue", "loop")
 
-    def __init__(self, solver=None, proxy=None, logger=None):
+    def __init__(self, solver=None, proxy=None, logger=None, loop=None):
         if logger:
             self.logger = logger
         else:
             self.logger = logging.Logger("vk_client")
+
+        if loop:
+            self.loop = loop
+        else:
+            self.loop = asyncio.get_event_loop()
 
         self.solver = solver
         self.auth = Auth(self, logger=self.logger)
@@ -269,12 +274,10 @@ class VkClient:
 
         return code
 
-    def stop(self):
+    async def stop(self):
         """Method for cleaning"""
 
-        f = self.session.close()
-
-        asyncio.ensure_future(f)
+        await self.session.close()
 
 
 class RequestsQueue:

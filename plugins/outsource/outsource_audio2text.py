@@ -77,10 +77,10 @@ class Audio2TextPlugin(CommandPlugin):
                 return None, None
 
             for at in ats:
-                if at.type == "doc" and at.ext in SUPPORTED:
+                if at.type == "doc" and at.raw.get("ext") in SUPPORTED:
                     async with aiohttp.ClientSession() as sess:
                         async with sess.get(at.url) as resp:
-                            return await resp.read(), at.ext
+                            return await resp.read(), at.raw.get("ext")
 
             return None, None
 

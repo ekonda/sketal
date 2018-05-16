@@ -31,7 +31,7 @@ class RandomPostPlugin(CommandPlugin):
             self.description.append(self.prefixes[-1] + str(k))
 
     async def process_message(self, msg):
-        command, text = self.parse_message(msg, full_text=self.strict)
+        command, text = self.parse_message(msg, full=self.strict)
         group_id = self.commgroups[command]
 
         message, attachments = "", ""

@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from vkutils import upload_graffiti
+from utils import upload_graffiti
 
 import aiohttp, io
 
@@ -31,7 +31,7 @@ class GraffitiPlugin(CommandPlugin):
 
         async with aiohttp.ClientSession() as sess:
             async with sess.get(fgra.url) as resp:
-                at = await upload_graffiti(self.api, io.BytesIO(await resp.read()), "gra." + (fgra.ext if fgra.ext else "png"))
+                at = await upload_graffiti(self.api, io.BytesIO(await resp.read()), "gra." + (fgra.raw["ext"] if fgra.raw.get("ext") else "png"))
 
         if not at:
             return await msg.answer("Не удалось создать граффити!")

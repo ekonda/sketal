@@ -117,7 +117,7 @@ class StoragePlugin(BasePlugin):
     def my_path(self):
         return self.get_path("admin_lists.localdata.json")
 
-    def stop(self):
+    async def stop(self):
         if not self.save_to_file:
             return
 

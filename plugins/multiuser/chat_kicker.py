@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from vkutils import EventType, parse_user_id
+from utils import EventType, parse_user_id
 
 import time
 

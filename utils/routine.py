@@ -1,8 +1,13 @@
-import datetime
-import html
-
-import json
+import datetime, string, random, html, json
 from dateutil.relativedelta import relativedelta
+
+
+def random_key(length=8, upper=False):
+    return ''.join(
+        random.choices(
+            (string.ascii_uppercase if upper else string.ascii_letters) + string.digits,
+            k=length)
+        )
 
 
 def traverse(o, tree_types=(list, tuple)):

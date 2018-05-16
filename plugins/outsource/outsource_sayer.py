@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from vkutils import upload_audio_message
+from utils import upload_audio_message
 
 from gtts import gTTS
 import langdetect
@@ -88,7 +88,7 @@ class SayerPlugin(CommandPlugin):
         return "Произошла ошибка! Попробуйте позже.", None
 
     async def process_message(self, msg):
-        command, text = self.parse_message(msg, full_text=True)
+        command, text = self.parse_message(msg, full=True)
 
         if not text:
             return await msg.answer('Введите текст для перевода его в речь!')

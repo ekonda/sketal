@@ -17,7 +17,7 @@ class WikiPlugin(CommandPlugin):
         self.description = ["Википедия", f"{self.command_example()} [что-то] - получить информацию о чём-то"]
 
     async def process_message(self, msg):
-        command, text = self.parse_message(msg, full_text=True)
+        command, text = self.parse_message(msg, full=True)
         text = text.replace(" ", "+")
 
         url = f"https://ru.wikipedia.org/w/api.php?action=opensearch&search={text}&limit=1&format=json" \

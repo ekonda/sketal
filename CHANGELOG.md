@@ -4,6 +4,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Added `control_chat.py`.
 - Added `control_staff.py`.
 - Added `misc_counter.py`.
+- Added `content_namer.py`.
 - Added `content_statistics.py`
 - Added `order` field to plugins.
 - Added highly optimized plugin `storage.py`.
@@ -13,11 +14,13 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Added method `global_after_*_process` for plugins.
 - Added `_nl_to_text` and `_nl_to_br` for method execution.
 - Added more tests(!) and enchanced them.
+- Added error handling
 - Changed `README.md`.
 - Changed `ISSUE_TEMPLATE.py`.
 - Changed `settings.py`.
 - Changed logger's format.
 - Changed `Makefile`.
+- Changed life control methods of bot.
 - Changed many base plugins (!important!).
 - Rearranged plugins.
 - Removed `dueler.py`.
@@ -30,10 +33,11 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Removed mass methods (it wasn't useful).
 - Renamed `bot_runner.py` -> `runner.py`.
 - Renamed `admin` to `control_staff_control.py` and reworked it.
-- Renamed and rearranged `vk` folder. Renamed to package `vkutils`.
+- Renamed and rearranged `vk` folder. Renamed to package `utils`.
 - Renamed `bot.py` for running to `run.py`.
 - Renamed `base_plugin_command.CommandPlugin` to `base_plugin.CommandPlugin`.
 - Many fixes.
+- Moved `utils.py` to `utils/routine.py`
 
 #### sketal v7.3.4 `funny dog`
 https://github.com/vk-brain/sketal/commit/e320bc87694a88ea0019cbd11f0a254cb2a55293

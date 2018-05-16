@@ -2,7 +2,7 @@ import aiohttp
 import json
 
 from .utils import Attachment
-from utils import traverse
+from .routine import traverse
 
 
 async def upload_audio_message(api, multipart_data, peer_id):

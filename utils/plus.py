@@ -1,20 +1,26 @@
 from captcha_solver import CaptchaSolver
 
-from utils import *
 from .api import *
 from .utils import *
+from .routine import *
 from .methods import *
 
 
 class VkController:
     __slots__ = ("logger", "vk_users", "vk_groups", "scope", "group", "app_id",
-                 "proxies", "users_data", "solver", "target_client", "settings")
+                 "proxies", "users_data", "solver", "target_client", "settings",
+                 "loop")
 
-    def __init__(self, settings, logger=None):
+    def __init__(self, settings, logger=None, loop=None):
         if logger:
             self.logger = logger
         else:
             self.logger = logging.Logger("vk_controller")
+
+        if loop:
+            self.loop = loop
+        else:
+            self.loop = asyncio.get_event_loop()
 
         self.settings = settings
 
@@ -62,7 +68,7 @@ class VkController:
                 proxy = None
 
             if user[0] == "group":
-                client = VkClient(proxy=proxy, solver=self.solver, logger=self.logger)
+                client = VkClient(proxy=proxy, solver=self.solver, logger=self.logger, loop=self.loop)
 
                 await client.group(user[1])
 
@@ -72,7 +78,7 @@ class VkController:
                 self.group = True
 
             else:
-                client = VkClient(proxy=proxy, solver=self.solver, logger=self.logger)
+                client = VkClient(proxy=proxy, solver=self.solver, logger=self.logger, loop=self.loop)
 
                 if len(user) == 2:
                     await client.user_with_token(user[1])
@@ -235,11 +241,11 @@ class VkController:
 
         return sender
 
-    def stop(self):
+    async def stop(self):
         """Method for cleaning"""
 
         for api in self.vk_users:
-            api.stop()
+            await api.stop()
 
         for api in self.vk_groups:
-            api.stop()
+            await api.stop()

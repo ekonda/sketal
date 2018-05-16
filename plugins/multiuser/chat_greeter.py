@@ -1,5 +1,5 @@
 from handler.base_plugin import BasePlugin
-from vkutils import EventType
+from utils import EventType
 
 
 class ChatGreeterPlugin(BasePlugin):

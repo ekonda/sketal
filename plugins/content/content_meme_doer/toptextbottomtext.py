@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from vkutils import upload_photo
+from utils import upload_photo
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -40,32 +40,7 @@ class MemeDoerPlugin(CommandPlugin):
         if self.allow_photos:
             self.description.append("Вы можете присылать свои картинки для текста! Просто приложите её к сообщению.")
 
-    async def process_message(self, msg):
-        command, text = self.parse_message(msg)
-
-        if not text:
-            return await msg.answer("Пожалуйста, укажите текст(ы) для картинки!")
-
-        photo = None
-
-        if msg.brief_attaches and self.allow_photos:
-            for a in await msg.get_full_attaches():
-                if a.type == "photo":
-                    photo = a
-
-        img = None
-
-        if not photo or not photo.url:
-            img = Image.open(io.BytesIO(self.default_photo))
-
-        if not img:
-            async with aiohttp.ClientSession() as sess:
-                async with sess.get(photo.url) as response:
-                    img = Image.open(io.BytesIO(await response.read()))
-
-        if not img:
-            return await msg.answer('К сожалению, ваше фото исчезло!')
-
+    def make_image(self, img, text):
         strings = text.upper().split("\n")
 
         if len(strings) < 2:
@@ -104,7 +79,7 @@ class MemeDoerPlugin(CommandPlugin):
             bottom_text_size = font.getsize(strings[1])
 
         else:
-            return await msg.answer("Ваш текст не влезает! Простите!")
+            return "Ваш текст не влезает! Простите!"
 
         top_text_position = img.size[0] / 2 - top_text_size[0] / 2, 0
         bottom_text_position = img.size[0] / 2 - bottom_text_size[0] / 2, img.size[1] - bottom_text_size[1] * 1.17
@@ -125,6 +100,40 @@ class MemeDoerPlugin(CommandPlugin):
 
         buff = io.BytesIO()
         img.save(buff, format='png')
-        attachment = await upload_photo(self.api, buff.getvalue(), msg.user_id)
+
+        return buff.getvalue()
+
+    async def process_message(self, msg):
+        command, text = self.parse_message(msg)
+
+        if not text:
+            return await msg.answer("Пожалуйста, укажите текст(ы) для картинки!")
+
+        photo = None
+
+        if msg.brief_attaches and self.allow_photos:
+            for a in await msg.get_full_attaches():
+                if a.type == "photo":
+                    photo = a
+
+        img = None
+
+        if not photo or not photo.url:
+            img = Image.open(io.BytesIO(self.default_photo))
+
+        if not img:
+            async with aiohttp.ClientSession() as sess:
+                async with sess.get(photo.url) as response:
+                    img = Image.open(io.BytesIO(await response.read()))
+
+        if not img:
+            return await msg.answer('К сожалению, ваше фото исчезло!')
+
+        result = await self.run_in_executor(self.make_image, img, text)
+
+        if isinstance(result, str):
+            return await msg.answer(result)
+
+        attachment = await upload_photo(self.api, result, msg.user_id)
 
         return await msg.answer(attachment=str(attachment))

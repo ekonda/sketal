@@ -113,15 +113,15 @@ class Sender:
 
 
 class Attachment(object):
-    __slots__ = ('type', 'owner_id', 'id', 'access_key', 'url', 'ext')
+    __slots__ = ('type', 'owner_id', 'id', 'access_key', 'url', 'raw')
 
-    def __init__(self, attach_type, owner_id, aid, access_key=None, url=None, ext=None):
+    def __init__(self, attach_type, owner_id, aid, access_key=None, url=None, raw=None):
         self.type = attach_type
         self.owner_id = owner_id
         self.id = aid
         self.access_key = access_key
         self.url = url
-        self.ext = ext
+        self.raw = raw
 
     @staticmethod
     def from_upload_result(result, attach_type="photo"):
@@ -135,7 +135,7 @@ class Attachment(object):
             elif "url" == k:
                 url = result[k]
 
-        return Attachment(attach_type, result["owner_id"], result["id"], url=url, ext=result.get("ext"))
+        return Attachment(attach_type, result["owner_id"], result["id"], url=url, raw=result)
 
     @staticmethod
     def from_raw(raw_attach):
@@ -152,7 +152,7 @@ class Attachment(object):
             elif "url" == k:
                 url = v
 
-        return Attachment(a_type, attach.get('owner_id', ''), attach.get('id', ''), attach.get('access_key'), url, ext=attach.get("ext"))
+        return Attachment(a_type, attach.get('owner_id', ''), attach.get('id', ''), attach.get('access_key'), url, attach)
 
     def value(self):
         if self.access_key:

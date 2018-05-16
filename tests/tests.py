@@ -5,7 +5,7 @@ import asyncio, unittest, logging, time
 
 
 # Optimize testing
-import vkutils
+import utils
 
 async def parse_user_name(user_id, entity):
     return str(user_id)
@@ -25,14 +25,13 @@ async def parse_user_id(msg, can_be_argument=True, argument_ind=-1, custom_text=
         if puid.isdigit() and "]" in text[3:]:
             return int(puid)
 
-vkutils.parse_user_name = parse_user_name
-vkutils.parse_user_id = parse_user_id
+utils.parse_user_name = parse_user_name
+utils.parse_user_id = parse_user_id
 # ----------------
 
 
 from bot import Bot
 from plugins import *
-from vkutils import *
 from utils import *
 
 from settings_base import BaseSettings
@@ -99,7 +98,7 @@ class TestSketal(unittest.TestCase):
             "random_id": 0, "read_state": 1, "title": "", "out": 0
         }))
 
-        self.bot.do(self.bot.handler.process(m))
+        self.bot.coroutine_exec(self.bot.handler.process(m))
 
     def test_plugins(self):
         """Requires TimePlugin and AntifloodPlugin."""
@@ -107,8 +106,8 @@ class TestSketal(unittest.TestCase):
         messages = []
 
         _answer = Message.answer
-        async def answer(self, text="", **kwargs):
-            messages.append(text)
+        async def answer(self, message="", **kwargs):
+            messages.append(message)
         Message.answer = answer
 
         m = Message(self.bot.api, MessageEventData.from_message_body({
@@ -119,11 +118,11 @@ class TestSketal(unittest.TestCase):
             "random_id": 0, "read_state": 1, "title": "", "out": 0
         }))
 
-        self.bot.do(self.bot.handler.process(m))
+        self.bot.coroutine_exec(self.bot.handler.process(m))
 
         self.assertIn("Текущие дата и время по МСК", messages[0])
 
-        self.bot.do(self.bot.handler.process(m))
+        self.bot.coroutine_exec(self.bot.handler.process(m))
 
         self.assertEqual(len(messages), 1)
 
@@ -132,16 +131,16 @@ class TestSketal(unittest.TestCase):
     def test_methods(self):
         """Requires at least 1 message in dialogs on account."""
 
-        result = self.bot.do(self.bot.api.groups.getById(group_id=1))
+        result = self.bot.coroutine_exec(self.bot.api.groups.getById(group_id=1))
         self.assertNotIn(result, (False, None))
 
         count = 2
-        result = self.bot.do(self.bot.api.messages.get(count=count))
+        result = self.bot.coroutine_exec(self.bot.api.messages.get(count=count))
         self.assertNotIn(result, (False, None))
         self.assertIn("items", result)
         self.assertEqual(len(result['items']), count)
 
-        result = self.bot.do(self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
+        result = self.bot.coroutine_exec(self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
         self.assertEqual(asyncio.isfuture(result), True)
         self.bot.loop.run_until_complete(result)
         self.assertEqual(result.done(), True)
@@ -152,7 +151,7 @@ class TestSketal(unittest.TestCase):
 
         async def bot_stopper():
             await asyncio.sleep(1.5)
-            self.bot.stop_bot()
+            await self.bot.stop_tasks()
 
         asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
 
@@ -160,7 +159,7 @@ class TestSketal(unittest.TestCase):
             with self.assertRaises(asyncio.CancelledError):
                 self.bot.loop.run_until_complete(task)
 
-        self.assertEqual(cm.output, [f'INFO:{self.bot.logger.name}:Attempting to turn bot off'])
+        self.assertEqual(cm.output, [f"INFO:{self.bot.logger.name}:Attempting stop bot", f"INFO:{self.bot.logger.name}:Stopped to process messages"])
 
     def test_bots_longpoll(self):
         if all("group" not in e for e in self.bot.settings.USERS):
@@ -170,7 +169,7 @@ class TestSketal(unittest.TestCase):
 
         async def bot_stopper():
             await asyncio.sleep(1.5)
-            self.bot.stop_bot()
+            await self.bot.stop_tasks()
 
         asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
 
@@ -178,14 +177,14 @@ class TestSketal(unittest.TestCase):
             with self.assertRaises(asyncio.CancelledError):
                 self.bot.loop.run_until_complete(task)
 
-        self.assertEqual(cm.output, [f'INFO:{self.bot.logger.name}:Attempting to turn bot off'])
+        self.assertEqual(cm.output, [f"INFO:{self.bot.logger.name}:Attempting stop bot", f"INFO:{self.bot.logger.name}:Stopped to process messages"])
 
     def test_callback(self):
         task = self.bot.callback_run(True)
 
         async def bot_stopper():
             await asyncio.sleep(1.5)
-            self.bot.stop_bot()
+            await self.bot.stop_tasks()
 
         asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
 
@@ -193,11 +192,11 @@ class TestSketal(unittest.TestCase):
             with self.assertRaises(asyncio.CancelledError):
                 self.bot.loop.run_until_complete(task)
 
-        self.assertEqual(cm.output, [f'INFO:{self.bot.logger.name}:Attempting to turn bot off'])
+        self.assertEqual(cm.output, [f"INFO:{self.bot.logger.name}:Attempting stop bot", f"INFO:{self.bot.logger.name}:Stopped to process messages"])
 
     def test_errors(self):
         with self.assertLogs(self.bot.logger, level='ERROR') as cm:
-            self.bot.do(self.bot.api.messages.send())
+            self.bot.coroutine_exec(self.bot.api.messages.send())
 
         self.assertIn(r"ERROR:sketal:Errors while executing vk method: {'code': 100, 'method': 'messages.send', 'error_msg': 'One of the parameters specified was missing or invalid: you should specify peer_id, user_id, domain, chat_id or user_ids param'}, {'code': 100, 'method': 'execute', 'error_msg': 'One of the parameters specified was missing or invalid: you should specify peer_id, user_id, domain, chat_id or user_ids param'}", cm.output)
 
@@ -205,7 +204,7 @@ class TestSketal(unittest.TestCase):
         with open("tests/simple_image.png", "rb") as f:
             image = f.read()
 
-            res_photo, res_doc = self.bot.do(
+            res_photo, res_doc = self.bot.coroutine_exec(
                 asyncio.gather(
                     upload_photo(self.bot.api, image),
                     upload_doc(self.bot.api, image, "image.png")
@@ -217,7 +216,7 @@ class TestSketal(unittest.TestCase):
         self.assertNotEqual(res_photo.url, "")
         self.assertNotEqual(res_doc.url, "")
 
-        self.bot.do(
+        self.bot.coroutine_exec(
             asyncio.gather(
                 self.bot.api.photos.delete(owner_id=res_photo.owner_id,
                     photo_id=res_photo.id),
@@ -247,7 +246,7 @@ class TestSketal(unittest.TestCase):
             self.assertEqual(tas2.result()["id"], 512)
             self.assertEqual(tas3.result()["id"], 511)
 
-        self.bot.do(work())
+        self.bot.coroutine_exec(work())
 
 class TestSketalUtils(unittest.TestCase):
     def check(self, message):
@@ -368,8 +367,8 @@ class TestSketalPlugins(unittest.TestCase):
         cls._answer = Message.answer
         cls.messages = []
 
-        async def answer(self, text="", **kwargs):
-            cls.messages.append(text)
+        async def answer(self, message="", **kwargs):
+            cls.messages.append(message)
 
         Message.answer = answer
 
@@ -401,7 +400,7 @@ class TestSketalPlugins(unittest.TestCase):
         }))
 
     def process(self, text, chat=False, admin=False):
-        self.bot.do(self.bot.handler.process(self.message(text, chat, admin)))
+        self.bot.coroutine_exec(self.bot.handler.process(self.message(text, chat, admin)))
 
     def test_about_plugin(self):
         self.process("/о боте")

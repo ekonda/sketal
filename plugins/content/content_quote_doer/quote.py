@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from vkutils import upload_photo
+from utils import upload_photo
 from utils import traverse, timestamp_to_date
 
 from PIL import Image, ImageDraw, ImageFont
@@ -23,49 +23,14 @@ class QuoteDoerPlugin(CommandPlugin):
 
         self.f = ImageFont.truetype(self.get_path("font.ttf"), 24)
         self.fs = ImageFont.truetype(self.get_path("font.ttf"), 16)
-        self.fss = ImageFont.truetype(self.get_path("font.ttf"), 16)
+        self.fss = ImageFont.truetype(self.get_path("font.ttf"), 15)
 
         example = self.command_example()
         self.description = [f"Генератор цитат",
                             f"{example} [титул] - перешлите сообщение и укажите титул (по желанию) и "
                              "получите цитату!"]
 
-    async def process_message(self, msg):
-        command, otext = self.parse_message(msg)
-
-        i, url, name, last_name, timestamp = None, None, None, None, None
-
-        for m in traverse(await msg.get_full_forwarded()):
-            if m.full_text:
-                if i == m.true_user_id:
-                    text += "\n" + m.full_text
-                    continue
-                elif i is not None:
-                    break
-
-                i = m.true_user_id
-                timestamp = m.timestamp
-
-                u = await self.api.users.get(user_ids=i, fields="photo_max")
-                if not u:
-                    continue
-
-                u = u[0]
-
-                url = u["photo_max"]
-                name = u["first_name"]
-                last_name = u["last_name"]
-
-                text = m.full_text
-        else:
-            if i is None:
-                return await msg.answer("Нечего цитировать!")
-
-        async with aiohttp.ClientSession() as sess:
-            async with sess.get(url) as response:
-                img = Image.open(io.BytesIO(await response.read()))
-                img = img.resize((200, 200), Image.NEAREST)
-
+    def make_image(self, img, text, name, last_name, timestamp, otext):
         rsize = (700, 400)
 
         res = Image.new("RGB", rsize, color=(0, 0, 0))
@@ -109,7 +74,7 @@ class QuoteDoerPlugin(CommandPlugin):
         res.paste(tex, (x, y))
 
         if y <= 10:
-            return await msg.answer("Не получилось... простите.")
+            return "Не получилось... простите."
 
         if height < 210:
             height = 210
@@ -125,6 +90,49 @@ class QuoteDoerPlugin(CommandPlugin):
         buff = io.BytesIO()
         res.save(buff, format='png')
 
-        attachment = await upload_photo(self.api, buff.getvalue(), msg.user_id)
+        return buff.getvalue()
+
+    async def process_message(self, msg):
+        command, otext = self.parse_message(msg)
+
+        i, url, name, last_name, timestamp = None, None, None, None, None
+
+        for m in traverse(await msg.get_full_forwarded()):
+            if m.full_text:
+                if i == m.true_user_id:
+                    text += "\n" + m.full_text
+                    continue
+                elif i is not None:
+                    break
+
+                i = m.true_user_id
+                timestamp = m.timestamp
+
+                u = await self.api.users.get(user_ids=i, fields="photo_max")
+                if not u:
+                    continue
+
+                u = u[0]
+
+                url = u["photo_max"]
+                name = u["first_name"]
+                last_name = u["last_name"]
+
+                text = m.full_text
+        else:
+            if i is None:
+                return await msg.answer("Нечего цитировать!")
+
+        async with aiohttp.ClientSession() as sess:
+            async with sess.get(url) as response:
+                img = Image.open(io.BytesIO(await response.read()))
+                img = img.resize((200, 200), Image.NEAREST)
+
+        result = await self.run_in_executor(self.make_image, img, text, name, last_name, timestamp, otext)
+
+        if isinstance(result, str):
+            return await msg.answer(result)
+
+        attachment = await upload_photo(self.api, result, msg.user_id)
 
         return await msg.answer(attachment=str(attachment))

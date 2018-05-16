@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from vkutils import Message
+from utils import Message
 
 from random import choice
 

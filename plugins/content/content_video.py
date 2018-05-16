@@ -17,7 +17,7 @@ class VideoPlugin(CommandPlugin):
 
     async def process_message(self, msg):
         data = await self.api.video.search(
-            q=self.parse_message(msg, full_text=True)[1] or "милый котик",
+            q=self.parse_message(msg, full=True)[1] or "милый котик",
             sort=2,
             count=10,
             adult=0

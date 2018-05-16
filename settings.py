@@ -48,14 +48,17 @@ class BotSettings(BaseSettings):
         CalculatorPlugin(),
         VideoPlugin(),
         DispatchPlugin(),
+        NamerPlugin(),
         help_plugin,
 
         # Needs tokens (see plugin's codes, some have defaults):
         SayerPlugin(),
 
         # Plugins for bot's control
-        AntifloodPlugin(), NoQueuePlugin(),
+        AntifloodPlugin(),
+        NoQueuePlugin(),
         CommandAttacherPlugin(),
+        ForwardedCheckerPlugin(),
     )
 
     help_plugin.add_plugins(PLUGINS)

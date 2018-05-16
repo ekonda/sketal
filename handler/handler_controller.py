@@ -1,9 +1,15 @@
+import traceback
+
+from utils import random_key
+
+
 class MessageHandler:
     def __init__(self, bot, api, initiate_plugins=True):
         self.bot = bot
         self.api = api
 
         self.plugins = []
+        self.exceptions = []
 
         for plugin in self.bot.settings.PLUGINS:
             plugin.set_up(self.bot, self.api, self)
@@ -22,11 +28,25 @@ class MessageHandler:
             plugin.initiate()
 
     async def process(self, msg):
-        res = await self.core_process(msg)
+        try:
+            res = await self.core_process(msg)
 
-        for plugin in sorted(self.plugins, key=lambda x: x.order[-1]):
-            if await plugin.global_after_message_process(msg, res) is False:
-                break
+            for plugin in sorted(self.plugins, key=lambda x: x.order[-1]):
+                if await plugin.global_after_message_process(msg, res) is False:
+                    break
+
+        except Exception:
+            exception = traceback.format_exc()
+
+            self.exceptions.append(exception)
+
+            self.bot.logger.error(f"Error #{len(self.exceptions)}\n{exception}")
+
+            await msg.answer(
+                "[ Произошла ошибка при обработке сообщения плагинами! ]\n"
+                "[ Сообщите об этом админимстратору ]\n"
+                f"[ error#{len(self.exceptions)}<{random_key(6)}> ]"
+            )
 
     async def core_process(self, msg):
         for plugin in sorted(self.plugins, key=lambda x: x.order[0]):
@@ -95,7 +115,7 @@ class MessageHandler:
 
         return result
 
-    def stop(self):
+    async def stop(self):
         for plugin in self.plugins:
             self.bot.logger.debug(f"Stopping plugin: {plugin.name}")
-            plugin.stop()
+            await plugin.stop()

@@ -1,4 +1,4 @@
-import asyncio, aiohttp, signal, json, time, logging
+import asyncio, aiohttp, json, time, logging
 
 from asyncio import Future, Task
 from aiohttp import web
@@ -7,9 +7,9 @@ from os import getenv
 from handler.handler_controller import MessageHandler
 from utils import parse_msg_flags
 
-from vkutils import VkController
-from vkutils import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
-from vkutils import MessageEventData
+from utils import VkController
+from utils import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
+from utils import MessageEventData
 
 
 class Bot:
@@ -18,23 +18,27 @@ class Bot:
         "tasks", "sessions", "requests", "settings"
     )
 
-    def __init__(self, settings, logger=None, handler=None, loop=asyncio.get_event_loop()):
+    def __init__(self, settings, logger=None, handler=None, loop=None):
         self.settings = settings
 
-        self.logger = logger
-        if not logger:
-            self.init_logger()
+        if logger:
+            self.logger = logger
+        else:
+            self.logger = self.init_logger()
+
+        if loop:
+            self.loop = loop
+        else:
+            self.loop = asyncio.get_event_loop()
 
         self.logger.info("Initializing bot")
-
-        self.loop = loop
 
         self.requests = []
         self.sessions = []
         self.tasks = []
 
         self.logger.info("Initializing vk clients")
-        self.api = VkController(settings, logger=self.logger)
+        self.api = VkController(settings, logger=self.logger, loop=self.loop)
 
         self.logger.info("Loading plugins")
         if handler:
@@ -43,8 +47,6 @@ class Bot:
         else:
             self.handler = MessageHandler(self, self.api, initiate_plugins=False)
             self.handler.initiate_plugins()
-
-        signal.signal(signal.SIGINT, lambda x, y: self.stop_bot(True))
 
         self.logger.info("Bot successfully initialized")
 
@@ -68,7 +70,7 @@ class Bot:
         logger.addHandler(file_handler)
         logger.addHandler(stream_handler)
 
-        self.logger = logger
+        return logger
 
     def add_task(self, task):
         for ctask in self.tasks[::]:
@@ -79,6 +81,8 @@ class Bot:
             return
 
         self.tasks.append(task)
+
+        return task
 
     async def init_long_polling(self, pack, update=0):
         result = None
@@ -370,9 +374,7 @@ class Bot:
         return web.Response(text="ok")
 
     def longpoll_run(self, custom_process=False):
-        task = Task(self.longpoll_processor())
-
-        self.add_task(task)
+        task = self.add_task(Task(self.longpoll_processor()))
 
         if custom_process:
             return task
@@ -383,16 +385,13 @@ class Bot:
             self.loop.run_until_complete(task)
 
         except (KeyboardInterrupt, SystemExit):
-            self.stop()
-            self.logger.info("Stopped to process messages")
+            self.loop.run_until_complete(self.stop())
 
         except asyncio.CancelledError:
             pass
 
     def bots_longpoll_run(self, custom_process=False):
-        task = Task(self.bots_longpoll_processor())
-
-        self.add_task(task)
+        task = self.add_task(Task(self.bots_longpoll_processor()))
 
         if custom_process:
             return task
@@ -403,8 +402,7 @@ class Bot:
             self.loop.run_until_complete(task)
 
         except (KeyboardInterrupt, SystemExit):
-            self.stop()
-            self.logger.info("Stopped to process messages")
+            self.loop.run_until_complete(self.stop())
 
         except asyncio.CancelledError:
             pass
@@ -416,15 +414,20 @@ class Bot:
         self.logger.info("Started to process messages")
 
         try:
-            server_generator, handler, app = self.loop.run_until_complete(self.init_app(host, port, self.loop))
-            server = self.loop.run_until_complete(server_generator)
+            app = web.Application()
+            app.router.add_post('/', self.callback_processor)
+
+            runner = web.AppRunner(app)
+            self.loop.run_until_complete(runner.setup())
+
+            site = web.TCPSite(runner, host, port)
+            self.loop.run_until_complete(site.start())
+
         except OSError:
             self.logger.error("Address already in use: " + str(host) + ":" + str(port))
             return
 
-        task = Future()
-
-        self.add_task(task)
+        task = self.add_task(Future())
 
         if custom_process:
             return task
@@ -432,56 +435,12 @@ class Bot:
         print("======== Running on http://{}:{} ========\n"
               "         (Press CTRL+C to quit)".format(*server.sockets[0].getsockname()))
 
-        def stop_server():
-            server.close()
-
-            if not self.loop.is_running():
-                return
-
-            self.loop.run_until_complete(server.wait_closed())
-            self.loop.run_until_complete(app.shutdown())
-            self.loop.run_until_complete(handler.shutdown(10))
-            self.loop.run_until_complete(app.cleanup())
-
         try:
             self.loop.run_until_complete(task)
-        except KeyboardInterrupt:
-            self.stop()
 
-            stop_server()
-
-            self.loop.close()
-
-        except asyncio.CancelledError:
-            pass
-
-        finally:
-            stop_server()
-
-            self.logger.info("Stopped to process messages")
-
-    async def init_app(self, host, port, loop):
-        app = web.Application()
-        app.router.add_post('/', self.callback_processor)
-
-        handler = app.make_handler()
-
-        server_generator = loop.create_server(handler, host, port)
-        return server_generator, handler, app
-
-    def stop_bot(self, full=False):
-        for task in self.tasks:
-            try:
-                task.cancel()
-            except Exception:
-                import traceback
-                traceback.print_exc()
-
-        if full:
-            self.stop()
-            self.loop.stop()
-
-        self.logger.info("Attempting to turn bot off")
+        except (KeyboardInterrupt, SystemExit):
+            self.loop.run_until_complete(runner.cleanup())
+            self.loop.run_until_complete(self.stop())
 
     async def process_message(self, msg):
         asyncio.ensure_future(self.handler.process(msg), loop=self.loop)
@@ -503,20 +462,31 @@ class Bot:
     async def process_event(self, evnt):
         asyncio.ensure_future(self.handler.process_event(evnt), loop=self.loop)
 
-    def do(self, coroutine):
-        if asyncio.iscoroutine(coroutine) or \
-                isinstance(coroutine, asyncio.Future):
+    def coroutine_exec(self, coroutine):
+        if asyncio.iscoroutine(coroutine) or isinstance(coroutine, asyncio.Future):
             return self.loop.run_until_complete(coroutine)
 
         return False
 
-    def stop(self):
-        if self.loop.is_running():
-            for session in self.sessions:
-                asyncio.ensure_future(session.close())
+    async def stop_tasks(self):
+        self.logger.info("Attempting stop bot")
 
-        self.handler.stop()
-        self.api.stop()
+        for task in self.tasks:
+            try:
+                task.cancel()
+            except Exception:
+                pass
+
+        self.logger.info("Stopped to process messages")
+
+    async def stop(self):
+        self.logger.info("Attempting to turn bot off")
+
+        for session in self.sessions:
+            await session.close()
+
+        await self.handler.stop()
+        await self.api.stop()
 
         for task in self.tasks:
             try:
@@ -526,3 +496,5 @@ class Bot:
 
         self.logger.removeHandler(self.logger_file)
         self.logger_file.close()
+
+        self.logger.info("Stopped to process messages")

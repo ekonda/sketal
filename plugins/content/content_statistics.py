@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from vkutils import parse_user_name
+from utils import parse_user_name
 
 import time
 
