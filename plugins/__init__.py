@@ -45,7 +45,9 @@ def import_plugins(package):
                 continue
 
             if isinstance(e, type) and issubclass(e, BasePlugin) and e.__module__ == module.__name__:
-                # save_doc(e, full_name, "PLUGINS.md")
+                if "-gendocs" in sys.argv:
+                    save_doc(e, full_name, "PLUGINS.md")
+
                 __all__.append(e.__name__)
                 globals()[e.__name__] = e
 

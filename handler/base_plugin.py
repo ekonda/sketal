@@ -170,6 +170,29 @@ class CommandPlugin(BasePlugin):
             if full else msg.meta["__arguments"])
 
     async def check_message(self, msg):
+        result = await self._check_message(msg)
+
+        if not result and msg.reserved_by:
+            if msg.reserved_by != self:
+                return False
+
+            msg.meta["__prefix"] = ""
+            msg.meta["__raw_text"] = msg.text.strip()
+            msg.meta["__raw_full_text"] = msg.full_text.strip()
+
+            msg.meta["__command"] = ""
+            msg.meta["__arguments"] = msg.meta["__raw_text"]
+            msg.meta["__arguments_full"] = msg.meta["__raw_full_text"]
+
+            msg.meta["__reserved"] = True
+
+            return True
+
+        return result
+
+    async def _check_message(self, msg):
+        msg.meta["__reserved"] = False
+
         if msg.meta.get("__no_prefix"):
             return False
 

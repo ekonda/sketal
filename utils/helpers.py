@@ -75,6 +75,7 @@ async def upload_doc(api, multipart_data, filename="image.png", additional_param
             result = json.loads(await resp.text())
 
     if not result or not result.get("file"):
+        print(result)
         return None
 
     data = dict(file=result['file'])

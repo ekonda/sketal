@@ -54,9 +54,7 @@ class MessageHandler:
                 self.bot.logger.debug(f"Message ({msg.msg_id}) cancelled with {plugin.name}")
                 return None
 
-        plugins_to_check = msg.reserved_by if msg.reserved_by else self.plugins
-
-        for plugin in plugins_to_check:
+        for plugin in self.plugins:
             if await plugin.check_message(msg):
                 subres = await self.process_with_plugin(msg, plugin)
 
@@ -91,9 +89,7 @@ class MessageHandler:
                 self.bot.logger.debug(f"Event {evnt} cancelled with {plugin.name}")
                 return
 
-        plugins_to_check = evnt.reserved_by if evnt.reserved_by else self.plugins
-
-        for plugin in plugins_to_check:
+        for plugin in self.plugins:
             if await plugin.check_event(evnt):
                 subres = await self.process_event_with_plugin(evnt, plugin)
 

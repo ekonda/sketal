@@ -14,13 +14,11 @@ class AboutPlugin(CommandPlugin):
 
         self.version = version
 
-        self.set_description()
-
-    def set_description(self):
-        example = self.command_example()
-        self.description = [f"О боте",
-                            f"Вывод информации о боте.",
-                            f"{example} - вывести информацию."]
+        self.description = (
+            "О боте",
+            "Вывод информации о боте.",
+            f"{self.command_example()} - вывести информацию."
+        )
 
     async def process_message(self, msg):
         message = "🌍 sketal 🌍\n" \

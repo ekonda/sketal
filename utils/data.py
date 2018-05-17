@@ -12,15 +12,14 @@ class Message:
     __slots__ = ('message_data', 'api', 'is_multichat', 'chat_id', 'user_id', 'is_out', 'true_user_id',
                  'timestamp', 'answer_values', 'msg_id', 'text', 'full_text', 'meta', 'is_event',
                  'brief_attaches', 'brief_forwarded', '_full_attaches', '_full_forwarded',
-                 'reserved_by', 'occupied_by', 'peer_id', "is_forwarded", 'true_msg_id')
+                 'peer_id', "is_forwarded", 'true_msg_id', 'reserved_by')
 
     def __init__(self, vk_api_object, message_data):
         self.message_data = message_data
         self.api = vk_api_object
 
-        self.reserved_by = []
-        self.occupied_by = []
         self.meta = {}
+        self.reserved_by = None
 
         self.is_event = False
         self.is_multichat = message_data.is_multichat
@@ -290,16 +289,14 @@ class Chat:
 
 
 class Event:
-    __slots__ = ("api", "type", "reserved_by", "occupied_by", "meta")
+    __slots__ = ("api", "type", "meta", "reserved_by")
 
     def __init__(self, api, evnt_type):
         self.api = api
         self.type = evnt_type
 
         self.meta = {}
-
-        self.reserved_by = []
-        self.occupied_by = []
+        self.reserved_by = None
 
 
 # https://vk.com/dev/using_longpoll
