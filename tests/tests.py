@@ -140,7 +140,7 @@ class TestSketal(unittest.TestCase):
         self.assertIn("items", result)
         self.assertEqual(len(result['items']), count)
 
-        result = self.bot.coroutine_exec(self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
+        result = self.bot.coroutine_exec(self.bot.api(wait="custom").messages.get(count=1))
         self.assertEqual(asyncio.isfuture(result), True)
         self.bot.loop.run_until_complete(result)
         self.assertEqual(result.done(), True)
@@ -198,7 +198,11 @@ class TestSketal(unittest.TestCase):
         with self.assertLogs(self.bot.logger, level='ERROR') as cm:
             self.bot.coroutine_exec(self.bot.api.messages.send())
 
-        self.assertIn(r"ERROR:sketal:Errors while executing vk method: {'code': 100, 'method': 'messages.send', 'error_msg': 'One of the parameters specified was missing or invalid: you should specify peer_id, user_id, domain, chat_id or user_ids param'}, {'code': 100, 'method': 'execute', 'error_msg': 'One of the parameters specified was missing or invalid: you should specify peer_id, user_id, domain, chat_id or user_ids param'}", cm.output)
+        full_error_text = "\n".join(cm.output)
+
+        self.assertIn(r"Errors while executing vk method", full_error_text)
+        self.assertIn(r"'error_code': 100", full_error_text)
+        self.assertIn(r"One of the parameters specified was missing or invalid", full_error_text)
 
     def test_upload(self):
         with open("tests/simple_image.png", "rb") as f:
@@ -233,11 +237,11 @@ class TestSketal(unittest.TestCase):
             sender = self.bot.api.get_default_sender("wall.getById")
 
             tas1 = await self.bot.api.method_accumulative("wall.getById", {},
-                {"posts": "-145935681_515"}, sender=sender, wait=Wait.CUSTOM)
+                {"posts": "-145935681_515"}, sender=sender, wait="custom")
             tas2 = await self.bot.api.method_accumulative("wall.getById", {},
-                {"posts": "-145935681_512"}, sender=sender, wait=Wait.CUSTOM)
+                {"posts": "-145935681_512"}, sender=sender, wait="custom")
             tas3 = await self.bot.api.method_accumulative("wall.getById", {},
-                {"posts": "-145935681_511"}, sender=sender, wait=Wait.CUSTOM)
+                {"posts": "-145935681_511"}, sender=sender, wait="custom")
 
             await asyncio.gather(tas1, tas2, tas3, loop=self.bot.loop,
                 return_exceptions=True)

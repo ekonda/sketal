@@ -2,12 +2,6 @@ from enum import Enum
 import asyncio
 
 
-class Wait(Enum):
-    NO = 0
-    YES = 1
-    CUSTOM = 2
-
-
 class EventType(Enum):
     Longpoll = 0
     ChatChange = 1
@@ -17,7 +11,7 @@ class EventType(Enum):
 class ProxyParametrs:
     __slots__ = ("parent", "wait", "sender")
 
-    def __init__(self, parent, sender=None, wait=Wait.YES):
+    def __init__(self, parent, sender=None, wait="yes"):
         self.sender = sender
         self.wait = wait
         self.parent = parent
@@ -30,7 +24,7 @@ class Proxy:
     __slots__ = ("parent", "outer_name",
                  "wait", "sender")
 
-    def __init__(self, parent, outer_name, sender=None, wait=Wait.YES):
+    def __init__(self, parent, outer_name, sender=None, wait="yes"):
         self.parent = parent
         self.outer_name = outer_name
 
@@ -39,17 +33,18 @@ class Proxy:
 
     def __getattr__(self, inner_name):
         async def wrapper(**data):
-            return await self.parent.method(f"{self.outer_name}.{inner_name}", data, sender=self.sender, wait=self.wait)
+            return await self.parent.method(f"{self.outer_name}.{inner_name}",
+                data, sender=self.sender, wait=self.wait)
 
         return wrapper
 
 
 class Request(asyncio.Future):
-    __slots__ = ("key", "data", "sender", "time")
+    __slots__ = ("key", "data", "sender")
 
     def __init__(self, key, data, sender=None):
         self.key = key
-        self.data = data
+        self.data = data if data else {}
         self.sender = sender
 
         super().__init__()
@@ -86,18 +81,18 @@ class RequestAccumulative(Request):
         return future
 
     def process_result(self, result):
-        for t in self.results:
-            if t.done() or t.cancelled():
+        for fut in self.results:
+            if fut.done() or fut.cancelled():
                 continue
 
             try:
-                t.set_result(result.pop(0))
+                fut.set_result(result.pop(0))
 
             except (KeyError, IndexError, AttributeError):
-                t.set_result(False)
+                fut.set_result({})
 
             except asyncio.InvalidStateError:
-                continue
+                pass
 
 
 class Sender:

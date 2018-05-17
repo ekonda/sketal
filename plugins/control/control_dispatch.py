@@ -1,5 +1,5 @@
 from handler.base_plugin import CommandPlugin
-from utils import Wait, upload_photo
+from utils import upload_photo
 
 import asyncio, aiohttp, io
 
@@ -55,7 +55,7 @@ class DispatchPlugin(CommandPlugin):
         tasks = []
 
         for i in range(int(dialogs / 200) + 1):
-            tasks.append(await self.bot.api(wait=Wait.CUSTOM).messages.getDialogs(count=200, preview_length=1))
+            tasks.append(await self.bot.api(wait="custom").messages.getDialogs(count=200, preview_length=1))
 
         await asyncio.wait_for(
             asyncio.gather(*tasks, return_exceptions=True), None)
@@ -73,7 +73,7 @@ class DispatchPlugin(CommandPlugin):
                 users.add(int(dialog["message"]["user_id"]))
 
         for i, u in enumerate(users):
-            await self.bot.api(wait=Wait.NO).messages.send(user_id=u, message=message, attachment=attachment)
+            await self.bot.api(wait="no").messages.send(user_id=u, message=message, attachment=attachment)
 
             if i % 25 == 0:
                 await asyncio.sleep(0.2)

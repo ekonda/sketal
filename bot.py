@@ -88,7 +88,7 @@ class Bot:
         result = None
 
         for _ in range(4):
-            result = await self.api(sender=self.api.target_client).\
+            result = await self.api(sender=self.api.target_client). \
                 messages.getLongPollServer(use_ssl=1, lp_version=2)
 
             if result:

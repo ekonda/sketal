@@ -100,7 +100,7 @@ class VkController:
         if self.target_client.group:
             return self.vk_groups[self.target_client.target].group_id
 
-    def create_proxy(self, outer_name, sender=None, wait=Wait.YES):
+    def create_proxy(self, outer_name, sender=None, wait="yes"):
         """Create Proxy for nice looking mthod calls"""
 
         if outer_name == "execute":
@@ -111,53 +111,55 @@ class VkController:
 
         return Proxy(self, outer_name, sender, wait)
 
-    def __call__(self, sender=None, wait=Wait.YES):
+    def __call__(self, sender=None, wait="yes"):
         return ProxyParametrs(self, sender, wait)
 
     def __getattr__(self, outer_name):
         return self.create_proxy(outer_name)
 
-    async def method(self, key, data=None, sender=None, wait=Wait.YES):
-        "Execute vk method `key` with parameters `data` with sender settings \
-        `sender` with waiting settings `wait` and return results. False or \
-        None if something failed."
+    async def method(self, key, data=None, sender=None, wait="yes"):
+        """Execute vk method `key` with parameters `data` with sender settings
+        `sender` with waiting settings `wait` and return results or {} in case
+        of errors or usage of wait="no"."""
 
         client = self.get_current_sender(key, sender)
 
         if not client:
             self.logger.error(f"No account to execute: \"{key}\"!")
-            return False
+            return {}
 
-        task = Request(key, data, sender)
-        await client.queue.enqueue(task)
+        task = await client.queue.enqueue(Request(key, data, sender))
 
-        if wait == Wait.NO:
-            return None
+        if wait == "no":
+            return {}
 
-        elif wait == Wait.YES:
+        elif wait == "yes":
             try:
                 return await asyncio.wait_for(task, 90)
+
             except asyncio.CancelledError:
-                pass
+                return {}
+
             except Exception:
                 import traceback
                 traceback.print_exc()
 
-        elif wait == Wait.CUSTOM:
-            return task
+                return {}
+
+        return task
 
     async def method_accumulative(self, key, stable_data=None, data=None, join_func=None,
-                                  sender=None, wait=Wait.YES):
-        "Execute vk method `key` with static data `stable_data` and \
-        accumulative data `data` (data appends to already set data with \
-        function `join_func`) with sender settings `sender`, with waiting \
-        settings `wait`"
+                                  sender=None, wait="yes"):
+        """Execute vk method `key` with static data `stable_data` and
+        accumulative data `data` (data appends to already set data with
+        function `join_func`) with sender settings `sender`, with waiting
+        settings `wait`"""
 
         client = self.get_current_sender(key, sender)
 
         if not client:
             self.logger.error(f"No account to execute: \"{key}\"!")
-            return False
+            return {}
 
         a_task = None
 
@@ -190,27 +192,27 @@ class VkController:
             for k, v in data.items():
                 full_data[k] = ""
 
-            a_task = RequestAccumulative(key, full_data, sender, join_func)
-
-            await client.queue.enqueue(a_task)
+            a_task = await client.queue.enqueue(RequestAccumulative(key, full_data, sender, join_func))
 
         task = a_task.accumulate(data)
 
-        if wait == Wait.NO:
-            return None
+        if wait == "no":
+            return {}
 
-        elif wait == Wait.YES:
+        elif wait == "yes":
             try:
-                return await asyncio.wait_for(task, 60)
+                return await asyncio.wait_for(task, 90)
+
             except asyncio.CancelledError:
-                pass
+                return {}
 
             except Exception:
                 import traceback
                 traceback.print_exc()
 
-        elif wait == Wait.CUSTOM:
-            return task
+                return {}
+
+        return task
 
     def get_current_sender(self, key, sender=None):
         "Get group or user for executing method `key` with \

@@ -1,6 +1,6 @@
 from math import ceil
 
-from .utils import MessageEventData, Attachment, EventType, Wait
+from .utils import MessageEventData, Attachment, EventType
 
 
 MAX_LENGHT = 4000
@@ -178,7 +178,7 @@ class Message:
 
         return result
 
-    async def answer(self, message="", wait=Wait.NO, **additional_values):
+    async def answer(self, message="", wait="no", **additional_values):
         "Send message to this message's sender (chat or user) with wait \
         settings `wait` and additional_values`additional_values` for \
         `messages.send`"

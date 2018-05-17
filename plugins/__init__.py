@@ -45,7 +45,7 @@ def import_plugins(package):
                 continue
 
             if isinstance(e, type) and issubclass(e, BasePlugin) and e.__module__ == module.__name__:
-                if "-gendocs" in sys.argv:
+                if "-wrplugins" in sys.argv:
                     save_doc(e, full_name, "PLUGINS.md")
 
                 __all__.append(e.__name__)

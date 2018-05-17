@@ -96,23 +96,16 @@ class VkClient:
             except json.JSONDecodeError:
                 self.logger.error("Error while executing vk method: vk's response is wrong!")
 
-                return False
+                return {}
 
-        return False
+        return {}
 
-    async def execute(self, code, reties=0, **additional_values):
+    async def execute(self, code, **additional_values):
         """Execute a `code` from vk's `execute` method"""
 
-        if reties > 4:
-            self.logger.warning("Can't execute code: \"" + str(code) + "\"")
-            return False
-
-        url = f"https://api.vk.com/method/execute"
-
-        async with self.session.post(url, data={"code": code, "access_token": self.token, "v": VERSION, **additional_values}, **self.req_kwargs) as resp:
-            errors = []
-            errors_codes = []
-
+        async with self.session.post(f"https://api.vk.com/method/execute",
+                data={"code": code, "access_token": self.token, "v": VERSION,
+                **additional_values}, **self.req_kwargs) as resp:
             try:
                 response = await resp.text()
 
@@ -120,58 +113,53 @@ class VkClient:
 
                 results = json_iter_parse(response)
 
-                for data in results:
-                    if 'error' in data:
-                        if data['error']['error_code'] == CAPTCHA_IS_NEEDED:
-                            captcha_key = await self.enter_captcha(data['error']["captcha_img"])
-
-                            if not captcha_key:
-                                return False
-
-                            new_data = {"captcha_key": captcha_key, "captcha_sid": data['error']["captcha_sid"]}
-                            new_data.update(additional_values)
-
-                            return await self.execute(code, **new_data)
-
-                        errors.append(data['error'])
-                        errors_codes.append(data['error']['error_code'])
-
-                    if 'execute_errors' in data:
-                        for error in data['execute_errors']:
-                            errors.append({'code': error['error_code'],
-                                           'method': error['method'],
-                                           'error_msg': error['error_msg']})
-                            errors_codes.append(error['error_code'])
-
-                        errors_codes.append(EXECUTE_ERROR)
-
-                        continue
-
-                    if 'response' in data:
-                        return data['response']
-
-                if INTERNAL_ERROR in errors_codes:
-                    await asyncio.sleep(1)
-                    return await self.execute(code, reties + 1)
-
-                if AUTHORIZATION_FAILED in errors_codes:
-                    if self.app_id:
-                        await self.user(self.username, self.password, self.app_id, self.scope)
-
-                    return await self.execute(code, reties + 1)
-
             except json.JSONDecodeError:
                 self.logger.error("Error while executing vk method: vk's response is wrong!")
+                return {}
 
-                return False
+        errors = []
+
+        for data in results:
+            if 'error' in data:
+                if data['error']['error_code'] == CAPTCHA_IS_NEEDED:
+                    captcha_key = await self.enter_captcha(data['error']["captcha_img"])
+
+                    if not captcha_key:
+                        return {}
+
+                    return await self.execute(code, captcha_key=captcha_key,
+                        captcha_sid=data['error']["captcha_sid"], **additional_values)
+
+                errors.append(data['error'])
+
+            if 'execute_errors' in data:
+                for error in data['execute_errors']:
+                    errors.append({
+                        'error_code': error['error_code'],
+                        'method': error['method'],
+                        'error_msg': error['error_msg']
+                    })
+
+                continue
+
+            if 'response' in data:
+                return data['response']
+
+        if any(error['error_code'] == INTERNAL_ERROR for error in errors):
+            return {}
+
+        if any(error['error_code'] == AUTHORIZATION_FAILED for error in errors):
+            if self.app_id:
+                await self.user(self.username, self.password, self.app_id, self.scope)
+                return await self.execute(code)
 
         error_text = ""
         for error in errors:
-            error_text += (str(error)) + ", "
+            error_text += (str(error)) + "\n"
 
-        self.logger.error("Errors while executing vk method: " + error_text[:-2])
+        self.logger.error("Errors while executing vk method:\n" + error_text[:-1])
 
-        return False
+        return {}
 
     async def user_with_token(self, token):
         """Authorize a user by his token"""
@@ -337,8 +325,9 @@ class RequestsQueue:
             return
 
         if self.requests_done > 2:
-            return await asyncio.sleep(max(0,
-                self.requests_done_clear_time - time.time() + 0.03))
+            return await asyncio.sleep(
+                max(0, self.requests_done_clear_time - time.time())
+            )
 
         await self.execute_queue()
 
@@ -349,7 +338,7 @@ class RequestsQueue:
 
         self.queue.put_nowait(task)
 
-        return True
+        return task
 
     async def execute_queue(self):
         """Execute 25 or less tasks from client's queue"""
@@ -357,41 +346,38 @@ class RequestsQueue:
         if not self.requests or self.requests_done > 2:
             return
 
-        tasks = []
-        result = []
+        current_tasks = []
 
-        execute = "return ["
+        execute_code = "return ["
 
         for _ in range(25):
+            if self.queue.empty():
+                break
+
             task = self.queue.get_nowait()
 
-            if task.key in ("photos.saveWallPhoto", "messages.setChatPhoto", ):
-                for _ in range(2):
-                    self._requests_done += 1
+            if task.key in ("photos.saveWallPhoto", "messages.setChatPhoto",):
+                self._requests_done += 1
 
-                    try:
-                        result = await asyncio.shield(self.vk_client.method(task.key, **task.data))
-                        break
-                    except Exception:
-                        import traceback
-                        traceback.print_exc()
+                try:
+                    result = await self.vk_client.method(task.key, **task.data)
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
 
                 if not task.done() and not task.cancelled():
-                    task.set_result(result)
+                    task.set_result(result or {})
 
                 return
 
-            if task.data is None:
-                task.data = {}
-
-            execute += "API." + task.key + "({ "
+            execute_code += "API." + task.key + "({ "
 
             nl_to_text = task.data.pop("_nl_to_text", False)
             nl_to_br = not nl_to_text and task.data.pop("_nl_to_br", True)
 
             for k, v in task.data.items():
                 if isinstance(v, (int, float)):
-                    execute += '"' + str(k) + '":' + str(v) + ','
+                    execute_code += '"' + str(k) + '":' + str(v) + ','
                     continue
 
                 if not isinstance(v, str):
@@ -405,55 +391,49 @@ class RequestsQueue:
                 if nl_to_text:
                     v = v.replace("\n", "\\n")
 
-                execute += '"' + str(k) + '":"' + v + '",'
+                execute_code += '"' + str(k) + '":"' + v + '",'
 
-            execute = execute[:-1] + '}),'
+            execute_code = execute_code[:-1] + '}),'
 
-            tasks.append(task)
+            current_tasks.append(task)
 
-            if self.queue.empty():
-                break
+        execute_code = execute_code[:-1] + "];"
 
-        execute = execute[:-1] + "];"
+        result = []
 
         for _ in range(2):
             self._requests_done += 1
 
             try:
-                result = await asyncio.shield(self.vk_client.execute(execute))
-                break
+                result = await self.vk_client.execute(execute_code)
 
             except aiohttp.ClientOSError:
-                try:
-                    await self.session.close()
-                except Exception:
-                    pass
-
+                await self.vk_client.close()
                 self.vk_client.session = aiohttp.ClientSession()
 
-            except asyncio.TimeoutError:
-                await asyncio.sleep(1)
+            except Exception:
+                import traceback
+                traceback.print_exc()
 
-            except RuntimeError:
-                pass
+                await asyncio.sleep(0.25)
 
-            except ValueError:
-                pass
+            if result:
+                break
 
-        for task in tasks:
+
+        for task in current_tasks:
             if task.done() or task.cancelled():
                 continue
 
             try:
                 task_result = result.pop(0)
-                task.set_result(task_result)
-
             except (KeyError, IndexError, AttributeError):
-                task.set_result(False)
-                continue
-
-            except asyncio.InvalidStateError:
-                continue
+                task_result = {}
 
             if isinstance(task, RequestAccumulative):
                 task.process_result(task_result)
+            else:
+                try:
+                    task.set_result(task_result)
+                except asyncio.InvalidStateError:
+                    pass
