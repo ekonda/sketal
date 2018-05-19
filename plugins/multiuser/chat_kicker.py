@@ -28,7 +28,7 @@ class ChatKickerPlugin(CommandPlugin):
         if not msg.is_multichat:
             return await msg.answer("🤜🏻 Это не беседа.")
 
-        if self.admins_only and msg.meta["is_admin_or_moder"]:
+        if self.admins_only and not msg.meta["is_admin_or_moder"]:
             return await msg.answer("🤜🏻 У вас недостаточно прав.")
 
         command, text = self.parse_message(msg)
