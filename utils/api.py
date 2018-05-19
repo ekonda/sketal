@@ -417,9 +417,8 @@ class RequestsQueue:
 
                 await asyncio.sleep(0.25)
 
-            if result:
+            else:
                 break
-
 
         for task in current_tasks:
             if task.done() or task.cancelled():

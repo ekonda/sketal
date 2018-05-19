@@ -32,6 +32,7 @@ class BotSettings(BaseSettings):
         GraffitiPlugin(),
         QuoteDoerPlugin(),
         WikiPlugin(),
+        AnagramsPlugin(),
         MembersPlugin(),
         PairPlugin(),
         WhoIsPlugin(),

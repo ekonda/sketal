@@ -7,6 +7,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Added `content_namer.py`.
 - Added `content_statistics.py`
 - Added `games_anagrams.py`
+- Added `control_friends.py`
 - Added `order` field to plugins.
 - Added highly optimized plugin `storage.py`.
 - Added code for generation `PLUGINS.md` (`plugin/__init__.py` -> `save_doc`, should be used around adding class to `__all__`).

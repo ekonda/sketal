@@ -225,6 +225,7 @@ class Bot:
 
             except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
                 self.logger.warning("Long polling server doesn't respond. Changing server.")
+
                 await asyncio.sleep(0.5)
 
                 await self.init_long_polling(pack)
