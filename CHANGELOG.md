@@ -40,6 +40,7 @@ Version dedicated to performance updates, removing and unifying plugins.
 - Renamed and rearranged `vk` folder. Renamed to package `utils`.
 - Renamed `bot.py` for running to `run.py`.
 - Renamed `base_plugin_command.CommandPlugin` to `base_plugin.CommandPlugin`.
+- Fixed `control_friends.py`
 - Many fixes.
 - Moved `utils.py` to `utils/routine.py`
 

@@ -40,7 +40,8 @@ class NamerPlugin(CommandPlugin):
             return await msg.answer("👊 Нет.")
 
         if not fname or fname == "никак":
-            del msg.meta["data_user"]["nickname"]
+            if "nickname" in msg.meta["data_user"]:
+                del msg.meta["data_user"]["nickname"]
         else:
             msg.meta["data_user"]["nickname"] = name
 

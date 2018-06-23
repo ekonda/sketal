@@ -21,7 +21,7 @@ class FriendsPlugin(BasePlugin):
     async def accept_friends(self):
         requests = await self.api.friends.getRequests()
 
-        if not request:
+        if not requests:
             return
 
         for user_id in requests["items"]:

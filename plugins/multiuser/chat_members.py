@@ -42,7 +42,7 @@ class MembersPlugin(CommandPlugin):
                     users += f"{emoji} [id{user['id']}|{user['first_name']} {user['last_name']}] " \
                              f"{' - онлайн' if user['online'] else ''}\n"
 
-                elif user['online']:
+                elif user.get('online'):
                     users += f"{emoji} [id{user['id']}|{user['first_name']} {user['last_name']}]\n"
 
             if self.show_offline:
