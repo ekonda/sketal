@@ -16,7 +16,7 @@ class TicTacToePlugin(CommandPlugin):
             c_invite = ("кн вызов",)
 
         if not c_decline:
-            c_decline = ("кн тказаться",)
+            c_decline = ("кн отказаться",)
 
         if not c_accept:
             c_accept = ("кн принять",)
