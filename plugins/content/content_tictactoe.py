@@ -72,7 +72,7 @@ class TicTacToePlugin(CommandPlugin):
             await self.api.messages.send(peer_id=puid, message=
                 f"💭 Вас [id{msg.user_id}|пригласили] для игры в \"{self.game_name}\"!\n"
                 f"👉 Напишите {self.prefixes[-1]}{self.c_accept[0]} - чтобы принять вызов.\n"
-                f"👉 Напишите {self.prefixes[-1]}{self.c_accept[0]} - чтобы отклонить вызов.\n")
+                f"👉 Напишите {self.prefixes[-1]}{self.c_decline[0]} - чтобы отклонить вызов.\n")
 
             await self.api.messages.send(peer_id=msg.user_id, message=f"💭 Приглашение отправлено!")
 
@@ -129,7 +129,10 @@ class TicTacToePlugin(CommandPlugin):
 
                 return
 
-            x, y = text.split()
+            try:
+                x, y = text.split()
+            except Exception:
+                return await msg.answer("🤜🏻 Введите столб и строку (двумя числами через пробел), куда хотите поставить!")
 
             if not x.isdigit():
                 return await msg.answer("🤜🏻 Столб клетки введён неверно!")
