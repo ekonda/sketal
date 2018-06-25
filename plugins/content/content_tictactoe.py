@@ -16,7 +16,7 @@ class TicTacToePlugin(CommandPlugin):
             c_invite = ("кн вызов",)
 
         if not c_decline:
-            c_decline = ("кн тказаться",)
+            c_decline = ("кн отказаться",)
 
         if not c_accept:
             c_accept = ("кн принять",)
@@ -43,7 +43,7 @@ class TicTacToePlugin(CommandPlugin):
 
         if controls:
             message += \
-                f"\n👉 Напишите {self.prefixes[-1]}{self.c_make_turn[0]} слобик_клетки строка_клетки - чтобы сходить туда.\n" + \
+                f"\n👉 Напишите {self.prefixes[-1]}{self.c_make_turn[0]} столбик_клетки строка_клетки - чтобы сходить туда.\n" + \
                 f"👉 Напишите {self.prefixes[-1]}{self.c_make_turn[0]} сдаться - чтобы сдаться."
 
         return message
