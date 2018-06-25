@@ -1,5 +1,5 @@
 from handler.base_plugin_command import CommandPlugin
-
+import random
 
 class VideoPlugin(CommandPlugin):
     __slots__ = ()
@@ -16,7 +16,8 @@ class VideoPlugin(CommandPlugin):
             q=self.parse_message(msg, full_text=True)[1] or "милый котик",
             sort=2,
             count=10,
-            adult=0
+            adult=0,
+            offset= random.randint(1, 300)
         )
 
         if not data or not data.get("items"):
