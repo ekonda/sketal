@@ -6,7 +6,9 @@ import aiohttp, random, string
 BASE_API_URL = 'https://node-01.faceapp.io/api/v2.3/photos'  # Ensure no slash at the end.
 BASE_HEADERS = {'User-agent': "FaceApp/1.0.229 (Linux; Android 4.4)"}
 DEVICE_ID_LENGTH = 8
-KNOWN_FILTERS = ['smile', 'smile_2', 'hot', 'old', 'young', 'female', 'male']
+KNOWN_FILTERS = ['smile', 'smile_2', 'hot', 'old', 'young', 'female', 
+                 'male', 'hollywood', 'fun_glasses', 'hitman', 'mustache_free', 
+                 'pan', 'heisenberg']
 # Thanks to https://github.com/vasilysinitsin/Faces
 
 class FacePlugin(CommandPlugin):
@@ -37,6 +39,8 @@ class FacePlugin(CommandPlugin):
             'тёлкой': 'female',
             'тётей': 'female',
             'кисой': 'female',
+            
+            # Вы можете давать свои именя для фильтров из KNOWN_FILTERS здесь
         }
 
     @staticmethod
