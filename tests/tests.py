@@ -84,26 +84,6 @@ class TestBot(unittest.TestCase):
 
         self.bot.do(self.bot.api.docs.delete(owner_id=result.owner_id, doc_id=result.id))
 
-    def test_mass_method(self):
-        async def work():
-            with self.bot.api.mass_request():
-                tasks = []
-
-                for _ in range(70):
-                    tasks.append(await self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
-
-                while tasks:
-                    await asyncio.sleep(0.01)
-
-                    task = tasks.pop()
-
-                    if task.done():
-                        continue
-
-                    tasks.append(task)
-
-        self.bot.do(work())
-
     def test_accumulative_methods(self):
         async def work():
             sender = self.bot.api.get_default_sender("wall.getById")
