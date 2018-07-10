@@ -31,25 +31,6 @@ class TestBot(unittest.TestCase):
         self.assertIn(f'INFO:{self.bot.logger.name}:Initializing vk clients', cm.output)
         self.assertIn(f'INFO:{self.bot.logger.name}:Loading plugins', cm.output)
 
-    def test_methods(self):
-        result = self.bot.do(self.bot.api.groups.getById(group_id=1))
-        self.assertNotIn(result, (False, None))
-
-        count = 4
-        result = self.bot.do(self.bot.api.messages.get(count=count))
-        self.assertNotIn(result, (False, None))
-        self.assertIn("items", result)
-        self.assertEqual(len(result['items']), count)
-
-        result = self.bot.do(self.bot.api().messages.get(count=1))
-        self.assertNotIn(result, (False, None))
-
-        result = self.bot.do(self.bot.api(wait=Wait.CUSTOM).messages.get(count=1))
-        self.assertEqual(asyncio.isfuture(result), True)
-        self.bot.loop.run_until_complete(result)
-        self.assertEqual(result.done(), True)
-        self.assertNotIn(result.result(), (False, None))
-
     def test_longpoll(self):
         task = self.bot.longpoll_run(True)
 
