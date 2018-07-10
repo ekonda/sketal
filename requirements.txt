@@ -18,10 +18,10 @@ Pillow
 qrcode
 
 # Data and bases
+psycopg2-binary
 peewee==2.10.2
 peewee_async
 aiomysql
-psycopg2-binary
 aiopg
 tinydb
 
