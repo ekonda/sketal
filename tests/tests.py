@@ -128,24 +128,6 @@ class TestSketal(unittest.TestCase):
 
         Message.answer = _answer
 
-    def test_methods(self):
-        """Requires at least 1 message in dialogs on account."""
-
-        result = self.bot.coroutine_exec(self.bot.api.groups.getById(group_id=1))
-        self.assertNotIn(result, (False, None))
-
-        count = 2
-        result = self.bot.coroutine_exec(self.bot.api.messages.get(count=count))
-        self.assertNotIn(result, (False, None))
-        self.assertIn("items", result)
-        self.assertEqual(len(result['items']), count)
-
-        result = self.bot.coroutine_exec(self.bot.api(wait="custom").messages.get(count=1))
-        self.assertEqual(asyncio.isfuture(result), True)
-        self.bot.loop.run_until_complete(result)
-        self.assertEqual(result.done(), True)
-        self.assertNotIn(result.result(), (False, None))
-
     def test_longpoll(self):
         task = self.bot.longpoll_run(True)
 
