@@ -375,6 +375,9 @@ class RequestsQueue:
             nl_to_text = task.data.pop("_nl_to_text", False)
             nl_to_br = not nl_to_text and task.data.pop("_nl_to_br", True)
 
+            nl_to_text = task.data.pop("_nl_to_text", False)
+            nl_to_br = not nl_to_text and task.data.pop("_nl_to_br", True)
+
             for k, v in task.data.items():
                 if isinstance(v, (int, float)):
                     execute_code += '"' + str(k) + '":' + str(v) + ','
