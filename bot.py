@@ -1,45 +1,44 @@
-import aiohttp
-import signal
-import json
+import asyncio, aiohttp, json, time, logging
 
-import logging
-import asyncio
 from asyncio import Future, Task
-
-import time
 from aiohttp import web
 from os import getenv
 
 from handler.handler_controller import MessageHandler
 from utils import parse_msg_flags
-from vk.plus import VkController
 
-from vk.data import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
-from vk.utils import MessageEventData
+from utils import VkController
+from utils import Message, LongpollEvent, ChatChangeEvent, CallbackEvent
+from utils import MessageEventData
 
 
 class Bot:
-    __slots__ = ("logger", "loop", "values", "server", "main_task", "longpoll_request",
-                 "settings", "api", "handler", "logger_file")
+    __slots__ = (
+        "api", "handler", "logger", "logger_file", "loop",
+        "tasks", "sessions", "requests", "settings"
+    )
 
-    def __init__(self, settings, logger=None, handler=None, loop=asyncio.get_event_loop()):
+    def __init__(self, settings, logger=None, handler=None, loop=None):
         self.settings = settings
 
-        self.logger = None
-        self.init_logger(logger)
+        if logger:
+            self.logger = logger
+        else:
+            self.logger = self.init_logger()
+
+        if loop:
+            self.loop = loop
+        else:
+            self.loop = asyncio.get_event_loop()
 
         self.logger.info("Initializing bot")
 
-        self.loop = loop
-
-        self.values = {}
-        self.server = ""
-        self.longpoll_request = None
-
-        self.main_task = None
+        self.requests = []
+        self.sessions = []
+        self.tasks = []
 
         self.logger.info("Initializing vk clients")
-        self.api = VkController(settings, logger=self.logger)
+        self.api = VkController(settings, logger=self.logger, loop=self.loop)
 
         self.logger.info("Loading plugins")
         if handler:
@@ -49,16 +48,14 @@ class Bot:
             self.handler = MessageHandler(self, self.api, initiate_plugins=False)
             self.handler.initiate_plugins()
 
-        signal.signal(signal.SIGINT, lambda x, y: self.stop_bot(True))
-
         self.logger.info("Bot successfully initialized")
 
-    def init_logger(self, logger):
-        if not logger:
-            logger = logging.Logger("sketal", level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
+    def init_logger(self):
+        logger = logging.Logger("sketal", level=logging.DEBUG if self.settings.DEBUG else logging.INFO)
 
-        formatter = logging.Formatter(fmt=u'%(filename)-10s [%(asctime)s] %(levelname)-8s: %(message)s',
-                                      datefmt='%y.%m.%d %H:%M:%S')
+        formatter = logging.Formatter(
+            fmt=u'[%(asctime)s] %(levelname)-8s: %(message)s',
+            datefmt='%y.%m.%d %H:%M:%S')
 
         file_handler = logging.FileHandler('logs.txt')
         file_handler.setLevel(logging.DEBUG)
@@ -73,13 +70,26 @@ class Bot:
         logger.addHandler(file_handler)
         logger.addHandler(stream_handler)
 
-        self.logger = logger
+        return logger
 
-    async def init_long_polling(self, update=0):
+    def add_task(self, task):
+        for ctask in self.tasks[::]:
+            if ctask.done() or ctask.cancelled():
+                self.tasks.remove(ctask)
+
+        if task.done() or task.cancelled():
+            return
+
+        self.tasks.append(task)
+
+        return task
+
+    async def init_long_polling(self, pack, update=0):
         result = None
-        retries = 10
-        for _ in range(retries):
-            result = await self.api(sender=self.api.target_client).messages.getLongPollServer(use_ssl=1, lp_version=2)
+
+        for _ in range(4):
+            result = await self.api(sender=self.api.target_client). \
+                messages.getLongPollServer(use_ssl=1, lp_version=2)
 
             if result:
                 break
@@ -87,38 +97,48 @@ class Bot:
             time.sleep(0.5)
 
         if not result:
-            self.logger.error("Unable to connect to VK's long polling server")
+            self.logger.error("Unable to connect to VK's long polling server.")
             exit()
 
-        last_ts = 0
-        longpoll_key = ""
-
-        if 'ts' in self.values:
-            last_ts = self.values['ts']
-
-        if 'key' in self.values:
-            longpoll_key = self.values['key']
-
         if update == 0:
-            self.server = "https://" + result['server']
-            longpoll_key = result['key']
-            last_ts = result['ts']
-
-        elif update == 3:
-            longpoll_key = result['key']
-            last_ts = result['ts']
+            pack[1] = "https://" + result['server']
+            pack[0]['key'] = result['key']
+            pack[0]['ts'] = result['ts']
 
         elif update == 2:
-            longpoll_key = result['key']
+            pack[0]['key'] = result['key']
 
-        self.values = {
-            'act': 'a_check',
-            'key': longpoll_key,
-            'ts': last_ts,
-            'wait': 20,
-            'mode': 10,
-            'version': 2
-        }
+        elif update == 3:
+            pack[0]['key'] = result['key']
+            pack[0]['ts'] = result['ts']
+
+    async def init_bots_long_polling(self, pack, update=0):
+        result = None
+
+        for _ in range(4):
+            result = await self.api(sender=self.api.target_client).\
+                groups.getLongPollServer(group_id=self.api.get_current_id())
+
+            if result:
+                break
+
+            time.sleep(0.5)
+
+        if not result:
+            self.logger.error("Unable to connect to VK's bots long polling server.")
+            exit()
+
+        if update == 0:
+            pack[1] = result['server']
+            pack[0]['key'] = result['key']
+            pack[0]['ts'] = result['ts']
+
+        elif update == 2:
+            pack[0]['key'] = result['key']
+
+        elif update == 3:
+            pack[0]['key'] = result['key']
+            pack[0]['ts'] = result['ts']
 
     async def process_longpoll_event(self, new_event):
         if not new_event:
@@ -136,14 +156,12 @@ class Bot:
         data.attaches = new_event[6]
         data.time = int(new_event[4])
 
-        try:
-            data.user_id = int(data.attaches['from'])
+        if 'from' in data.attaches and len(new_event) > 3:
+            data.user_id = int(data.attaches.pop('from'))
             data.chat_id = int(new_event[3]) - 2000000000
             data.is_multichat = True
 
-            del data.attaches['from']
-
-        except KeyError:
+        else:
             data.user_id = int(new_event[3])
             data.is_multichat = False
 
@@ -159,8 +177,8 @@ class Bot:
         data.full_text = new_event[5].replace('<br>', '\n')
 
         if "fwd" in data.attaches:
-            data.forwarded = MessageEventData.parse_brief_forwarded_messages_from_lp(data.attaches["fwd"])
-            del data.attaches["fwd"]
+            data.forwarded = MessageEventData.\
+                parse_brief_forwarded_messages_from_lp(data.attaches.pop("fwd"))
 
         else:
             data.forwarded = []
@@ -173,28 +191,53 @@ class Bot:
         await self.process_message(msg)
 
     async def longpoll_processor(self):
-        await self.init_long_polling()
+        pack = [{'act': 'a_check', 'key': '', 'ts': 0, 'wait': 25, 'mode': 10,
+            'version': 2}, ""]
+
+        await self.init_long_polling(pack)
 
         session = aiohttp.ClientSession(loop=self.loop)
+        self.sessions.append(session)
 
         while True:
             try:
-                self.longpoll_request = session.get(self.server, params=self.values)
-
-                resp = await self.longpoll_request
-
+                requ = session.get(pack[1], params=pack[0])
             except aiohttp.ClientOSError:
-                session = aiohttp.ClientSession(loop=self.loop)
-
-            except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
-                self.logger.warning("Long polling server doesn't respond. Changing server")
-                await self.init_long_polling()
+                await asyncio.sleep(0.5)
                 continue
+
+            self.requests.append(requ)
 
             try:
-                events = json.loads(await resp.text())
-            except ValueError:
+                events = json.loads(await (await requ).text())
+
+            except aiohttp.ClientOSError:
+                try:
+                    self.sessions.remove(session)
+                except ValueError:
+                    pass
+
+                await asyncio.sleep(0.5)
+
+                session = aiohttp.ClientSession(loop=self.loop)
+                self.sessions.append(session)
                 continue
+
+            except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
+                self.logger.warning("Long polling server doesn't respond. Changing server.")
+
+                await asyncio.sleep(0.5)
+
+                await self.init_long_polling(pack)
+                continue
+
+            except ValueError:
+                await asyncio.sleep(0.5)
+                continue
+
+            finally:
+                if requ in self.requests:
+                    self.requests.remove(requ)
 
             failed = events.get('failed')
 
@@ -202,22 +245,113 @@ class Bot:
                 err_num = int(failed)
 
                 if err_num == 1:  # 1 - update timestamp
-                    self.values['ts'] = events['ts']
+                    if 'ts' not in events:
+                        await self.init_long_polling(pack)
+                    else:
+                        pack[0]['ts'] = events['ts']
 
                 elif err_num in (2, 3):  # 2, 3 - new data for long polling
-                    await self.init_long_polling(err_num)
+                    await self.init_long_polling(pack, err_num)
 
                 continue
 
-            self.values['ts'] = events['ts']
+            pack[0]['ts'] = events['ts']
+
             for event in events['updates']:
                 asyncio.ensure_future(self.process_longpoll_event(event))
+
+    async def bots_longpoll_processor(self):
+        pack = [{'act': 'a_check', 'key': '', 'ts': 0,
+            'wait': 25}, ""]
+
+        await self.init_bots_long_polling(pack)
+
+        session = aiohttp.ClientSession(loop=self.loop)
+        self.sessions.append(session)
+
+        while True:
+            try:
+                requ = session.get(pack[1], params=pack[0])
+            except aiohttp.ClientOSError:
+                await asyncio.sleep(0.5)
+                continue
+
+            self.requests.append(requ)
+
+            try:
+                events = json.loads(await (await requ).text())
+
+            except aiohttp.ClientOSError:
+                try:
+                    self.sessions.remove(session)
+                except ValueError:
+                    pass
+
+                await asyncio.sleep(0.5)
+
+                session = aiohttp.ClientSession(loop=self.loop)
+                self.sessions.append(session)
+                continue
+
+            except (asyncio.TimeoutError, aiohttp.ServerDisconnectedError):
+                self.logger.warning("Long polling server doesn't respond. Changing server.")
+                await asyncio.sleep(0.5)
+
+                await self.init_bots_long_polling(pack)
+                continue
+
+            except ValueError:
+                await asyncio.sleep(0.5)
+                continue
+
+            finally:
+                if requ in self.requests:
+                    self.requests.remove(requ)
+
+            failed = events.get('failed')
+
+            if failed:
+                err_num = int(failed)
+
+                if err_num == 1:  # 1 - update timestamp
+                    if 'ts' not in events:
+                        await self.init_bots_long_polling(pack)
+                    else:
+                        pack[0]['ts'] = events['ts']
+
+                elif err_num in (2, 3):  # 2, 3 - new data for long polling
+                    await self.init_bots_long_polling(pack, err_num)
+
+                continue
+
+            pack[0]['ts'] = events['ts']
+
+            for event in events['updates']:
+                if "type" not in event or "object" not in event:
+                    continue
+
+                data_type = event["type"]
+                obj = event["object"]
+
+                if "user_id" in obj:
+                    obj['user_id'] = int(obj['user_id'])
+
+                if data_type == 'message_new':
+                    await self.process_message(
+                        Message(self.api, MessageEventData.from_message_body(obj)))
+
+                else:
+                    await self.process_event(
+                        CallbackEvent(self.api, data_type, obj))
 
     async def callback_processor(self, request):
         try:
             data = await request.json()
 
-        except (UnicodeDecodeError, json.decoder.JSONDecodeError):
+            if "type" not in data or "object" not in data:
+                raise ValueError("Damaged data received.")
+
+        except (UnicodeDecodeError, ValueError):
             return web.Response(text="ok")
 
         data_type = data["type"]
@@ -231,33 +365,45 @@ class Bot:
             obj['user_id'] = int(obj['user_id'])
 
         if data_type == 'message_new':
-            data = MessageEventData.from_message_body(obj)
-
-            msg = Message(self.api, data)
-
-            await self.process_message(msg)
+            await self.process_message(
+                Message(self.api, MessageEventData.from_message_body(obj)))
 
         else:
-            evnt = CallbackEvent(self.api, data_type, obj)
-            await self.process_event(evnt)
+            await self.process_event(
+                CallbackEvent(self.api, data_type, obj))
 
         return web.Response(text="ok")
 
     def longpoll_run(self, custom_process=False):
-        self.main_task = Task(self.longpoll_processor())
+        task = self.add_task(Task(self.longpoll_processor()))
 
         if custom_process:
-            return self.main_task
+            return task
 
         self.logger.info("Started to process messages")
 
         try:
-            self.loop.run_until_complete(self.main_task)
+            self.loop.run_until_complete(task)
 
         except (KeyboardInterrupt, SystemExit):
-            self.stop()
+            self.loop.run_until_complete(self.stop())
 
-            self.logger.info("Stopped to process messages")
+        except asyncio.CancelledError:
+            pass
+
+    def bots_longpoll_run(self, custom_process=False):
+        task = self.add_task(Task(self.bots_longpoll_processor()))
+
+        if custom_process:
+            return task
+
+        self.logger.info("Started to process messages")
+
+        try:
+            self.loop.run_until_complete(task)
+
+        except (KeyboardInterrupt, SystemExit):
+            self.loop.run_until_complete(self.stop())
 
         except asyncio.CancelledError:
             pass
@@ -269,70 +415,33 @@ class Bot:
         self.logger.info("Started to process messages")
 
         try:
-            server_generator, handler, app = self.loop.run_until_complete(self.init_app(host, port, self.loop))
-            server = self.loop.run_until_complete(server_generator)
+            app = web.Application()
+            app.router.add_post('/', self.callback_processor)
+
+            runner = web.AppRunner(app)
+            self.loop.run_until_complete(runner.setup())
+
+            site = web.TCPSite(runner, host, port)
+            self.loop.run_until_complete(site.start())
+
         except OSError:
             self.logger.error("Address already in use: " + str(host) + ":" + str(port))
             return
 
-        self.main_task = Future()
+        task = self.add_task(Future())
 
         if custom_process:
-            return self.main_task
+            return task
 
         print("======== Running on http://{}:{} ========\n"
               "         (Press CTRL+C to quit)".format(*server.sockets[0].getsockname()))
 
-        def stop_server():
-            server.close()
-
-            if not self.loop.is_running():
-                return
-
-            self.loop.run_until_complete(server.wait_closed())
-            self.loop.run_until_complete(app.shutdown())
-            self.loop.run_until_complete(handler.shutdown(10))
-            self.loop.run_until_complete(app.cleanup())
-
         try:
-            self.loop.run_until_complete(self.main_task)
-        except KeyboardInterrupt:
-            self.stop()
+            self.loop.run_until_complete(task)
 
-            stop_server()
-
-            self.loop.close()
-
-        except asyncio.CancelledError:
-            pass
-
-        finally:
-            stop_server()
-
-            self.logger.info("Stopped to process messages")
-
-    async def init_app(self, host, port, loop):
-        app = web.Application()
-        app.router.add_post('/', self.callback_processor)
-
-        handler = app.make_handler()
-
-        server_generator = loop.create_server(handler, host, port)
-        return server_generator, handler, app
-
-    def stop_bot(self, full=False):
-        try:
-            if self.main_task:
-                self.main_task.cancel()
-        except Exception:
-            import traceback
-            traceback.print_exc()
-
-        if full:
-            self.stop()
-            self.loop.stop()
-
-        self.logger.info("Attempting to turn bot off")
+        except (KeyboardInterrupt, SystemExit):
+            self.loop.run_until_complete(runner.cleanup())
+            self.loop.run_until_complete(self.stop())
 
     async def process_message(self, msg):
         asyncio.ensure_future(self.handler.process(msg), loop=self.loop)
@@ -354,46 +463,39 @@ class Bot:
     async def process_event(self, evnt):
         asyncio.ensure_future(self.handler.process_event(evnt), loop=self.loop)
 
-    def do(self, coroutine):
-        if asyncio.iscoroutine(coroutine):
+    def coroutine_exec(self, coroutine):
+        if asyncio.iscoroutine(coroutine) or isinstance(coroutine, asyncio.Future):
             return self.loop.run_until_complete(coroutine)
 
         return False
 
-    @staticmethod
-    def silent(func):
-        try:
-            func()
-        except Exception as e:
-            print(e)
+    async def stop_tasks(self):
+        self.logger.info("Attempting stop bot")
 
-    def stop(self):
-        self.handler.stop()
-        self.api.stop()
+        for task in self.tasks:
+            try:
+                task.cancel()
+            except Exception:
+                pass
 
-        self.silent(self.main_task.cancel)
+        self.logger.info("Stopped to process messages")
+
+    async def stop(self):
+        self.logger.info("Attempting to turn bot off")
+
+        for session in self.sessions:
+            await session.close()
+
+        await self.handler.stop()
+        await self.api.stop()
+
+        for task in self.tasks:
+            try:
+                task.cancel()
+            except Exception:
+                pass
 
         self.logger.removeHandler(self.logger_file)
         self.logger_file.close()
 
-
-if __name__ == "__main__":
-    try:
-        import sys
-
-        if "-d" in sys.argv:
-            raise ModuleNotFoundError
-
-        from settings_real import BotSettings
-
-    except ModuleNotFoundError:
-        from settings import BotSettings
-
-    except ImportError:
-        import traceback
-        traceback.print_exc()
-        exit(1)
-
-    bot = Bot(BotSettings)
-    bot.longpoll_run()
-    # bot.callback_run()
+        self.logger.info("Stopped to process messages")
