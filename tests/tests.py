@@ -129,13 +129,19 @@ class TestSketal(unittest.TestCase):
         Message.answer = _answer
 
     def test_longpoll(self):
+        print(":( 1", flush=True)
+
         task = self.bot.longpoll_run(True)
 
         async def bot_stopper():
+            print(":) 1", flush=True)
             await asyncio.sleep(1.5)
             await self.bot.stop_tasks()
+            print(":) 2", flush=True)
 
         asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
+
+        print(":( 2", flush=True)
 
         with self.assertLogs(self.bot.logger, level='INFO') as cm:
             with self.assertRaises(asyncio.CancelledError):
