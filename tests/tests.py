@@ -128,27 +128,6 @@ class TestSketal(unittest.TestCase):
 
         Message.answer = _answer
 
-    def test_longpoll(self):
-        print(":( 1", flush=True)
-
-        task = self.bot.longpoll_run(True)
-
-        async def bot_stopper():
-            print(":) 1", flush=True)
-            await asyncio.sleep(1.5)
-            await self.bot.stop_tasks()
-            print(":) 2", flush=True)
-
-        asyncio.ensure_future(bot_stopper(), loop=self.bot.loop)
-
-        print(":( 2", flush=True)
-
-        with self.assertLogs(self.bot.logger, level='INFO') as cm:
-            with self.assertRaises(asyncio.CancelledError):
-                self.bot.loop.run_until_complete(task)
-
-        self.assertEqual(cm.output, [f"INFO:{self.bot.logger.name}:Attempting stop bot", f"INFO:{self.bot.logger.name}:Stopped to process messages"])
-
     def test_bots_longpoll(self):
         if all("group" not in e for e in self.bot.settings.USERS):
             return
@@ -188,9 +167,9 @@ class TestSketal(unittest.TestCase):
 
         full_error_text = "\n".join(cm.output)
 
-        self.assertIn(r"Errors while executing vk method", full_error_text)
-        self.assertIn(r"'error_code': 100", full_error_text)
-        self.assertIn(r"One of the parameters specified was missing or invalid", full_error_text)
+        self.assertIn("Errors while executing vk method", full_error_text)
+        self.assertIn("'error_code': 100", full_error_text)
+        self.assertIn("One of the parameters specified was missing or invalid", full_error_text)
 
     def test_upload(self):
         with open("tests/simple_image.png", "rb") as f:
