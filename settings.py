@@ -43,7 +43,7 @@ class BotSettings(BaseSettings):
         MemeDoerPlugin(),
         QRCodePlugin(),
         ChatKickerPlugin(admins_only=True),
-        RandomPostPlugin({"kitties": -145935681, "random": -111759315,
+        RandomPostPlugin({"random": -111759315,
             "savehouse": -96322217, "octavia": -36007583}),
         CalculatorPlugin(),
         VideoPlugin(),
