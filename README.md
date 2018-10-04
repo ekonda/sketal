@@ -2,7 +2,7 @@
 
 ## sketal
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1a5af7a2447a4f83838cb4ea9da0bb43)](https://www.codacy.com/app/m-krjukov/Sketal?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=vk-brain/sketal&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.org/vk-brain/sketal.svg?branch=master)](https://travis-ci.org/vk-brain/sketal)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1a5af7a2447a4f83838cb4ea9da0bb43)](https://www.codacy.com/app/m-krjukov/Sketal?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ekonda/sketal&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.org/ekonda/sketal.svg?branch=master)](https://travis-ci.org/ekonda/sketal)
 
 #### Немного о боте
 - Бот работает на python3.6 и выше. Ниже не работает. **Совсем**. Это важно.
@@ -71,7 +71,7 @@
 - При запуске `run.py`, будет попытка использовать настройки `BotSettings` из файла с настройками `settings_prod.py`, затем, в случае неудачи, будет использован `BotSettings` из `settings.py`.
 
 #### Участники проекта:
-- [Список участников (все молодцы! большие!)](https://github.com/vk-brain/sketal/graphs/contributors)
+- [Список участников (все молодцы! большие!)](https://github.com/ekonda/sketal/graphs/contributors)
 - [Плагинчик сделал](https://github.com/TumkasCor)
 - [Плагинчик сделал](https://github.com/Lis1us)
 
