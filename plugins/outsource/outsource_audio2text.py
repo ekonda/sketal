@@ -67,7 +67,7 @@ class Audio2TextPlugin(CommandPlugin):
             return await msg.answer("Я и так всё слушаю и записываю \_C:_/")
 
         if command in self.commands_turn_off:
-            del self.configurations[msg.peer_id]
+            self.configurations[msg.peer_id] = 0
             return await msg.answer("Как хочешь...")
 
         sound, exten = None, None
@@ -87,15 +87,16 @@ class Audio2TextPlugin(CommandPlugin):
         if msg.brief_attaches:
             sound, exten = await check(await msg.get_full_attaches())
 
-        if sound is None and msg.brief_forwarded:
-            for m in traverse(await msg.get_full_forwarded()):
-                 sound, exten = await check(await m.get_full_attaches())
+        if self.configurations.get(msg.peer_id, 0) != 1 or command in self.commands_once:
+            if sound is None and msg.brief_forwarded:
+                for m in traverse(await msg.get_full_forwarded()):
+                    sound, exten = await check(await m.get_full_attaches())
 
-                 if sound is not None:
-                     break
+                    if sound is not None:
+                        break
 
         if sound is None and command in self.commands_once:
-            if self.configurations.get(msg.peer_id, 0) in (0, 2):
+            if self.configurations.get(msg.peer_id, 0) != 1:
                 self.configurations[msg.peer_id] = 2
                 return await msg.answer("Переведу следующее в текст ;)")
 

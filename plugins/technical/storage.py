@@ -45,7 +45,7 @@ class StoragePlugin(BasePlugin):
     def __init__(self, host="localhost", port=27017, database="sketal_db",
             in_memory=False, save_to_file=False):
         """Allows users and chats to store persistent data with MongoDB or in
-        memory. Both storages are siuated in `meta` as `data_user` and
+        memory. Both storages are situated in `meta` as `data_user` and
         `data_chat` and represented as dictionary with possible basic values
         (dict, list, tuple, int, float, str, bool). On the beggining theese
         fields are populated and after message processing it is saved to
