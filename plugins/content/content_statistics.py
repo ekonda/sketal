@@ -26,11 +26,13 @@ class StatisticsPlugin(CommandPlugin):
 
         statistics = data["chat_statistics"]
 
-        if msg.user_id not in statistics["users"]:
-            statistics["users"][msg.user_id] = {"messages": 0, "symbols": 0,
+        user_key = str(msg.user_id)
+
+        if user_key not in statistics["users"]:
+            statistics["users"][user_key] = {"messages": 0, "symbols": 0,
                 "last_message": time.time()}
 
-        user = statistics["users"][msg.user_id]
+        user = statistics["users"][user_key]
 
         user["messages"] += 1
         user["symbols"] += len(msg.full_text)
