@@ -47,7 +47,7 @@ class ChatControlPlugin(CommandPlugin):
                 list(self.banned)
 
         if entity.chat_id not in self.cached:
-            self.cached = self.cached[19:] + [entity.chat_id]
+            self.cached = self.cached[-19:] + [entity.chat_id]
 
         return banned
 
