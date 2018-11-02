@@ -44,7 +44,7 @@ class MessageHandler:
 
             await msg.answer(
                 "[ Произошла ошибка при обработке сообщения плагинами! ]\n"
-                "[ Сообщите об этом админимстратору ]\n"
+                "[ Сообщите об этом администратору ]\n"
                 f"[ error#{len(self.exceptions)}<{random_key(6)}> ]"
             )
 
