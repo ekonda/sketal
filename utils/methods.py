@@ -15,7 +15,9 @@ ALLOWED_METHODS = {
              'getWallUploadServer'),
 
     'photos': ('getMessagesUploadServer',
-               'saveMessagesPhoto')
+               'saveMessagesPhoto'),
+    
+    'users': ('get',)
 }
 
 # Словарь, ключ - раздел API методов, значение - список запрещённых методов
