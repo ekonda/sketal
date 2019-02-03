@@ -1,12 +1,20 @@
 ![Title](title.png)
 
 ## sketal
-
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1a5af7a2447a4f83838cb4ea9da0bb43)](https://www.codacy.com/app/m-krjukov/Sketal?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ekonda/sketal&amp;utm_campaign=Badge_Grade) [![Build Status](https://travis-ci.org/ekonda/sketal.svg?branch=master)](https://travis-ci.org/ekonda/sketal)
 
 #### Немного о боте
 - Бот работает на python3.6 и выше. Ниже не работает. **Совсем**. Это важно.
 - Бот использует asyncio, aiohttp и т.д.
+
+#### Важно
+Бот более не поддерживается. С последними изменениями ВКонтакте, методы,
+позволяющие работать с сообщениями, будут ограничены для пользователей. Это
+значит, что этот бот сможет работать, как полагается, только от лица группы,
+но этот бот не поддерживает работу в беседах от лица группы. Поэтому, скорее
+всего, этот бот для многих потеряет смысл. Если вы разработчик - рекомендуется
+обратить внимание на [Kutana](https://github.com/ekonda/kutana). Этот бот
+более надёжный и поддерживает большинство возможностей ВКонтакте.
 
 #### Инструкция
 1. Скачать бота.
